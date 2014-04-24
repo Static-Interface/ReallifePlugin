@@ -67,11 +67,19 @@ public class PayDayRunnable implements Runnable
             return;
         }
 
+        try
+        {
+            user.getMoney();
+        }
+        catch(Exception e){}
+
+        double money = user.getMoney();
+
         String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
         String moneyPrefix = (user.getMoney() < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
 
         out.add(ChatColor.AQUA + String.format("|- Summe: " + resultPrefix + "%s Euro", MathHelper.round(result)));
-        out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s Euro", user.getMoney()));
+        out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s Euro", money));
 
         String seperator = ChatColor.BLUE + "------------------------------------------------";
         out.add(seperator);
