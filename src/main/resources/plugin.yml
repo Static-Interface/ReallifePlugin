@@ -1,0 +1,25 @@
+name: ReallifePlugin
+version: ${project.version}
+description: A bukkit reallife plugin
+author: Trojaner
+website: http://static-interface.de
+main: de.static_interface.reallifeplugin.ReallifeMain
+soft-depend: [SinkLibrary]
+
+commands:
+  reallifeplugin:
+    description: Reallifeplugin command
+    permission: reallifeplugin.command
+    usage: "Wrong usage! Correct Usage: /<command> <option> <args>"
+    aliases: rp
+  insurance:
+    description: Insurance Command
+    permission: reallifeplugin.insurance
+    usage: "Wrong usage! Correct Usage: /<command> <on/off>"
+    aliases: [versicherung,ic]
+
+permissions:
+  reallifeplugin.command:
+     default: op
+  reallifeplugin.insurance:
+     default: true
