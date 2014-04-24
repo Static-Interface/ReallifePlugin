@@ -1,6 +1,7 @@
 ReallifePlugin
 ==============
 [![Build Status](http://ci.static-interface.de/job/ReallifePlugin/badge/icon)](http://ci.static-interface.de/job/ReallifePlugin/)
+<p>
 This Plugin adds paydays, insurances and taxes and provides an API for other plugins
 
 License
