@@ -23,6 +23,7 @@ import de.static_interface.reallifeplugin.events.PayDayEvent;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.EntryResult;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.BukkitUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.User;
 import org.bukkit.Bukkit;
@@ -121,6 +122,7 @@ public class PayDayRunnable implements Runnable
     @Override
     public void run()
     {
+        BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
         for ( Player player : Bukkit.getOnlinePlayers() )
         {
             boolean isInGroup = false;
