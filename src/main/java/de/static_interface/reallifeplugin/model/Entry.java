@@ -35,10 +35,10 @@ public abstract class Entry implements Comparable<Entry>
         if(entry == null) throw new NullPointerException();
 
         if (getAmount() < entry.getAmount())
-            return -1;
+            return 1;
         if (getAmount() == entry.getAmount())
             return 0;
         else
-            return 1;
+            return -1;
     }
 }
