@@ -35,7 +35,7 @@ public class PayDayEntry extends Entry
     }
 
     @Override
-    public String fromAccount()
+    public String getSourceAccount()
     {
         return user.getName();
     }
@@ -59,7 +59,7 @@ public class PayDayEntry extends Entry
     }
 
     @Override
-    public String targetAccount()
+    public String getTargetAccount()
     {
         return ReallifeMain.getSettings().getEconomyAccount();
     }

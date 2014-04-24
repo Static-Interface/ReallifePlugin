@@ -99,12 +99,12 @@ public class PayDayRunnable implements Runnable
         result.out = text;
         result.amount = amount;
 
-        User from = SinkLibrary.getUser(entry.fromAccount());
+        User from = SinkLibrary.getUser(entry.getSourceAccount());
         from.addBalance(amount);
 
         if ( entry.sendToTarget() )
         {
-            User target = SinkLibrary.getUser(entry.targetAccount());
+            User target = SinkLibrary.getUser(entry.getTargetAccount());
             target.addBalance(-amount);
         }
         return result;

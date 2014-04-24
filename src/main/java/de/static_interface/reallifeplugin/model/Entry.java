@@ -19,7 +19,7 @@ package de.static_interface.reallifeplugin.model;
 
 public abstract class Entry implements Comparable<Entry>
 {
-    public abstract String fromAccount();
+    public abstract String getSourceAccount();
 
     public abstract String getReason();
 
@@ -27,7 +27,7 @@ public abstract class Entry implements Comparable<Entry>
 
     public abstract boolean sendToTarget();
 
-    public abstract String targetAccount();
+    public abstract String getTargetAccount();
 
     @Override
     public int compareTo(Entry entry)
