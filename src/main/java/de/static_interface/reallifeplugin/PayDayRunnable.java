@@ -30,6 +30,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PayDayRunnable implements Runnable
@@ -51,6 +52,8 @@ public class PayDayRunnable implements Runnable
 
         double result = 0;
         out.add(ChatColor.BLUE + "--------------------" + ChatColor.BLUE + " Zahltag " + ChatColor.BLUE + "--------------------");
+
+        Collections.sort(entries);
 
         for ( Entry entry : entries )
         {
@@ -96,12 +99,12 @@ public class PayDayRunnable implements Runnable
         result.out = text;
         result.amount = amount;
 
-        User from = SinkLibrary.getUser(entry.from());
+        User from = SinkLibrary.getUser(entry.fromAccount());
         from.addBalance(amount);
 
         if ( entry.sendToTarget() )
         {
-            User target = SinkLibrary.getUser(entry.target());
+            User target = SinkLibrary.getUser(entry.targetAccount());
             target.addBalance(-amount);
         }
         return result;

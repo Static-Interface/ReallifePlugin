@@ -35,7 +35,7 @@ public class TaxesEntry extends Entry
     }
 
     @Override
-    public String from()
+    public String fromAccount()
     {
         return user.getName();
     }
@@ -102,7 +102,7 @@ public class TaxesEntry extends Entry
     }
 
     @Override
-    public String target()
+    public String targetAccount()
     {
         return ReallifeMain.getSettings().getEconomyAccount();
     }
