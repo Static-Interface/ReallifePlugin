@@ -38,28 +38,23 @@ public class VaultBridge
         return economy.getBalance(player.getName());
     }
 
-    public static boolean addBalance(Player player, double amount)
+    public static boolean addBalance(String player, double amount)
     {
         Economy economy = SinkLibrary.getEconomy();
-        String name = player.getName();
         double roundedAmount = MathHelper.round(amount);
         EconomyResponse response;
         if ( roundedAmount > 0 )
         {
-            SinkLibrary.getCustomLogger().debug("econ.withDrawPlayer(" + name + ", " + -roundedAmount + ");");
-            response = economy.withdrawPlayer(name, -roundedAmount);
+            response = economy.withdrawPlayer(player, -roundedAmount);
         }
         else if ( roundedAmount < 0 )
         {
-            SinkLibrary.getCustomLogger().debug("econ.depositPlayer(" + name + ", " + roundedAmount + ");");
-            response = economy.depositPlayer(name, roundedAmount);
+            response = economy.depositPlayer(player, roundedAmount);
         }
         else
         {
             return true;
         }
-        boolean result = response.transactionSuccess();
-        SinkLibrary.getCustomLogger().debug("result = " + result);
         return response.transactionSuccess();
     }
 }

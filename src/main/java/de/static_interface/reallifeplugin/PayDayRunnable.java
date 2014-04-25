@@ -24,8 +24,6 @@ import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.EntryResult;
 import de.static_interface.reallifeplugin.model.Group;
 import de.static_interface.sinklibrary.BukkitUtil;
-import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.User;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -45,9 +43,11 @@ public class PayDayRunnable implements Runnable
         PayDayEvent event = new PayDayEvent(player, group);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
-        if ( event.isCancelled() ) return;
+        if (event.isCancelled()) return;
 
         entries.addAll(event.getEntries());
+        entries.addAll(Queue.getPlayerQueue(player.getUniqueId()));
+
         List<String> out = new ArrayList<>();
 
         double result = 0;
@@ -66,8 +66,6 @@ public class PayDayRunnable implements Runnable
         {
             return;
         }
-
-        VaultBridge.addBalance(player, result);
 
         double money = VaultBridge.getBalance(player);
 
@@ -103,13 +101,12 @@ public class PayDayRunnable implements Runnable
         result.out = text;
         result.amount = amount;
 
-        User source = SinkLibrary.getUser(entry.getSourceAccount());
-        source.addBalance(amount);
-
+        String source = entry.getSourceAccount();
+        VaultBridge.addBalance(source, amount);
         if ( entry.sendToTarget() )
         {
-            User target = SinkLibrary.getUser(entry.getTargetAccount());
-            target.addBalance(-amount);
+            String target = entry.getTargetAccount();
+            VaultBridge.addBalance(target, -amount);
         }
         return result;
     }
