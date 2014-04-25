@@ -43,7 +43,7 @@ public class PayDayEntry extends Entry
     @Override
     public String getReason()
     {
-        return String.format("Lohn [%s]", group.name);
+        return String.format("Lohn [%s]", group.shownName);
     }
 
     @Override
