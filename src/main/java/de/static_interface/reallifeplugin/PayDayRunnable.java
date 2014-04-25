@@ -46,7 +46,8 @@ public class PayDayRunnable implements Runnable
         if (event.isCancelled()) return;
 
         entries.addAll(event.getEntries());
-        entries.addAll(Queue.getPlayerQueue(player.getUniqueId()));
+        List<Entry> queue = Queue.getPlayerQueue(player.getUniqueId());
+        if (queue != null) entries.addAll(queue);
 
         List<String> out = new ArrayList<>();
 
