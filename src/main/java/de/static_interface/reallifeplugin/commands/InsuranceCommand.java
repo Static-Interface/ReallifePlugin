@@ -24,6 +24,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.concurrent.TimeUnit;
 
@@ -45,8 +46,9 @@ public class InsuranceCommand implements CommandExecutor
         }
     }
 
-    public static boolean isActive(User user)
+    public static boolean isActive(Player player)
     {
+        User user = SinkLibrary.getUser(player);
         return (boolean) user.getPlayerConfiguration().get(ACTIVATED_PATH);
     }
 
@@ -81,7 +83,6 @@ public class InsuranceCommand implements CommandExecutor
 
                 user.sendMessage(ChatColor.DARK_GREEN + "Die Versicherung wurde erfolgreich aktiviert");
                 break;
-
             case "off":
                 if ( !active )
                 {

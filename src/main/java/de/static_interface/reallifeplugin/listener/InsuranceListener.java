@@ -49,7 +49,7 @@ public class InsuranceListener implements Listener
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event)
     {
-        if ( !InsuranceCommand.isActive(SinkLibrary.getUser(event.getEntity())) ) return;
+        if ( !InsuranceCommand.isActive(event.getEntity())) return;
 
         inventories.put(event.getEntity().getName(), event.getEntity().getInventory().getContents());
 
@@ -87,8 +87,8 @@ public class InsuranceListener implements Listener
     @EventHandler
     public void onPayDay(PayDayEvent event)
     {
-        if ( !InsuranceCommand.isActive(event.getUser()) ) return;
-        InsuranceEntry entry = new InsuranceEntry(event.getUser(), event.getGroup());
+        if ( !InsuranceCommand.isActive(event.getPlayer()) ) return;
+        InsuranceEntry entry = new InsuranceEntry(event.getPlayer(), event.getGroup());
         event.addEntry(entry);
     }
 }

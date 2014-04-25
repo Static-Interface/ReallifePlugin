@@ -38,12 +38,11 @@ public class PayDayRunnable implements Runnable
 {
     public void givePayDay(Player player, Group group)
     {
-        User user = SinkLibrary.getUser(player);
         List<Entry> entries = new ArrayList<>();
-        entries.add(new PayDayEntry(user, group));
-        entries.add(new TaxesEntry(user, group));
+        entries.add(new PayDayEntry(player, group));
+        entries.add(new TaxesEntry(player, group));
 
-        PayDayEvent event = new PayDayEvent(user, group);
+        PayDayEvent event = new PayDayEvent(player, group);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if ( event.isCancelled() ) return;
@@ -68,16 +67,12 @@ public class PayDayRunnable implements Runnable
             return;
         }
 
-        try
-        {
-            user.getMoney();
-        }
-        catch(Exception e){}
+        VaultBridge.addBalance(player, result);
 
-        double money = user.getMoney();
+        double money = VaultBridge.getBalance(player);
 
         String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
-        String moneyPrefix = (user.getMoney() < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
+        String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
 
         out.add(ChatColor.AQUA + String.format("|- Summe: " + resultPrefix + "%s Euro", MathHelper.round(result)));
         out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s Euro", money));
@@ -108,8 +103,8 @@ public class PayDayRunnable implements Runnable
         result.out = text;
         result.amount = amount;
 
-        User from = SinkLibrary.getUser(entry.getSourceAccount());
-        from.addBalance(amount);
+        User source = SinkLibrary.getUser(entry.getSourceAccount());
+        source.addBalance(amount);
 
         if ( entry.sendToTarget() )
         {
@@ -126,10 +121,9 @@ public class PayDayRunnable implements Runnable
         for ( Player player : Bukkit.getOnlinePlayers() )
         {
             boolean isInGroup = false;
-            User user = SinkLibrary.getUser(player);
             for ( Group group : ReallifeMain.getSettings().readGroups() )
             {
-                if ( ChatColor.stripColor(user.getPrimaryGroup()).equals(group.name) )
+                if ( ChatColor.stripColor(VaultBridge.getPlayerGroup(player)).equals(group.name) )
                 {
                     givePayDay(player, group);
                     isInGroup = true;
@@ -138,18 +132,18 @@ public class PayDayRunnable implements Runnable
             }
             if ( !isInGroup )
             {
-                givePayDay(player, getDefaultGroup(user));
+                givePayDay(player, getDefaultGroup(player));
             }
         }
     }
 
-    public Group getDefaultGroup(User user)
+    public Group getDefaultGroup(Player player)
     {
         Group group = new Group();
         group.payday = ReallifeMain.getSettings().getDefaultPayday();
         group.taxesmodifier = ReallifeMain.getSettings().getDefaultTaxesModifier();
-        group.shownName = user.getPrimaryGroup();
-        group.name = ChatColor.stripColor(user.getPrimaryGroup());
+        group.shownName = VaultBridge.getPlayerGroup(player);
+        group.name = ChatColor.stripColor(VaultBridge.getPlayerGroup(player));
         group.excluded = ReallifeMain.getSettings().getDefaultExcluded();
         return group;
     }

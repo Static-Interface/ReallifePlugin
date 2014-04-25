@@ -21,23 +21,23 @@ import de.static_interface.reallifeplugin.MathHelper;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.sinklibrary.User;
+import org.bukkit.entity.Player;
 
 public class PayDayEntry extends Entry
 {
-    User user;
+    Player player;
     Group group;
 
-    public PayDayEntry(User user, Group group)
+    public PayDayEntry(Player player, Group group)
     {
-        this.user = user;
+        this.player = player;
         this.group = group;
     }
 
     @Override
     public String getSourceAccount()
     {
-        return user.getName();
+        return player.getName();
     }
 
     @Override

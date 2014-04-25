@@ -19,25 +19,27 @@ package de.static_interface.reallifeplugin.entries;
 
 import de.static_interface.reallifeplugin.MathHelper;
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.sinklibrary.User;
+import org.bukkit.entity.Player;
 
 public class TaxesEntry extends Entry
 {
-    User user;
+    Player player;
     Group group;
 
-    public TaxesEntry(User user, Group group)
+    public TaxesEntry(Player player, Group group)
     {
-        this.user = user;
+        this.player = player;
         this.group = group;
     }
+
 
     @Override
     public String getSourceAccount()
     {
-        return user.getName();
+        return player.getName();
     }
 
     @Override
@@ -54,7 +56,7 @@ public class TaxesEntry extends Entry
 
     private double getTaxesModifier()
     {
-        double money = user.getMoney() + group.payday;
+        double money = VaultBridge.getBalance(player) + group.payday;
         double taxesBase = ReallifeMain.getSettings().getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
@@ -92,7 +94,7 @@ public class TaxesEntry extends Entry
 
     private double getTaxes()
     {
-        return getTaxesModifier() * (user.getMoney() + group.payday);
+        return getTaxesModifier() * (VaultBridge.getBalance(player) + group.payday);
     }
 
     @Override

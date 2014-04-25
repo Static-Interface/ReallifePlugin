@@ -71,6 +71,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/SinkLibrary-1.9.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>vault</artifactId>
+            <version>1.2.26</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/Vault-1.2.26-SNAPSHOT.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <properties>

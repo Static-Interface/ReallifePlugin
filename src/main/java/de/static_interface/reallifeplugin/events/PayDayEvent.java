@@ -19,7 +19,7 @@ package de.static_interface.reallifeplugin.events;
 
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.sinklibrary.User;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -30,13 +30,13 @@ public class PayDayEvent extends Event
 {
     private static final HandlerList handlers = new HandlerList();
     List<Entry> entries = new ArrayList<>();
-    private User user;
+    private Player player;
     private Group group;
     private boolean cancelled;
 
-    public PayDayEvent(User user, Group group)
+    public PayDayEvent(Player player, Group group)
     {
-        this.user = user;
+        this.player= player;
         this.group = group;
     }
 
@@ -45,9 +45,9 @@ public class PayDayEvent extends Event
         return handlers;
     }
 
-    public User getUser()
+    public Player getPlayer()
     {
-        return user;
+        return player;
     }
 
     public Group getGroup()
