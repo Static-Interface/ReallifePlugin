@@ -22,6 +22,10 @@ import de.static_interface.sinklibrary.SinkLibrary;
 import java.util.HashMap;
 import java.util.UUID;
 
+/**
+ * Bans are stored in memory (HashMaps), <b>they will be erased on restarts/reloads</b>
+ */
+
 public class BanHelper
 {
     static HashMap<UUID, Long> bannedPlayers = new HashMap<>();

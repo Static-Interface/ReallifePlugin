@@ -22,7 +22,7 @@
 
     <groupId>de.static_interface</groupId>
     <artifactId>reallifeplugin</artifactId>
-    <version>0.1</version>
+    <version>0.5</version>
 
     <name>Reallife Plugin</name>
     <url>http://dev.bukkit.org/bukkit-plugins/reallife-plugin</url>
