@@ -15,41 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin;
+package de.static_interface.reallifeplugin.listener;
 
-import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.reallifeplugin.BanHelper;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 
-public class Queue
+public class BanListener implements Listener
 {
-    private static HashMap<UUID, List<Entry>> queue = new HashMap<>();
-
-    public static void addToQueue(UUID uuid, Entry entry)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event)
     {
-        List<Entry> list;
-        if (!queue.containsKey(uuid))
-        {
-            list = new ArrayList<>();
-        }
-        else
-        {
-            list = queue.get(uuid);
-        }
-        list.add(entry);
-        queue.put(uuid, list);
-    }
+        UUID uuid = event.getUniqueId();
+        if (!BanHelper.isBanned(uuid)) return;
 
-    public static HashMap<UUID, List<Entry>> getQueues()
-    {
-        return queue;
-    }
-
-    public static List<Entry> getPlayerQueue(UUID uuid)
-    {
-        return queue.get(uuid);
+        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, BanHelper.getBanReason(uuid));
     }
 }

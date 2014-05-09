@@ -38,7 +38,7 @@ import java.util.Random;
 public class InsuranceListener implements Listener
 {
     HashMap<String, ItemStack[]> inventories = new HashMap<>();
-    List<String> re = new ArrayList<>();
+    List<String> activatedPlayers = new ArrayList<>();
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event)
@@ -58,12 +58,12 @@ public class InsuranceListener implements Listener
 
         if ( r == 1 )
         {
-            re.add(event.getEntity().getName());
+            activatedPlayers.add(event.getEntity().getName());
             event.getDrops().clear();
         }
         else
         {
-            re.remove(event.getEntity().getName());
+            activatedPlayers.remove(event.getEntity().getName());
         }
     }
 
@@ -71,7 +71,7 @@ public class InsuranceListener implements Listener
     public void onPlayerResawpn(PlayerRespawnEvent event)
     {
         if ( !inventories.keySet().contains(event.getPlayer().getName()) ) return;
-        if ( !re.contains(event.getPlayer().getName()) )
+        if ( !activatedPlayers.contains(event.getPlayer().getName()) )
         {
             event.getPlayer().sendMessage(ChatColor.DARK_RED + "[Versicherung]" + ChatColor.GOLD + " Dein Inventar konnte nicht gerettet werden!");
             return;
@@ -81,7 +81,7 @@ public class InsuranceListener implements Listener
         {
             event.getPlayer().getInventory().addItem(stack);
         }
-        re.remove(event.getPlayer().getName());
+        activatedPlayers.remove(event.getPlayer().getName());
     }
 
     @EventHandler

@@ -26,6 +26,10 @@ import org.bukkit.event.HandlerList;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This event is fired when a payday starts
+ * Its fired seperatly for each player, so not only one time
+ */
 public class PayDayEvent extends Event
 {
     private static final HandlerList handlers = new HandlerList();

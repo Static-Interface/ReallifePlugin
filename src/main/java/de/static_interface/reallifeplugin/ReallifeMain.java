@@ -19,7 +19,10 @@ package de.static_interface.reallifeplugin;
 
 import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
+import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
+import de.static_interface.reallifeplugin.listener.BanListener;
 import de.static_interface.reallifeplugin.listener.InsuranceListener;
+import de.static_interface.reallifeplugin.listener.OnlineTimeListener;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.exceptions.NotInitializedException;
 import org.bukkit.Bukkit;
@@ -93,11 +96,23 @@ public class ReallifeMain extends JavaPlugin
     private void registerCommands()
     {
         Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand());
-        Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand());
+        if (getSettings().isInsuranceEnabled())
+        {
+            Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand());
+        }
     }
 
     private void registerListeners()
     {
-        Bukkit.getPluginManager().registerEvents(new InsuranceListener(), this);
+        if (getSettings().isInsuranceEnabled())
+        {
+            Bukkit.getPluginManager().registerEvents(new InsuranceListener(), this);
+        }
+        if (getSettings().isAntiEscapeEnabled())
+        {
+            Bukkit.getPluginManager().registerEvents(new AntiEscapeListener(), this);
+        }
+        Bukkit.getPluginManager().registerEvents(new BanListener(), this);
+        Bukkit.getPluginManager().registerEvents(new OnlineTimeListener(), this);
     }
 }

@@ -36,15 +36,14 @@ public class PayDayRunnable implements Runnable
 {
     public void givePayDay(Player player, Group group)
     {
-        List<Entry> entries = new ArrayList<>();
-        entries.add(new PayDayEntry(player, group));
-        entries.add(new TaxesEntry(player, group));
-
         PayDayEvent event = new PayDayEvent(player, group);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) return;
 
+        List<Entry> entries = new ArrayList<>();
+        entries.add(new PayDayEntry(player, group));
+        entries.add(new TaxesEntry(player, group));
         entries.addAll(event.getEntries());
         List<Entry> queue = Queue.getPlayerQueue(player.getUniqueId());
         if (queue != null) entries.addAll(queue);
@@ -142,7 +141,7 @@ public class PayDayRunnable implements Runnable
         group.taxesmodifier = ReallifeMain.getSettings().getDefaultTaxesModifier();
         group.shownName = VaultBridge.getPlayerGroup(player);
         group.name = ChatColor.stripColor(VaultBridge.getPlayerGroup(player));
-        group.excluded = ReallifeMain.getSettings().getDefaultExcluded();
+        group.excluded = ReallifeMain.getSettings().isDefaultExcluded();
         return group;
     }
 }
