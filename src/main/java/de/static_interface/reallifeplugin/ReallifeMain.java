@@ -81,7 +81,7 @@ public class ReallifeMain extends JavaPlugin
 
         if ( sinkLibrary == null )
         {
-            getLogger().log(Level.WARNING, "This Plugin requires SinkLibrary!");
+            Bukkit.getLogger().log(Level.WARNING, "This Plugin requires SinkLibrary!");
             Bukkit.getPluginManager().disablePlugin(this);
             return false;
         }
@@ -89,6 +89,13 @@ public class ReallifeMain extends JavaPlugin
         if ( !SinkLibrary.initialized )
         {
             throw new NotInitializedException("SinkLibrary is not initialized!");
+        }
+
+        if( !SinkLibrary.isEconomyAvailable())
+        {
+            Bukkit.getLogger().log(Level.WARNING, "Economy not available. Please install vault and an economy plugin");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return false;
         }
         return true;
     }
