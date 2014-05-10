@@ -43,9 +43,11 @@ public class AntiEscapeListener implements Listener
 
     public static final int COOLDOWN = 10 * 1000;
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDamageByEntity(EntityDamageByEntityEvent event)
     {
+        if(event.isCancelled()) return;
+
         if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) return;
 
         Player player = (Player)event.getEntity();
@@ -64,9 +66,11 @@ public class AntiEscapeListener implements Listener
         damageInstances.put(player.getUniqueId(), damage);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDamage(EntityDamageEvent event)
     {
+        if(event.isCancelled()) return;
+
         if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) return;
 
         Player player = (Player)event.getEntity();
@@ -96,6 +100,8 @@ public class AntiEscapeListener implements Listener
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerTeleport(PlayerTeleportEvent event)
     {
+        if(event.isCancelled()) return;
+
         if (!damageInstances.containsKey(event.getPlayer().getUniqueId())) return;
         try
         {

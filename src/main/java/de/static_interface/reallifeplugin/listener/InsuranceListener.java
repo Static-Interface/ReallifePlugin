@@ -43,7 +43,7 @@ public class InsuranceListener implements Listener
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event)
     {
-        InsuranceCommand.createVars(SinkLibrary.loadUser(event.getPlayer()));
+        InsuranceCommand.createVars(SinkLibrary.getUser(event.getPlayer()));
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
