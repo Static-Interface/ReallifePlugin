@@ -71,6 +71,11 @@ public class AntiEscapeListener implements Listener
 
         Player player = (Player)event.getEntity();
 
+        if(player.hasPermission("reallifeplugin.escapebypass"))
+        {
+            return;
+        }
+
         Damage damage = new Damage();
         if (damageInstances.containsKey(player.getUniqueId()))
             damage = damageInstances.get(player.getUniqueId());
@@ -144,7 +149,7 @@ public class AntiEscapeListener implements Listener
 
             long unbanTimeStamp = System.currentTimeMillis() +  (banMinutes * 60* 1000);
 
-            BanHelper.banPlayer(event.getPlayer().getUniqueId(), ChatColor.RED + "Du wurdest temporär für " + banMinutes + " Minuten gesperrt. Grund: Offline gegangen nach dem du Schaden bekommen hast", unbanTimeStamp);
+            BanHelper.banPlayer(event.getPlayer().getUniqueId(), ChatColor.RED + "Du wurdest automatisch temporär für " + banMinutes + " Minuten gesperrt. Grund: PvP Flucht", unbanTimeStamp);
         }
         catch(NullPointerException e)
         {
