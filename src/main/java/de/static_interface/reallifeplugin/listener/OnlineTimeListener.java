@@ -74,7 +74,7 @@ public class OnlineTimeListener implements Listener
 
         event.getPlayer().getPlayerTimeOffset();
 
-        if ( onlineTime < minTime )
+        if ( onlineTime > minTime )
         {
             return;
         }
