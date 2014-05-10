@@ -59,9 +59,9 @@ public class BanHelper
             if (unbanTime <= System.currentTimeMillis())
             {
                 unbanPlayer(uuid);
-                return true;
+                return false;
             }
-            return false;
+            return true;
         }
         catch(Exception e)
         {
