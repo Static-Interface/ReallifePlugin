@@ -43,10 +43,11 @@ public class Settings extends ConfigurationBase
         addDefault("General.Taxesbase", 0.1);
         addDefault("General.PaydayTime", 60);
         addDefault("General.TaxAccount", "Staatskasse");
-        addDefault("General.InsuranceEnabled", true);
-        addDefault("General.InsuranceAccount", "Versicherung");
         addDefault("General.MinOnlineTime", 30);
         addDefault("General.AntiEscapeEnabled", true);
+
+        addDefault("Insurance.Enabled", false);
+        addDefault("Insurance.Account", "Versicherung");
 
         addDefault("Default.PayDay", 0);
         addDefault("Default.TaxesModifier", 1);
@@ -154,12 +155,12 @@ public class Settings extends ConfigurationBase
 
     public String getInsuranceAccount()
     {
-        return (String) get("General.InsuranceAccount");
+        return (String) get("Insurance.Account");
     }
 
     public int getMinOnlineTime() { return (int) get("General.MinOnlineTime"); }
 
-    public boolean isInsuranceEnabled() { return (boolean) get("General.InsuranceEnabled"); }
+    public boolean isInsuranceEnabled() { return (boolean) get("Insurance.Enabled"); }
 
     public boolean isAntiEscapeEnabled() { return (boolean) get("General.AntiEscapeEnabled"); }
 }

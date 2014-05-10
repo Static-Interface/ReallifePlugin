@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.static_interface</groupId>
-    <artifactId>reallifeplugin</artifactId>
+    <artifactId>ReallifePlugin</artifactId>
     <version>0.5</version>
 
     <name>Reallife Plugin</name>

@@ -82,7 +82,7 @@ public class OnlineTimeListener implements Listener
         long timeLeft = TimeUnit.MILLISECONDS.toMinutes(onlineTime - minTime);
 
         event.getPlayer().sendMessage(ChatColor.DARK_RED + "Du hast kein Geld bekommen, da du nicht mindestens "
-                + TimeUnit.MILLISECONDS.toMinutes(minTime) + " Minuten online warst. Du musst noch mindestens " + timeLeft + " Minuten online sein!");
+                + TimeUnit.MILLISECONDS.toMinutes(minTime) + " Minuten online warst. Du musst noch mindestens " +  Math.abs(timeLeft) + " Minuten online sein!");
 
         event.setCancelled(true);
     }
