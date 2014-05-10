@@ -23,5 +23,5 @@ permissions:
      default: op
   reallifeplugin.insurance:
      default: true
-  reallifeplugin.escapebypass
+  reallifeplugin.escapebypass:
      default: false
