@@ -105,7 +105,9 @@ public class AntiEscapeListener implements Listener
 
             long timeLeft = TimeUnit.MILLISECONDS.toSeconds(cooldownTime - COOLDOWN);
 
-            event.getPlayer().sendMessage(ChatColor.DARK_RED + "Teleport wurde abgebrochen da du innerhalb der letzten " + TimeUnit.MILLISECONDS.toSeconds(COOLDOWN) + " Sekunden Schaden bekommen hast. Du musst noch " + Math.abs(timeLeft) + " Sekunden warten!");
+            event.getPlayer().sendMessage(ChatColor.DARK_RED + "Teleport wurde abgebrochen da du innerhalb der letzten "
+                    + TimeUnit.MILLISECONDS.toSeconds(COOLDOWN) + " Sekunden Schaden bekommen hast. Du musst noch "
+                    + (Math.abs(timeLeft) + 1) + " Sekunden warten!");
 
             event.setCancelled(true);
         }
