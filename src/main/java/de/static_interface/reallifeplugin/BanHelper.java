@@ -54,9 +54,9 @@ public class BanHelper
     {
         try
         {
-            long banTime = bannedPlayers.get(uuid);
+            long unbanTime = bannedPlayers.get(uuid);
 
-            if (banTime > System.currentTimeMillis())
+            if (unbanTime <= System.currentTimeMillis())
             {
                 unbanPlayer(uuid);
                 return true;
