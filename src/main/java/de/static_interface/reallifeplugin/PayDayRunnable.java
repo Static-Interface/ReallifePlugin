@@ -72,8 +72,10 @@ public class PayDayRunnable implements Runnable
         String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
         String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
 
-        out.add(ChatColor.AQUA + String.format("|- Summe: " + resultPrefix + "%s Euro", MathHelper.round(result)));
-        out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s Euro", money));
+        String curreny = VaultBridge.getCurrenyNamePlural();
+
+        out.add(ChatColor.AQUA + String.format("|- Summe: " + resultPrefix + "%s " + curreny, MathHelper.round(result)));
+        out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s " + curreny, money));
 
         String seperator = ChatColor.BLUE + "------------------------------------------------";
         out.add(seperator);
@@ -88,14 +90,16 @@ public class PayDayRunnable implements Runnable
         boolean negative = amount < 0;
         String text;
 
+        String curreny = VaultBridge.getCurrenyNamePlural();
+
         String entryPrefix = "|- ";
         if ( negative )
         {
-            text = String.format(ChatColor.RED + entryPrefix + "-%s Euro wurden abgezogen. (Grund: %s)", -amount, entry.getReason());
+            text = String.format(ChatColor.RED + entryPrefix + "-%s " + curreny +" wurden abgezogen. (Grund: %s)", -amount, entry.getReason());
         }
         else
         {
-            text = String.format(ChatColor.GREEN + entryPrefix + "+%s Euro wurden hinzugefuegt. (Grund: %s)", amount, entry.getReason());
+            text = String.format(ChatColor.GREEN + entryPrefix + "+%s " + curreny + " wurden hinzugefuegt. (Grund: %s)", amount, entry.getReason());
         }
 
         result.out = text;
