@@ -34,8 +34,7 @@ public class VaultBridge
 
     public static double getBalance(Player player)
     {
-        Economy economy = SinkLibrary.getEconomy();
-        return economy.getBalance(player.getName());
+        return getBalance(player.getName());
     }
 
     public static boolean addBalance(String player, double amount)
@@ -68,5 +67,11 @@ public class VaultBridge
     {
         Economy economy = SinkLibrary.getEconomy();
         return economy.currencyNameSingular();
+    }
+
+    public static double getBalance(String name)
+    {
+        Economy economy = SinkLibrary.getEconomy();
+        return economy.getBalance(name);
     }
 }

@@ -15,41 +15,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin;
+package de.static_interface.reallifeplugin.fractions;
 
-import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import org.bukkit.Bukkit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.io.File;
 
-public class Queue
+public class FractionConfig extends ConfigurationBase
 {
-    private static HashMap<UUID, List<Entry>> queue = new HashMap<>();
-
-    public static void addToQueue(UUID uuid, Entry entry)
+    public FractionConfig()
     {
-        List<Entry> list;
-        if (!queue.containsKey(uuid))
-        {
-            list = new ArrayList<>();
-        }
-        else
-        {
-            list = queue.get(uuid);
-        }
-        list.add(entry);
-        queue.put(uuid, list);
+        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Fractions.yml"));
     }
 
-    public static HashMap<UUID, List<Entry>> getQueues()
+    @Override
+    public void addDefaults()
     {
-        return queue;
-    }
-
-    public static List<Entry> getPlayerQueue(UUID uuid)
-    {
-        return queue.get(uuid);
+        addDefault("Enabled", true);
     }
 }

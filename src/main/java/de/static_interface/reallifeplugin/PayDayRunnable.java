@@ -45,7 +45,7 @@ public class PayDayRunnable implements Runnable
         entries.add(new PayDayEntry(player, group));
         entries.add(new TaxesEntry(player, group));
         entries.addAll(event.getEntries());
-        List<Entry> queue = Queue.getPlayerQueue(player.getUniqueId());
+        List<Entry> queue = PayDayQueue.getPlayerQueue(player.getUniqueId());
         if (queue != null) entries.addAll(queue);
 
         List<String> out = new ArrayList<>();
