@@ -26,7 +26,7 @@ public class FractionConfig extends ConfigurationBase
 {
     public FractionConfig()
     {
-        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Fractions.yml"));
+        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Fractions.yml"), true);
     }
 
     @Override

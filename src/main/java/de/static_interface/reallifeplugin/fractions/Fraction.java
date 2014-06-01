@@ -69,7 +69,7 @@ public class Fraction
     public void addMember(UUID uuid)
     {
         members.add(uuid);
-        setValue("Members", members);
+        setValue(FractionValues.MEMBERS, members);
         save();
     }
 
