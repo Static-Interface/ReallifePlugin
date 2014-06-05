@@ -43,11 +43,11 @@ public class VaultBridge
         Economy economy = SinkLibrary.getEconomy();
         double roundedAmount = MathHelper.round(amount);
         EconomyResponse response;
-        if ( roundedAmount > 0 )
+        if ( roundedAmount < 0 )
         {
             response = economy.withdrawPlayer(player, -roundedAmount);
         }
-        else if ( roundedAmount < 0 )
+        else if ( roundedAmount  > 0 )
         {
             response = economy.depositPlayer(player, roundedAmount);
         }
@@ -56,5 +56,17 @@ public class VaultBridge
             return true;
         }
         return response.transactionSuccess();
+    }
+
+    public static String getCurrenyNamePlural()
+    {
+        Economy economy = SinkLibrary.getEconomy();
+        return economy.currencyNamePlural();
+    }
+
+    public static String getCurrenyNameSingular()
+    {
+        Economy economy = SinkLibrary.getEconomy();
+        return economy.currencyNameSingular();
     }
 }

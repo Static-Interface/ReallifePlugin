@@ -126,7 +126,7 @@ public class Settings extends ConfigurationBase
 
     public double getDefaultTaxesModifier()
     {
-        return (double) get("Default.TaxesModifier");
+        return Double.parseDouble(get("Default.TaxesModifier").toString());
     }
 
     public boolean getDefaultExcluded()
