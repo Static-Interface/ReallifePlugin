@@ -17,8 +17,11 @@
 
 package de.static_interface.reallifeplugin;
 
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import de.static_interface.reallifeplugin.commands.CorporationCommand;
 import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
+import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
 import de.static_interface.reallifeplugin.listener.BanListener;
 import de.static_interface.reallifeplugin.listener.InsuranceListener;
@@ -37,7 +40,6 @@ public class ReallifeMain extends JavaPlugin
     public static final long TICKS = 20L;
     private static Settings settings = null;
     private static PayDayRunnable payDayRunnable = null;
-
     private BukkitTask payDayTask;
 
     public static PayDayRunnable getPayDayRunnable()
@@ -49,6 +51,8 @@ public class ReallifeMain extends JavaPlugin
     {
         return settings;
     }
+
+    static WorldGuardPlugin wgp;
 
     public void onEnable()
     {
@@ -68,6 +72,16 @@ public class ReallifeMain extends JavaPlugin
         SinkLibrary.registerPlugin(this);
 
         SinkLibrary.getCustomLogger().info("Enabled");
+        if( CorporationUtil.getCorporationConfig().isEnabled())
+        {
+            wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
+            CorporationUtil.registerCorporationsFromConfig();
+        }
+    }
+
+    public static WorldGuardPlugin getWorldGuardPlugin()
+    {
+        return wgp;
     }
 
     public void onDisable()
@@ -107,6 +121,7 @@ public class ReallifeMain extends JavaPlugin
         {
             Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand());
         }
+        Bukkit.getPluginCommand("corporation").setExecutor(new CorporationCommand());
     }
 
     private void registerListeners()

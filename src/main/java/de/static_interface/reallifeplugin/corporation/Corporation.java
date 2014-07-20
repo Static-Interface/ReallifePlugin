@@ -15,49 +15,52 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.fractions;
+package de.static_interface.reallifeplugin.corporation;
 
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Fraction
+public class Corporation
 {
     final String name;
     final ConfigurationBase config;
 
-    protected boolean isPvPAllowed;
-    protected boolean isGriefingAllowed;
-    protected String base;
+    protected ProtectedRegion base;
     protected List<UUID> members;
-    protected UUID leader;
+    protected UUID ceo;
 
-    public Fraction(FractionConfig config, String name)
+    public Corporation(ConfigurationBase config, String name)
     {
         this.config = config;
         this.name = name;
+        String[] baseraw =  ((String) getValue(CorporationValues.BASE)).split(":");
+        String world = baseraw[0];
+        String regionId = baseraw[1];
 
-        isGriefingAllowed = (boolean) getValue(FractionValues.GRIEFING_ALOWED);
-        isPvPAllowed = (boolean) getValue(FractionValues.PVP_ALLOWED);
-        base = (String) getValue(FractionValues.BASE);
+        base = ReallifeMain.getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
         members = getMembersFromConfig();
-        leader = (UUID) getValue(FractionValues.LEADER);
+        ceo = (UUID) getValue(CorporationValues.CEO);
     }
 
-    public void setLeader(UUID leader)
+    public void setCEO(UUID ceo)
     {
-        this.leader = leader;
-        setValue(FractionValues.LEADER, leader);
+        this.ceo = ceo;
+        setValue(CorporationValues.CEO, ceo);
         save();
     }
 
-    public void setBase(String base)
+    public void setBase(World world, String regionId)
     {
-        this.base = base;
-        setValue(FractionValues.BASE, base);
+        this.base = ReallifeMain.getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);;
+        setValue(CorporationValues.BASE, world.getName() + ":" + base);
         save();
     }
 
@@ -69,14 +72,14 @@ public class Fraction
     public void addMember(UUID uuid)
     {
         members.add(uuid);
-        setValue(FractionValues.MEMBERS, members);
+        setValue(CorporationValues.MEMBERS, members);
         save();
     }
 
     public void removeMember(UUID uuid)
     {
         members.remove(uuid);
-        setValue(FractionValues.MEMBERS, members);
+        setValue(CorporationValues.MEMBERS, members);
         save();
     }
 
@@ -85,27 +88,16 @@ public class Fraction
         config.save();
     }
 
-    public double getBalance()
+    public double getMoney()
     {
         return VaultBridge.getBalance(name);
     }
 
-    public void addBalance(int amount)
+    public void addBalance()
     {
-        VaultBridge.addBalance(name, amount);
-    }
 
-    public boolean isPvPAllowed()
-    {
-        return isPvPAllowed;
     }
-
-    public boolean isGriefingAllowed()
-    {
-        return isGriefingAllowed;
-    }
-
-    public String getBase()
+    public ProtectedRegion getBase()
     {
         return base;
     }
@@ -115,16 +107,16 @@ public class Fraction
         return members;
     }
 
-    public UUID getLeader()
+    public UUID getCEO()
     {
-        return leader;
+        return ceo;
     }
 
     public List<UUID> getMembersFromConfig()
     {
         List<UUID> tmp = new ArrayList<>();
 
-        for(String s : config.getYamlConfiguration().getStringList("Fractions." + getName() + "." + FractionValues.MEMBERS))
+        for(String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS))
         {
             tmp.add(UUID.fromString(s));
         }
@@ -133,11 +125,11 @@ public class Fraction
 
     public Object getValue(String path)
     {
-        return config.get("Fractions." + getName() + "." + path);
+        return config.get("Corporations." + getName() + "." + path);
     }
 
     public void setValue(String path, Object value)
     {
-        config.set("Fractions." + getName() + "." + path, value);
+        config.set("Corporations." + getName() + "." + path, value);
     }
 }

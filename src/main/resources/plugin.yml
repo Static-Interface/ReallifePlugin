@@ -17,6 +17,10 @@ commands:
     permission: reallifeplugin.insurance
     usage: "Wrong usage! Correct Usage: /<command> <on/off>"
     aliases: [versicherung,ic]
+  corporation:
+    description: Corporation Command
+    permission: reallifeplugin.corporation
+    aliases: corp
 
 permissions:
   reallifeplugin.command:
@@ -25,3 +29,5 @@ permissions:
      default: true
   reallifeplugin.escapebypass:
      default: false
+  reallifeplugin.corporation:
+     default: true

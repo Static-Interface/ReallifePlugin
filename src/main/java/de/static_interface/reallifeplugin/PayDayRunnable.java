@@ -72,7 +72,7 @@ public class PayDayRunnable implements Runnable
         String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
         String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
 
-        String curreny = VaultBridge.getCurrenyNamePlural();
+        String curreny = VaultBridge.getCurrenyName();
 
         out.add(ChatColor.AQUA + String.format("|- Summe: " + resultPrefix + "%s " + curreny, MathHelper.round(result)));
         out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s " + curreny, money));
@@ -90,7 +90,7 @@ public class PayDayRunnable implements Runnable
         boolean negative = amount < 0;
         String text;
 
-        String curreny = VaultBridge.getCurrenyNamePlural();
+        String curreny = VaultBridge.getCurrenyName();
 
         String entryPrefix = "|- ";
         if ( negative )

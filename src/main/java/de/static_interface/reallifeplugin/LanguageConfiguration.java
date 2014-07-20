@@ -56,6 +56,18 @@ public class LanguageConfiguration extends ConfigurationBase
         addDefault("Fractions.CreationFailed", "&4Error: &cCouldn't create %s!");
         addDefault("Fractions.Deleted", "&eYou've successfully deleted %s!");
         addDefault("Fractions.DeletionFailed", "&4Error: &cCouldn't delete %s!");
+
+        addDefault("Corporation.Corporation", "&6Fraction");
+        addDefault("Corporation.DoesntExists", "&4Error: &cCouldn't find corporation: %s!");
+        addDefault("Corporation.BaseSet", "&6Base has been updated!");
+        addDefault("Corporation.NotInCorporation", "&4Error: &cYou're not a member of any corporation!");
+        addDefault("Corporation.NotCEO", "&4Error: &cYou're not the CEO!");
+        addDefault("Corporation.Added", "&4You've been added to the %s corporation!");
+        addDefault("Corporation.Kick", "&eYou've been kicked from the %s corporation!");
+        addDefault("Corporation.Created", "&eYou've successfully created %s!");
+        addDefault("Corporation.CreationFailed", "&4Error: &cCouldn't create %s!");
+        addDefault("Corporation.Deleted", "&eYou've successfully deleted %s!");
+        addDefault("Corporation.DeletionFailed", "&4Error: &cCouldn't delete %s!");
     }
 
     /**
