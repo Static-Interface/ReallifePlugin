@@ -35,7 +35,7 @@ public class VaultBridge
     public static double getBalance(Player player)
     {
         Economy economy = SinkLibrary.getEconomy();
-        return economy.getBalance(player);
+        return economy.getBalance(player.getName());
     }
 
     public static boolean addBalance(String account, double amount)
