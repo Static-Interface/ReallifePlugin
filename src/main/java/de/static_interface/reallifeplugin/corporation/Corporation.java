@@ -22,6 +22,7 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.sinklibrary.configuration.ConfigurationBase;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 
 import java.util.ArrayList;
@@ -47,19 +48,19 @@ public class Corporation
 
         base = ReallifeMain.getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
         members = getMembersFromConfig();
-        ceo = (UUID) getValue(CorporationValues.CEO);
+        ceo = UUID.fromString((String)getValue(CorporationValues.CEO));
     }
 
     public void setCEO(UUID ceo)
     {
         this.ceo = ceo;
-        setValue(CorporationValues.CEO, ceo);
+        setValue(CorporationValues.CEO, ceo.toString());
         save();
     }
 
     public void setBase(World world, String regionId)
     {
-        this.base = ReallifeMain.getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);;
+        this.base = ReallifeMain.getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);
         setValue(CorporationValues.BASE, world.getName() + ":" + base);
         save();
     }
@@ -72,14 +73,24 @@ public class Corporation
     public void addMember(UUID uuid)
     {
         members.add(uuid);
-        setValue(CorporationValues.MEMBERS, members);
+        List<String> tmp = new ArrayList<>();
+        for(UUID member : members)
+        {
+            tmp.add(member.toString());
+        }
+        setValue(CorporationValues.MEMBERS, tmp);
         save();
     }
 
     public void removeMember(UUID uuid)
     {
         members.remove(uuid);
-        setValue(CorporationValues.MEMBERS, members);
+        List<String> tmp = new ArrayList<>();
+        for(UUID member : members)
+        {
+            tmp.add(member.toString());
+        }
+        setValue(CorporationValues.MEMBERS, tmp);
         save();
     }
 
@@ -93,13 +104,18 @@ public class Corporation
         return VaultBridge.getBalance(name);
     }
 
-    public void addBalance()
+    public void addBalance(double amount)
     {
-
+        VaultBridge.addBalance(name, amount);
     }
     public ProtectedRegion getBase()
     {
         return base;
+    }
+
+    public String getFormattedName()
+    {
+        return ChatColor.GOLD + name.replace("_", " ");
     }
 
     public List<UUID> getMembers()
@@ -112,7 +128,7 @@ public class Corporation
         return ceo;
     }
 
-    public List<UUID> getMembersFromConfig()
+    private List<UUID> getMembersFromConfig()
     {
         List<UUID> tmp = new ArrayList<>();
 

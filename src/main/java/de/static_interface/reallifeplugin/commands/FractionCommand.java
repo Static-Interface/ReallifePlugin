@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration._;
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class FractionCommand implements CommandExecutor
 {
@@ -48,7 +48,7 @@ public class FractionCommand implements CommandExecutor
                 sendFractionInfo(user, userFraction);
                 return true;
             }
-            user.sendMessage(_("Fractions.NotInFraction"));
+            user.sendMessage(m("Fractions.NotInFraction"));
             return true;
         }
         else if (args.length < 1 && user.isConsole())
@@ -68,7 +68,7 @@ public class FractionCommand implements CommandExecutor
                 {
                     if (moreArgs.length < 1)
                     {
-                        user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                        user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                         return true;
                     }
                     handleLeaderCommand(user, moreArgs, userFraction);
@@ -79,12 +79,12 @@ public class FractionCommand implements CommandExecutor
             {
                 if (!user.hasPermission("reallifeplugin.fractions.admin"))
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("Permissions.General"));
+                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("Permissions.General"));
                     return true;
                 }
                 if (moreArgs.length < 1)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return true;
                 }
                 handleAdminCommand(user, moreArgs);
@@ -110,12 +110,12 @@ public class FractionCommand implements CommandExecutor
             {
                 if (args.length < 5)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
 
                 boolean successful = FractionUtil.createFraction(args);
-                String msg = successful ? _("Fractions.Created") : _("Fractions.CreationFailed");
+                String msg = successful ? m("Fractions.Created") : m("Fractions.CreationFailed");
                 msg = String.format(msg, args[1]);
                 user.sendMessage(msg);
                 break;
@@ -125,13 +125,13 @@ public class FractionCommand implements CommandExecutor
             {
                 if (args.length < 2)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
 
                 boolean successful = FractionUtil.deleteFraction(args[1]);
 
-                String msg = successful ? _("Fractions.Deleted") : _("Fractions.DeletionFailed");
+                String msg = successful ? m("Fractions.Deleted") : m("Fractions.DeletionFailed");
                 msg = String.format(msg, args[1]);
                 user.sendMessage(msg);
                 break;
@@ -141,17 +141,17 @@ public class FractionCommand implements CommandExecutor
             {
                 if (args.length < 3)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
                 Fraction fraction = FractionUtil.getFraction(args[1]);
                 if (fraction == null)
                 {
-                    user.sendMessage(String.format(_("Fractions.DoesntExists"),args[1]));
+                    user.sendMessage(String.format(m("Fractions.DoesntExists"),args[1]));
                     return;
                 }
                 fraction.setBase(args[2]);
-                user.sendMessage(_("Fractions.BaseSet"));
+                user.sendMessage(m("Fractions.BaseSet"));
                 break;
             }
         }
@@ -161,7 +161,7 @@ public class FractionCommand implements CommandExecutor
     {
         if (!FractionUtil.isLeader(user, fraction))
         {
-            user.sendMessage(_("Fractions.NotLeader"));
+            user.sendMessage(m("Fractions.NotLeader"));
             return;
         }
         switch(args[0].toLowerCase())
@@ -176,7 +176,7 @@ public class FractionCommand implements CommandExecutor
                 fraction.removeMember(target.getUniqueId());
                 if (user.isOnline())
                 {
-                    user.sendMessage(String.format(_("Fractions.Kicked"), fraction.getName()));
+                    user.sendMessage(String.format(m("Fractions.Kicked"), fraction.getName()));
                 }
                 break;
             }
@@ -190,7 +190,7 @@ public class FractionCommand implements CommandExecutor
                 fraction.addMember(target.getUniqueId());
                 if (user.isOnline())
                 {
-                    user.sendMessage(String.format(_("Fractions.Added"), fraction.getName()));
+                    user.sendMessage(String.format(m("Fractions.Added"), fraction.getName()));
                 }
                 break;
             }

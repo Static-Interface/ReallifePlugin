@@ -18,11 +18,15 @@
 package de.static_interface.reallifeplugin.corporation;
 
 import de.static_interface.sinklibrary.User;
+import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class CorporationUtil
 {
@@ -44,7 +48,9 @@ public class CorporationUtil
     public static void registerCorporationsFromConfig()
     {
         YamlConfiguration yconfig = config.getYamlConfiguration();
-        for(String corpName : yconfig.getConfigurationSection("Configrations").getKeys(false))
+        ConfigurationSection section = yconfig.getConfigurationSection("Configurations");
+        if(section == null) return;
+        for(String corpName : section.getKeys(false))
         {
             Corporation corp = new Corporation(config, corpName);
             register(corp);
@@ -64,7 +70,7 @@ public class CorporationUtil
     {
         for(Corporation corporation : corporations)
         {
-            if(corporation.getName().equals(name)) return corporation;
+            if(corporation.getName().equalsIgnoreCase(name)) return corporation;
         }
 
         return null;
@@ -75,22 +81,28 @@ public class CorporationUtil
         return corporation.getCEO() == user.getUniqueId();
     }
 
-    public static boolean createCorporation(String[] args)
+    public static boolean createCorporation(User user, String name, UUID ceo, String base, World world)
     {
-        if ( getCorporation(args[0]) != null)
+        if(name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help"))
         {
+            user.sendMessage(m("Corporation.InvalidName"));
             return false;
         }
 
-        String name = args[1];
-        String leader = args[2];
+        if ( getCorporation(name) != null)
+        {
+            user.sendMessage(m("Corporation.Exists"));
+            return false;
+        }
 
         String pathPrefix = "Corporations." + name + ".";
 
         CorporationConfig config = new CorporationConfig();
-        config.set(pathPrefix + CorporationValues.CEO, leader);
-        config.set(pathPrefix + CorporationValues.BASE, "");
-        config.set(pathPrefix + CorporationValues.MEMBERS, "");
+        config.set(pathPrefix + CorporationValues.CEO, ceo.toString());
+        config.set(pathPrefix + CorporationValues.BASE, world.getName() + ":" + base);
+        List<String> members = new ArrayList<>();
+        members.add(ceo.toString());
+        config.set(pathPrefix + CorporationValues.MEMBERS, members);
         config.save();
 
         Corporation corporation = new Corporation(config, name);
@@ -108,12 +120,16 @@ public class CorporationUtil
         corporations.remove(corporation);
     }
 
-    public static boolean deleteCorporation(String name)
+    public static boolean deleteCorporation(User user, Corporation corporation)
     {
-        Corporation corporation = getCorporation(name);
-        if (corporation == null) return false;
-
+        if (corporation == null)
+        {
+            user.sendMessage(m("Corporation.DoesntExists"));
+            return false;
+        }
         unregister(corporation);
-        return false;
+        config.getYamlConfiguration().set("Corporations." + corporation.getName(), null);
+        config.save();
+        return true;
     }
 }

@@ -58,8 +58,10 @@ public class LanguageConfiguration extends ConfigurationBase
         addDefault("Fractions.DeletionFailed", "&4Error: &cCouldn't delete %s!");
 
         addDefault("Corporation.Corporation", "&6Corporation");
+        addDefault("Corporation.Exists", "&4Error: &cCorporation already exists!");
         addDefault("Corporation.DoesntExists", "&4Error: &cCouldn't find corporation: %s!");
         addDefault("Corporation.BaseSet", "&6Base has been updated!");
+        addDefault("Corporation.CEOSet", "&6CEO has been updated!");
         addDefault("Corporation.NotInCorporation", "&4Error: &cYou're not a member of any corporation!");
         addDefault("Corporation.NotCEO", "&4Error: &cYou're not the CEO!");
         addDefault("Corporation.Added", "&4You've been added to the %s corporation!");
@@ -68,6 +70,10 @@ public class LanguageConfiguration extends ConfigurationBase
         addDefault("Corporation.CreationFailed", "&4Error: &cCouldn't create %s!");
         addDefault("Corporation.Deleted", "&eYou've successfully deleted %s!");
         addDefault("Corporation.DeletionFailed", "&4Error: &cCouldn't delete %s!");
+        addDefault("Corporation.InvalidName", "&4Error:&c Invalid name");
+        addDefault("Corporation.BuyingFromSameCorporation", "&4Error:&c You can't buy from your corporation");
+        addDefault("Corporation.BuySign.CantPickup", "&4Error:&c You can't pickup items!");
+        addDefault("Corporation.BuySign.Bought", "&aSuccessfully bought %s for %s!");
     }
 
     /**
@@ -76,7 +82,7 @@ public class LanguageConfiguration extends ConfigurationBase
      * @param path Path to language variable
      * @return Language String
      */
-    public static String _(String path)
+    public static String m(String path)
     {
         return ChatColor.translateAlternateColorCodes('&', (String) getInstance().get(path));
     }

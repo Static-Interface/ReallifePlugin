@@ -26,6 +26,8 @@ import java.util.UUID;
 
 public class PayDayQueue
 {
+    //Todo: Dump data with json when plugin is beeing unloaded, load with onEnable
+
     private static HashMap<UUID, List<Entry>> queue = new HashMap<>();
 
     public static void addToQueue(UUID uuid, Entry entry)

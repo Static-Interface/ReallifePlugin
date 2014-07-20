@@ -20,6 +20,7 @@ package de.static_interface.reallifeplugin.corporation;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.User;
 import org.bukkit.ChatColor;
@@ -27,13 +28,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.List;
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class CorporationListener implements Listener
 {
@@ -52,14 +53,29 @@ public class CorporationListener implements Listener
         String line3 = sign.getLine(3);
         String line4 = sign.getLine(4);
 
-        List<Item> sellItems = getItem(line2);
+        ItemStack boughtItems = getItem(line2);
         double price = Double.valueOf(line3);
         Corporation corp = CorporationUtil.getCorporation(line4);
 
         User user = SinkLibrary.getUser(event.getPlayer());
+
+        if(CorporationUtil.getUserCorporation(user.getUniqueId()) == corp)
+        {
+            user.sendMessage(m("Corporation.BuyingFromSameCorporation"));
+            return;
+        }
+
+        if(!user.getPlayer().getCanPickupItems())
+        {
+            user.sendMessage(m("Corporation.BuySign.CantPickup"));
+            return;
+        }
+        user.getPlayer().getInventory().addItem(boughtItems);
+        VaultBridge.addBalance(user.getName(), -price);
+        user.sendMessage(String.format(m("Corporation.BuySign.Bought"), boughtItems.getAmount() + boughtItems.getItemMeta().getDisplayName(), price + VaultBridge.getCurrenyName()));
     }
 
-    private List<Item> getItem(String line3)
+    private ItemStack getItem(String line3)
     {
         return null;
     }

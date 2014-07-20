@@ -22,20 +22,20 @@ import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.User;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration._;
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class CorporationCommand implements CommandExecutor
 {
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
@@ -49,7 +49,7 @@ public class CorporationCommand implements CommandExecutor
                 sendCorporationInfo(user, userCorp);
                 return true;
             }
-            user.sendMessage(_("Corporations.NotInCorporation"));
+            user.sendMessage(m("Corporations.NotInCorporation"));
             return true;
         }
         else if (args.length < 1 && user.isConsole())
@@ -63,29 +63,42 @@ public class CorporationCommand implements CommandExecutor
 
         switch(args[0].toLowerCase())
         {
+            case "help":
+            {
+                sendHelp(user);
+                break;
+            }
+
+            case "?":
+            {
+                sendHelp(user);
+                break;
+            }
+
             case "ceo":
             {
                 if (!user.isConsole())
                 {
                     if (moreArgs.length < 1)
                     {
-                        user.sendMessage(LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                        user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                         return true;
                     }
                     handleCEOCommand(user, moreArgs, userCorp);
                     break;
                 }
             }
+
             case "admin":
             {
                 if (!user.hasPermission("reallifeplugin.corporations.admin"))
                 {
-                    user.sendMessage(LanguageConfiguration._("Permissions.General"));
+                    user.sendMessage(LanguageConfiguration.m("Permissions.General"));
                     return true;
                 }
                 if (moreArgs.length < 1)
                 {
-                    user.sendMessage(LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return true;
                 }
                 handleAdminCommand(user, moreArgs);
@@ -105,19 +118,36 @@ public class CorporationCommand implements CommandExecutor
 
     private void handleAdminCommand(User user, String[] args)
     {
-        switch(args[0])
+        switch(args[0].toLowerCase())
         {
+            case "help":
+            {
+                sendAdminHelp(user);
+                break;
+            }
+
+            case "?":
+            {
+                sendAdminHelp(user);
+                break;
+            }
+
             case "new":
             {
-                if (args.length < 5)
+                if (args.length < 4)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
 
-                boolean successful = CorporationUtil.createCorporation(args);
-                String msg = successful ? _("Corporation.Created") : _("Corporation.CreationFailed");
-                msg = String.format(msg, args[1]);
+                String name = args[1];
+                UUID ceo = SinkLibrary.getUser(args[2]).getUniqueId();
+                String base = args[3];
+
+                boolean successful = CorporationUtil.createCorporation(user, name, ceo , base, user.getPlayer().getWorld());
+                Corporation corp = CorporationUtil.getCorporation(name);
+                String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
+                msg = String.format(msg, corp.getFormattedName());
                 user.sendMessage(msg);
                 break;
             }
@@ -126,15 +156,17 @@ public class CorporationCommand implements CommandExecutor
             {
                 if (args.length < 2)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
 
-                boolean successful = CorporationUtil.deleteCorporation(args[1]);
+                Corporation corp = CorporationUtil.getCorporation(args[1]);
+                boolean successful = CorporationUtil.deleteCorporation(user, corp);
 
-                String msg = successful ? _("Corporation.Deleted") : _("Corporation.DeletionFailed");
-                msg = String.format(msg, args[1]);
-                user.sendMessage(msg);
+                if (successful)
+                {
+                    user.sendMessage(String.format(m("Corporation.Deleted"), corp.getFormattedName()));
+                }
                 break;
             }
 
@@ -142,17 +174,42 @@ public class CorporationCommand implements CommandExecutor
             {
                 if (args.length < 3)
                 {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration._("General.CommandMisused.Arguments.TooFew"));
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
                 Corporation corporation= CorporationUtil.getCorporation(args[1]);
                 if (corporation == null)
                 {
-                    user.sendMessage(String.format(_("Corporation.DoesntExists"),args[1]));
+                    user.sendMessage(String.format(m("Corporation.DoesntExists"),args[1]));
                     return;
                 }
                 corporation.setBase(user.getPlayer().getWorld(), args[2]);
-                user.sendMessage(_("Corporation.BaseSet"));
+                user.sendMessage(m("Corporation.BaseSet"));
+                break;
+            }
+
+            case "setceo":
+            {
+                if (args.length < 3)
+                {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
+                }
+                Corporation corporation= CorporationUtil.getCorporation(args[1]);
+                if (corporation == null)
+                {
+                    user.sendMessage(String.format(m("Corporation.DoesntExists"),args[1]));
+                    return;
+                }
+                User newCEO = SinkLibrary.getUser(args[2]);
+                corporation.setCEO(newCEO.getUniqueId());
+                user.sendMessage(m("Corporation.CEOSet"));
+                break;
+            }
+
+            default:
+            {
+                user.sendDebugMessage(ChatColor.RED + "Unknown subcommand: " + args[0]);
                 break;
             }
         }
@@ -162,11 +219,36 @@ public class CorporationCommand implements CommandExecutor
     {
         if (!CorporationUtil.isCEO(user, corporation))
         {
-            user.sendMessage(_("Corporation.NotCEO"));
+            user.sendMessage(m("Corporation.NotCEO"));
             return;
         }
         switch(args[0].toLowerCase())
         {
+            case "help":
+            {
+                sendCEOHelp(user);
+                break;
+            }
+
+            case "?":
+            {
+                sendCEOHelp(user);
+                break;
+            }
+
+            case "add":
+            {
+                if (args.length < 2)
+                {
+                    return;
+                }
+
+                User target = SinkLibrary.getUser(args[1]);
+                corporation.addMember(target.getUniqueId());
+                user.sendMessage(String.format(m("Corporation.Added"), corporation.getName()));
+                break;
+            }
+
             case "kick":
             {
                 if (args.length < 2)
@@ -175,31 +257,41 @@ public class CorporationCommand implements CommandExecutor
                 }
                 User target = SinkLibrary.getUser(args[1]);
                 corporation.removeMember(target.getUniqueId());
-                if (user.isOnline())
-                {
-                    user.sendMessage(String.format(_("Corporation.Kicked"), corporation.getName()));
-                }
-                break;
-            }
-            case "add":
-            {
-                if (args.length < 2)
-                {
-                    return;
-                }
-                User target = SinkLibrary.getUser(args[1]);
-                corporation.addMember(target.getUniqueId());
-                if (user.isOnline())
-                {
-                    user.sendMessage(String.format(_("Corporation.Added"), corporation.getName()));
-                }
+                user.sendMessage(String.format(m("Corporation.Kicked"), corporation.getName()));
                 break;
             }
         }
     }
 
+    private void sendHelp(User user)
+    {
+        user.sendMessage(ChatColor.RED + "Corp Commands: ");
+        user.sendMessage(ChatColor.GOLD + "/corp");
+        user.sendMessage(ChatColor.GOLD + "/corp help");
+        user.sendMessage(ChatColor.GOLD + "/corp <corp>");
+        user.sendMessage(ChatColor.GOLD + "/corp ceo help");
+        user.sendMessage(ChatColor.GOLD + "/corp admin help");
+    }
+
+    private void sendAdminHelp(User user)
+    {
+        user.sendMessage(ChatColor.RED + "Admin Commands: ");
+        user.sendMessage(ChatColor.GOLD + "/corp admin new <corp> <ceo> <base>");
+        user.sendMessage(ChatColor.GOLD + "/corp admin delete <corp>");
+        user.sendMessage(ChatColor.GOLD + "/corp admin setbase <corp> <region>");
+        user.sendMessage(ChatColor.GOLD + "/corp admin setceo <corp> <player>");
+    }
+
+    private void sendCEOHelp(User user)
+    {
+        user.sendMessage(ChatColor.RED + "CEO Commands: ");
+        user.sendMessage(ChatColor.GOLD +  "/corp ceo add <name>");
+        user.sendMessage(ChatColor.GOLD +  "/corp ceo kick <name>");
+    }
+
     private void sendCorporationInfo(User user, Corporation corporation)
     {
-        throw new NotImplementedException();
+        //Todo
+        user.sendMessage(corporation.toString());
     }
 }
