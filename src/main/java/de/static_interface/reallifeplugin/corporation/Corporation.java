@@ -17,6 +17,7 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
+import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.VaultBridge;
@@ -76,9 +77,13 @@ public class Corporation
         List<String> tmp = new ArrayList<>();
         for(UUID member : members)
         {
-            tmp.add(member.toString());
+            if (member == uuid) tmp.add(uuid.toString() + ":" + CorporationValues.DEFAULT_RANK);
+            else tmp.add(member.toString() + ":" + getRank(member));
         }
         setValue(CorporationValues.MEMBERS, tmp);
+        DefaultDomain rgMembers = getBase().getMembers();
+        rgMembers.addPlayer(Bukkit.getOfflinePlayer(uuid).getName());
+        getBase().setMembers(rgMembers);
         save();
     }
 
@@ -88,9 +93,12 @@ public class Corporation
         List<String> tmp = new ArrayList<>();
         for(UUID member : members)
         {
-            tmp.add(member.toString());
+            tmp.add(member.toString() + ":" + getRank(member));
         }
         setValue(CorporationValues.MEMBERS, tmp);
+        DefaultDomain rgMembers = getBase().getMembers();
+        rgMembers.removePlayer(Bukkit.getOfflinePlayer(uuid).getName());
+        getBase().setMembers(rgMembers);
         save();
     }
 
@@ -115,7 +123,7 @@ public class Corporation
 
     public String getFormattedName()
     {
-        return ChatColor.GOLD + name.replace("_", " ");
+        return ChatColor.DARK_GREEN + name.replace("_", " ");
     }
 
     public List<UUID> getMembers()
@@ -134,7 +142,7 @@ public class Corporation
 
         for(String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS))
         {
-            tmp.add(UUID.fromString(s));
+            tmp.add(UUID.fromString(s.split(":")[0]));
         }
         return tmp;
     }
@@ -147,5 +155,20 @@ public class Corporation
     public void setValue(String path, Object value)
     {
         config.set("Corporations." + getName() + "." + path, value);
+    }
+
+    public String getRank(UUID user)
+    {
+        String line = null;
+        for(String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS))
+        {
+            if( s.split(":")[0].equals(user.toString()) )
+            {
+                line = s;
+                break;
+            }
+        }
+        if(line == null) throw new AssertionError("This shouldn't happen :(");
+        return ChatColor.GOLD + line.split(":")[1];
     }
 }

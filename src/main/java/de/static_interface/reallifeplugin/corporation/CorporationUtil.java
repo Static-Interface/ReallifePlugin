@@ -17,7 +17,11 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
-import de.static_interface.sinklibrary.User;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.SinkUser;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -30,14 +34,14 @@ import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class CorporationUtil
 {
-    private static List<Corporation> corporations = new ArrayList<>();
+    private static List<Corporation> corporations;
     private static CorporationConfig config;
 
     public static Corporation getUserCorporation(UUID uuid)
     {
         for(Corporation corporation : corporations )
         {
-            if (corporation.getMembers().contains(uuid))
+            if (corporation.getMembers().contains(uuid) || corporation.getCEO() == uuid)
             {
                 return corporation;
             }
@@ -47,14 +51,29 @@ public class CorporationUtil
 
     public static void registerCorporationsFromConfig()
     {
+        corporations = new ArrayList<>();
         YamlConfiguration yconfig = config.getYamlConfiguration();
-        ConfigurationSection section = yconfig.getConfigurationSection("Configurations");
+        ConfigurationSection section = yconfig.getConfigurationSection("Corporations");
         if(section == null) return;
         for(String corpName : section.getKeys(false))
         {
+            SinkLibrary.getCustomLogger().debug("Registering corporation: " + corpName);
             Corporation corp = new Corporation(config, corpName);
             register(corp);
         }
+    }
+
+    public static String getFormattedName(UUID user)
+    {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(user);
+        Corporation corp = getUserCorporation(user);
+        if(corp == null) return ChatColor.WHITE + player.getName();
+        String rank = corp.getRank(user);
+        if (ChatColor.stripColor(rank).isEmpty())
+        {
+            return rank + player.getName();
+        }
+        return rank + " " + player.getName();
     }
 
     public static CorporationConfig getCorporationConfig()
@@ -76,22 +95,22 @@ public class CorporationUtil
         return null;
     }
 
-    public static boolean isCEO(User user, Corporation corporation)
+    public static boolean isCEO(SinkUser user, Corporation corporation)
     {
-        return corporation.getCEO() == user.getUniqueId();
+        return corporation != null && corporation.getCEO().toString().equals(user.getUniqueId().toString());
     }
 
-    public static boolean createCorporation(User user, String name, UUID ceo, String base, World world)
+    public static boolean createCorporation(SinkUser user, String name, UUID ceo, String base, World world)
     {
         if(name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help"))
         {
-            user.sendMessage(m("Corporation.InvalidName"));
+            if (user != null) user.sendMessage(m("Corporation.InvalidName"));
             return false;
         }
 
         if ( getCorporation(name) != null)
         {
-            user.sendMessage(m("Corporation.Exists"));
+            if (user != null) user.sendMessage(m("Corporation.Exists"));
             return false;
         }
 
@@ -101,7 +120,7 @@ public class CorporationUtil
         config.set(pathPrefix + CorporationValues.CEO, ceo.toString());
         config.set(pathPrefix + CorporationValues.BASE, world.getName() + ":" + base);
         List<String> members = new ArrayList<>();
-        members.add(ceo.toString());
+        members.add(ceo.toString() + ":" + CorporationValues.CEO_RANK); //uuid:rank
         config.set(pathPrefix + CorporationValues.MEMBERS, members);
         config.save();
 
@@ -120,11 +139,11 @@ public class CorporationUtil
         corporations.remove(corporation);
     }
 
-    public static boolean deleteCorporation(User user, Corporation corporation)
+    public static boolean deleteCorporation(SinkUser user, Corporation corporation)
     {
         if (corporation == null)
         {
-            user.sendMessage(m("Corporation.DoesntExists"));
+            user.sendMessage(String.format(m("Corporation.DoesntExists"), ""));
             return false;
         }
         unregister(corporation);

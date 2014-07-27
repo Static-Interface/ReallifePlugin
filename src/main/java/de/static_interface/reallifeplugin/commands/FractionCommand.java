@@ -20,7 +20,7 @@ package de.static_interface.reallifeplugin.commands;
 import de.static_interface.reallifeplugin.fractions.Fraction;
 import de.static_interface.reallifeplugin.fractions.FractionUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.User;
+import de.static_interface.sinklibrary.SinkUser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -38,7 +38,7 @@ public class FractionCommand implements CommandExecutor
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        User user = SinkLibrary.getUser(sender);
+        SinkUser user = SinkLibrary.getUser(sender);
         Fraction userFraction = FractionUtil.getUserFraction(user.getUniqueId());
 
         if(args.length < 1 && !user.isConsole())
@@ -102,7 +102,7 @@ public class FractionCommand implements CommandExecutor
         return true;
     }
 
-    private void handleAdminCommand(User user, String[] args)
+    private void handleAdminCommand(SinkUser user, String[] args)
     {
         switch(args[0])
         {
@@ -157,7 +157,7 @@ public class FractionCommand implements CommandExecutor
         }
     }
 
-    private void handleLeaderCommand(User user, String[] args, Fraction fraction)
+    private void handleLeaderCommand(SinkUser user, String[] args, Fraction fraction)
     {
         if (!FractionUtil.isLeader(user, fraction))
         {
@@ -172,7 +172,7 @@ public class FractionCommand implements CommandExecutor
                 {
                     return;
                 }
-                User target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getUser(args[1]);
                 fraction.removeMember(target.getUniqueId());
                 if (user.isOnline())
                 {
@@ -186,7 +186,7 @@ public class FractionCommand implements CommandExecutor
                 {
                     return;
                 }
-                User target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getUser(args[1]);
                 fraction.addMember(target.getUniqueId());
                 if (user.isOnline())
                 {
@@ -197,7 +197,7 @@ public class FractionCommand implements CommandExecutor
         }
     }
 
-    private void sendFractionInfo(User user, Fraction fraction)
+    private void sendFractionInfo(SinkUser user, Fraction fraction)
     {
         throw new NotImplementedException();
     }

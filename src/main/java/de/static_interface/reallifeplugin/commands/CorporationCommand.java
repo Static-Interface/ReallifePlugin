@@ -17,12 +17,15 @@
 
 package de.static_interface.reallifeplugin.commands;
 
+import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.User;
+import de.static_interface.sinklibrary.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -39,7 +42,7 @@ public class CorporationCommand implements CommandExecutor
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        User user = SinkLibrary.getUser(sender);
+        SinkUser user = SinkLibrary.getUser(sender);
         Corporation userCorp = CorporationUtil.getUserCorporation(user.getUniqueId());
 
         if(args.length < 1 && !user.isConsole())
@@ -49,7 +52,7 @@ public class CorporationCommand implements CommandExecutor
                 sendCorporationInfo(user, userCorp);
                 return true;
             }
-            user.sendMessage(m("Corporations.NotInCorporation"));
+            user.sendMessage(m("Corporation.NotInCorporation"));
             return true;
         }
         else if (args.length < 1 && user.isConsole())
@@ -116,7 +119,7 @@ public class CorporationCommand implements CommandExecutor
         return true;
     }
 
-    private void handleAdminCommand(User user, String[] args)
+    private void handleAdminCommand(SinkUser user, String[] args)
     {
         switch(args[0].toLowerCase())
         {
@@ -139,7 +142,8 @@ public class CorporationCommand implements CommandExecutor
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-
+                //Todo: remove ceo from any corporation
+                //Todo cancel if ceo is already a ceo of another corporation
                 String name = args[1];
                 UUID ceo = SinkLibrary.getUser(args[2]).getUniqueId();
                 String base = args[3];
@@ -201,7 +205,7 @@ public class CorporationCommand implements CommandExecutor
                     user.sendMessage(String.format(m("Corporation.DoesntExists"),args[1]));
                     return;
                 }
-                User newCEO = SinkLibrary.getUser(args[2]);
+                SinkUser newCEO = SinkLibrary.getUser(args[2]);
                 corporation.setCEO(newCEO.getUniqueId());
                 user.sendMessage(m("Corporation.CEOSet"));
                 break;
@@ -215,7 +219,7 @@ public class CorporationCommand implements CommandExecutor
         }
     }
 
-    private void handleCEOCommand(User user, String[] args, Corporation corporation)
+    private void handleCEOCommand(SinkUser user, String[] args, Corporation corporation)
     {
         if (!CorporationUtil.isCEO(user, corporation))
         {
@@ -240,12 +244,21 @@ public class CorporationCommand implements CommandExecutor
             {
                 if (args.length < 2)
                 {
-                    return;
+                    user.sendMessage(ChatColor.RED + "/corp ceo help");
+                    break;
+                }
+                //Todo: Check if targt is already in a corporation
+                SinkUser target = SinkLibrary.getUser(args[1]);
+
+                if(corporation.getMembers().contains(target.getUniqueId()))
+                {
+                    user.sendMessage(String.format(m("Corporation.AlreadyMember"), target.getName()));
+                    break;
                 }
 
-                User target = SinkLibrary.getUser(args[1]);
                 corporation.addMember(target.getUniqueId());
-                user.sendMessage(String.format(m("Corporation.Added"), corporation.getName()));
+                if (target.isConsole()) target.sendMessage(String.format(m("Corporation.Added"), corporation.getName()));
+                user.sendMessage(String.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(target.getUniqueId())));
                 break;
             }
 
@@ -253,17 +266,26 @@ public class CorporationCommand implements CommandExecutor
             {
                 if (args.length < 2)
                 {
-                    return;
+                    user.sendMessage(ChatColor.RED + "/corp ceo help");
+                    break;
                 }
-                User target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getUser(args[1]);
+
+                if(!corporation.getMembers().contains(target.getUniqueId()))
+                {
+                    user.sendMessage(String.format(m("Corporation.NotMember"), target.getName()));
+                    break;
+                }
+
                 corporation.removeMember(target.getUniqueId());
-                user.sendMessage(String.format(m("Corporation.Kicked"), corporation.getName()));
+                if (target.isConsole()) target.sendMessage(String.format(m("Corporation.Kicked"), corporation.getName()));
+                user.sendMessage(String.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(target.getUniqueId())));
                 break;
             }
         }
     }
 
-    private void sendHelp(User user)
+    private void sendHelp(SinkUser user)
     {
         user.sendMessage(ChatColor.RED + "Corp Commands: ");
         user.sendMessage(ChatColor.GOLD + "/corp");
@@ -273,7 +295,7 @@ public class CorporationCommand implements CommandExecutor
         user.sendMessage(ChatColor.GOLD + "/corp admin help");
     }
 
-    private void sendAdminHelp(User user)
+    private void sendAdminHelp(SinkUser user)
     {
         user.sendMessage(ChatColor.RED + "Admin Commands: ");
         user.sendMessage(ChatColor.GOLD + "/corp admin new <corp> <ceo> <base>");
@@ -282,16 +304,46 @@ public class CorporationCommand implements CommandExecutor
         user.sendMessage(ChatColor.GOLD + "/corp admin setceo <corp> <player>");
     }
 
-    private void sendCEOHelp(User user)
+    private void sendCEOHelp(SinkUser user)
     {
         user.sendMessage(ChatColor.RED + "CEO Commands: ");
         user.sendMessage(ChatColor.GOLD +  "/corp ceo add <name>");
         user.sendMessage(ChatColor.GOLD +  "/corp ceo kick <name>");
     }
 
-    private void sendCorporationInfo(User user, Corporation corporation)
+    private void sendCorporationInfo(SinkUser user, Corporation corporation)
     {
-        //Todo
-        user.sendMessage(corporation.toString());
+        if (corporation == null)
+        {
+            user.sendMessage(String.format(m("Corporation.DoesntExists"), ""));
+            return;
+        }
+        user.sendMessage("");
+        String text = ChatColor.GOLD + " Corporation: " + corporation.getFormattedName();
+        String divider = "";
+        for(int i = 0; i < 32; i++)
+        {
+            divider += "-";
+        }
+        user.sendMessage(ChatColor.RED + text);
+        user.sendMessage(ChatColor.GOLD + divider);
+        OfflinePlayer ceo = Bukkit.getOfflinePlayer(corporation.getCEO());
+        user.sendMessage(ChatColor.GRAY + "CEO: " + CorporationUtil.getFormattedName(ceo.getUniqueId()));
+        user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBase().getId());
+        user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + corporation.getMoney() + " " + VaultBridge.getCurrenyName());
+        String members = "";
+        for(UUID member : corporation.getMembers())
+        {
+            String name =  CorporationUtil.getFormattedName(member);
+            if ( members.equals("") )
+            {
+                members = name;
+                continue;
+            }
+            members += ChatColor.GRAY + ", " + name;
+        }
+        user.sendMessage(ChatColor.GRAY + "Members: " + ChatColor.GOLD + members);
+        user.sendMessage(ChatColor.GOLD + divider);
+        user.sendMessage("");
     }
 }

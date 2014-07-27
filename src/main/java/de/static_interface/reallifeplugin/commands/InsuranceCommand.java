@@ -18,7 +18,7 @@
 package de.static_interface.reallifeplugin.commands;
 
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.User;
+import de.static_interface.sinklibrary.SinkUser;
 import de.static_interface.sinklibrary.configuration.PlayerConfiguration;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -33,7 +33,7 @@ public class InsuranceCommand implements CommandExecutor
     public static final String ACTIVATED_PATH = "Insurance.Activated";
     public static final String TIMEOUT_TIMESTAMP = "Insurance.Timestamp";
 
-    public static void createVars(User user)
+    public static void createVars(SinkUser user)
     {
         PlayerConfiguration config = user.getPlayerConfiguration();
         if ( config.get(ACTIVATED_PATH) == null )
@@ -48,14 +48,14 @@ public class InsuranceCommand implements CommandExecutor
 
     public static boolean isActive(Player player)
     {
-        User user = SinkLibrary.getUser(player);
+        SinkUser user = SinkLibrary.getUser(player);
         return (boolean) user.getPlayerConfiguration().get(ACTIVATED_PATH);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        User user = SinkLibrary.getUser(sender);
+        SinkUser user = SinkLibrary.getUser(sender);
 
         if ( user.isConsole() || args.length < 1 )
         {

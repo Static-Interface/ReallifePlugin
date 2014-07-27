@@ -17,7 +17,7 @@
 
 package de.static_interface.reallifeplugin.fractions;
 
-import de.static_interface.sinklibrary.User;
+import de.static_interface.sinklibrary.SinkUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class FractionUtil
         return new Fraction(getFractionConfig(), name);
     }
 
-    public static boolean isLeader(User user, Fraction fraction)
+    public static boolean isLeader(SinkUser user, Fraction fraction)
     {
         return fraction.getLeader() == user.getUniqueId();
     }

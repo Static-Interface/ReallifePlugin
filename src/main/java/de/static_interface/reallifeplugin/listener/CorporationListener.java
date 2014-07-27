@@ -15,14 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.corporation;
+package de.static_interface.reallifeplugin.listener;
 
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.VaultBridge;
+import de.static_interface.reallifeplugin.corporation.Corporation;
+import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.User;
+import de.static_interface.sinklibrary.SinkUser;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -57,7 +59,7 @@ public class CorporationListener implements Listener
         double price = Double.valueOf(line3);
         Corporation corp = CorporationUtil.getCorporation(line4);
 
-        User user = SinkLibrary.getUser(event.getPlayer());
+        SinkUser user = SinkLibrary.getUser(event.getPlayer());
 
         if(CorporationUtil.getUserCorporation(user.getUniqueId()) == corp)
         {
@@ -85,7 +87,7 @@ public class CorporationListener implements Listener
     {
         Block signBlock = event.getBlock();
         String[] lines = event.getLines();
-        User user = SinkLibrary.getUser(event.getPlayer());
+        SinkUser user = SinkLibrary.getUser(event.getPlayer());
         if (!(signBlock.getState() instanceof Sign))
         {
             return;
@@ -106,7 +108,7 @@ public class CorporationListener implements Listener
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static boolean validateSign(String[] lines, Location location, User user)
+    private static boolean validateSign(String[] lines, Location location, SinkUser user)
     {
         Corporation corp = CorporationUtil.getUserCorporation(user.getUniqueId());
         if (corp == null) return false;
