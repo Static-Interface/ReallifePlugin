@@ -32,12 +32,11 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class OnlineTimeListener implements Listener
-{
+public class OnlineTimeListener implements Listener {
+
     public HashMap<UUID, Long> onlineTimes = new HashMap<>();
 
-    public OnlineTimeListener()
-    {
+    public OnlineTimeListener() {
         for (Player player : Bukkit.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
         {
             onlineTimes.put(player.getUniqueId(), System.currentTimeMillis());
@@ -45,44 +44,40 @@ public class OnlineTimeListener implements Listener
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event)
-    {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         onlineTimes.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event)
-    {
-        try
-        {
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        try {
             onlineTimes.remove(event.getPlayer().getUniqueId());
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage()); //Will this be thrown?
         }
     }
 
     @EventHandler
-    public void onPayDay(PayDayEvent event)
-    {
+    public void onPayDay(PayDayEvent event) {
         long minTime = TimeUnit.MINUTES.toMillis(ReallifeMain.getSettings().getMinOnlineTime());
 
-        if (minTime <= 0) return; //Don't check...
+        if (minTime <= 0) {
+            return; //Don't check...
+        }
 
         long onlineTime = System.currentTimeMillis() - onlineTimes.get(event.getPlayer().getUniqueId());
 
         event.getPlayer().getPlayerTimeOffset();
 
-        if ( onlineTime > minTime )
-        {
+        if (onlineTime > minTime) {
             return;
         }
 
         long timeLeft = TimeUnit.MILLISECONDS.toMinutes(onlineTime - minTime);
 
         event.getPlayer().sendMessage(ChatColor.DARK_RED + "Du hast kein Geld bekommen, da du nicht mindestens "
-                + TimeUnit.MILLISECONDS.toMinutes(minTime) + " Minuten online warst. Du musst noch mindestens " +  (Math.abs(timeLeft) + 1)+ " Minuten online sein!");
+                                      + TimeUnit.MILLISECONDS.toMinutes(minTime) + " Minuten online warst. Du musst noch mindestens " + (
+                Math.abs(timeLeft) + 1) + " Minuten online sein!");
 
         event.setCancelled(true);
     }

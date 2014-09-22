@@ -19,8 +19,8 @@ package de.static_interface.reallifeplugin.model;
 
 import org.bukkit.entity.Entity;
 
-public class Damage
-{
+public class Damage {
+
     public Entity damager = null;
     public long millis = 0;
 }

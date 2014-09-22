@@ -19,8 +19,8 @@ package de.static_interface.reallifeplugin.corporation;
 
 import org.bukkit.ChatColor;
 
-public class CorporationValues
-{
+public class CorporationValues {
+
     public static final String BASE = "Base";
     public static final String CEO = "CEO";
     public static final String MEMBERS = "Members";

@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Fraction
-{
+public class Fraction {
+
     final String name;
     final ConfigurationBase config;
 
@@ -35,8 +35,7 @@ public class Fraction
     protected List<UUID> members;
     protected UUID leader;
 
-    public Fraction(FractionConfig config, String name)
-    {
+    public Fraction(FractionConfig config, String name) {
         this.config = config;
         this.name = name;
 
@@ -47,97 +46,80 @@ public class Fraction
         leader = (UUID) getValue(FractionValues.LEADER);
     }
 
-    public void setLeader(UUID leader)
-    {
-        this.leader = leader;
-        setValue(FractionValues.LEADER, leader);
-        save();
-    }
-
-    public void setBase(String base)
-    {
-        this.base = base;
-        setValue(FractionValues.BASE, base);
-        save();
-    }
-
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void addMember(UUID uuid)
-    {
+    public void addMember(UUID uuid) {
         members.add(uuid);
         setValue(FractionValues.MEMBERS, members);
         save();
     }
 
-    public void removeMember(UUID uuid)
-    {
+    public void removeMember(UUID uuid) {
         members.remove(uuid);
         setValue(FractionValues.MEMBERS, members);
         save();
     }
 
-    public void save()
-    {
+    public void save() {
         config.save();
     }
 
-    public double getBalance()
-    {
+    public double getBalance() {
         return VaultHelper.getBalance(name);
     }
 
-    public void addBalance(int amount)
-    {
+    public void addBalance(int amount) {
         VaultHelper.addBalance(name, amount);
     }
 
-    public boolean isPvPAllowed()
-    {
+    public boolean isPvPAllowed() {
         return isPvPAllowed;
     }
 
-    public boolean isGriefingAllowed()
-    {
+    public boolean isGriefingAllowed() {
         return isGriefingAllowed;
     }
 
-    public String getBase()
-    {
+    public String getBase() {
         return base;
     }
 
-    public List<UUID> getMembers()
-    {
+    public void setBase(String base) {
+        this.base = base;
+        setValue(FractionValues.BASE, base);
+        save();
+    }
+
+    public List<UUID> getMembers() {
         return members;
     }
 
-    public UUID getLeader()
-    {
+    public UUID getLeader() {
         return leader;
     }
 
-    public List<UUID> getMembersFromConfig()
-    {
+    public void setLeader(UUID leader) {
+        this.leader = leader;
+        setValue(FractionValues.LEADER, leader);
+        save();
+    }
+
+    public List<UUID> getMembersFromConfig() {
         List<UUID> tmp = new ArrayList<>();
 
-        for(String s : config.getYamlConfiguration().getStringList("Fractions." + getName() + "." + FractionValues.MEMBERS))
-        {
+        for (String s : config.getYamlConfiguration().getStringList("Fractions." + getName() + "." + FractionValues.MEMBERS)) {
             tmp.add(UUID.fromString(s));
         }
         return tmp;
     }
 
-    public Object getValue(String path)
-    {
+    public Object getValue(String path) {
         return config.get("Fractions." + getName() + "." + path);
     }
 
-    public void setValue(String path, Object value)
-    {
+    public void setValue(String path, Object value) {
         config.set("Fractions." + getName() + "." + path, value);
     }
 }

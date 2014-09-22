@@ -34,86 +34,77 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AntiQuitListener implements Listener
-{
+public class AntiQuitListener implements Listener {
+
+    public static final int COOLDOWN = 10 * 1000;
     HashMap<UUID, Long> cooldowns = new HashMap<>();
     HashMap<UUID, DamageCause> damageCauses = new HashMap<>();
 
-    public static final int COOLDOWN = 10 * 1000;
-
     @EventHandler
-    public void onPlayerDamage(EntityDamageEvent event)
-    {
-        if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) return;
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) {
+            return;
+        }
 
-        Player player = (Player)event.getEntity();
+        Player player = (Player) event.getEntity();
         cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
         damageCauses.put(player.getUniqueId(), event.getCause());
     }
 
-    private boolean isValidCause(DamageCause cause)
-    {
+    private boolean isValidCause(DamageCause cause) {
         return cause != DamageCause.SUICIDE;
     }
 
-    private boolean isEntityCause(DamageCause cause)
-    {
+    private boolean isEntityCause(DamageCause cause) {
         return cause == DamageCause.ENTITY_ATTACK || cause == DamageCause.ENTITY_EXPLOSION;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerTeleport(PlayerTeleportEvent event)
-    {
-        try
-        {
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        try {
             long cooldownTime = System.currentTimeMillis() - cooldowns.get(event.getPlayer().getUniqueId());
 
-            if ( cooldownTime > COOLDOWN )
-            {
+            if (cooldownTime > COOLDOWN) {
                 cooldowns.remove(event.getPlayer().getUniqueId());
                 return;
             }
 
             long timeLeft = TimeUnit.MILLISECONDS.toSeconds(cooldownTime - COOLDOWN);
 
-            event.getPlayer().sendMessage(ChatColor.DARK_RED + "Teleport wurde abgebrochen da du innerhalb der letzten " + TimeUnit.MILLISECONDS.toSeconds(COOLDOWN) + " Minuten Schaden bekommen hast. Du musst noch " + timeLeft + " Sekunden warten!");
+            event.getPlayer().sendMessage(
+                    ChatColor.DARK_RED + "Teleport wurde abgebrochen da du innerhalb der letzten " + TimeUnit.MILLISECONDS.toSeconds(COOLDOWN)
+                    + " Minuten Schaden bekommen hast. Du musst noch " + timeLeft + " Sekunden warten!");
 
             event.setCancelled(true);
-        }
-        catch(NullPointerException e)
-        {
+        } catch (NullPointerException e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event)
-    {
-        try
-        {
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        try {
             long cooldownTime = System.currentTimeMillis() - cooldowns.get(event.getPlayer().getUniqueId());
 
-            if ( cooldownTime > COOLDOWN )
-            {
+            if (cooldownTime > COOLDOWN) {
                 cooldowns.remove(event.getPlayer().getUniqueId());
                 return;
             }
 
             DamageCause cause = damageCauses.get(event.getPlayer().getUniqueId());
-            if(!isEntityCause(cause))
-            {
+            if (!isEntityCause(cause)) {
                 cooldowns.remove(event.getPlayer().getUniqueId());
                 return;
             }
 
             int banMinutes = 5;
 
-            long unbanTimeStamp = System.currentTimeMillis() +  (banMinutes * 60* 1000);
+            long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 
-            BanHelper.banPlayer(event.getPlayer().getUniqueId(), ChatColor.RED + "Du wurdest temporär für " + banMinutes + " Minuten gesperrt. Grund: Offline gegangen nach dem du Schaden bekommen hast", unbanTimeStamp);
-        }
-        catch(NullPointerException e)
-        {
+            BanHelper.banPlayer(event.getPlayer().getUniqueId(), ChatColor.RED + "Du wurdest temporär für " + banMinutes
+                                                                 + " Minuten gesperrt. Grund: Offline gegangen nach dem du Schaden bekommen hast",
+                                unbanTimeStamp);
+        } catch (NullPointerException e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }

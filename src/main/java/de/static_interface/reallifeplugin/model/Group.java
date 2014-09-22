@@ -17,8 +17,8 @@
 
 package de.static_interface.reallifeplugin.model;
 
-public class Group
-{
+public class Group {
+
     public String name = null;
     public String shownName = null;
     public int payday = 0;

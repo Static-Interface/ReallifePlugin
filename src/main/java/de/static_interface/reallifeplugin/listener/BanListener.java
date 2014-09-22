@@ -25,13 +25,14 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.util.UUID;
 
-public class BanListener implements Listener
-{
+public class BanListener implements Listener {
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event)
-    {
+    public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
         UUID uuid = event.getUniqueId();
-        if (!BanHelper.isBanned(uuid)) return;
+        if (!BanHelper.isBanned(uuid)) {
+            return;
+        }
 
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, BanHelper.getBanReason(uuid));
     }

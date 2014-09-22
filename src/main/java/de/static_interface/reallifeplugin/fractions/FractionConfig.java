@@ -22,16 +22,14 @@ import org.bukkit.Bukkit;
 
 import java.io.File;
 
-public class FractionConfig extends ConfigurationBase
-{
-    public FractionConfig()
-    {
+public class FractionConfig extends ConfigurationBase {
+
+    public FractionConfig() {
         super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Fractions.yml"), true);
     }
 
     @Override
-    public void addDefaults()
-    {
+    public void addDefaults() {
         addDefault("Enabled", true);
     }
 }

@@ -26,20 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Settings extends ConfigurationBase
-{
+public class Settings extends ConfigurationBase {
+
     public static final String PAYDAY = "payday";
     public static final String TAXES_MODIFIER = "taxesmodifier";
     public static final String SHOWN_NAME = "shownname";
     public static final String EXCLUDED = "excluded";
-    public Settings(Plugin plugin)
-    {
+
+    public Settings(Plugin plugin) {
         super(new File(plugin.getDataFolder(), "Settings.yml"));
     }
 
     @Override
-    public void addDefaults()
-    {
+    public void addDefaults() {
         addDefault("General.Taxesbase", 0.1);
         addDefault("General.PaydayTime", 60);
         addDefault("General.TaxAccount", "Staatskasse");
@@ -67,21 +66,17 @@ public class Settings extends ConfigurationBase
         addDefault("Groups.Member.ShownName", "Arbeitsloser");
     }
 
-    public List<Group> readGroups()
-    {
+    public List<Group> readGroups() {
         List<Group> groups = new ArrayList<>();
 
         Map<String, Object> values = yamlConfiguration.getConfigurationSection("Groups").getValues(false);
 
-        for ( String groupName : values.keySet() )
-        {
+        for (String groupName : values.keySet()) {
             Group group = new Group();
             group.name = groupName;
             Map<String, Object> groupValues = yamlConfiguration.getConfigurationSection("Groups." + groupName).getValues(false);
-            for ( String s : groupValues.keySet() )
-            {
-                switch ( s.toLowerCase() )
-                {
+            for (String s : groupValues.keySet()) {
+                switch (s.toLowerCase()) {
                     case PAYDAY:
                         group.payday = (int) get("Groups." + groupName + "." + s);
                         break;
@@ -104,67 +99,63 @@ public class Settings extends ConfigurationBase
         return groups;
     }
 
-    private Group validateGroup(Group group)
-    {
-        if ( group.name == null || group.name.isEmpty() )
-        {
+    private Group validateGroup(Group group) {
+        if (group.name == null || group.name.isEmpty()) {
             throw new RuntimeException("Name is null");
         }
-        if ( group.shownName == null || group.shownName.isEmpty() || group.shownName.equals("%name%") )
-        {
+        if (group.shownName == null || group.shownName.isEmpty() || group.shownName.equals("%name%")) {
             group.shownName = group.name;
         }
-        if ( group.payday < 0 )
-        {
+        if (group.payday < 0) {
             group.payday = getDefaultPayday();
         }
-        if ( group.taxesmodifier < 0 )
-        {
+        if (group.taxesmodifier < 0) {
             group.taxesmodifier = getDefaultTaxesModifier();
         }
         return group;
     }
 
-    public int getDefaultPayday()
-    {
+    public int getDefaultPayday() {
         return (int) get("Default.PayDay");
     }
 
-    public double getDefaultTaxesModifier()
-    {
+    public double getDefaultTaxesModifier() {
         return Double.parseDouble(get("Default.TaxesModifier").toString());
     }
 
-    public boolean isDefaultExcluded()
-    {
+    public boolean isDefaultExcluded() {
         return (boolean) get("Default.Excluded");
     }
 
-    public double getTaxesBase()
-    {
+    public double getTaxesBase() {
         return (double) get("General.Taxesbase");
     }
 
-    public int getPaydayTime()
-    {
+    public int getPaydayTime() {
         return (int) get("General.PaydayTime");
     }
 
-    public String getEconomyAccount()
-    {
+    public String getEconomyAccount() {
         return (String) get("General.TaxAccount");
     }
 
-    public String getInsuranceAccount()
-    {
+    public String getInsuranceAccount() {
         return (String) get("Insurance.Account");
     }
 
-    public int getMinOnlineTime() { return (int) get("General.MinOnlineTime"); }
+    public int getMinOnlineTime() {
+        return (int) get("General.MinOnlineTime");
+    }
 
-    public boolean isInsuranceEnabled() { return (boolean) get("Insurance.Enabled"); }
+    public boolean isInsuranceEnabled() {
+        return (boolean) get("Insurance.Enabled");
+    }
 
-    public boolean isAntiEscapeEnabled() { return (boolean) get("General.AntiEscapeEnabled"); }
+    public boolean isAntiEscapeEnabled() {
+        return (boolean) get("General.AntiEscapeEnabled");
+    }
 
-    public double getAdPrice() { return Double.valueOf(String.valueOf(get("Ad.Price"))); }
+    public double getAdPrice() {
+        return Double.valueOf(String.valueOf(get("Ad.Price")));
+    }
 }

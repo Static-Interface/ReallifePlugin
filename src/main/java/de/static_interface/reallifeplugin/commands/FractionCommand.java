@@ -33,66 +33,55 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FractionCommand implements CommandExecutor
-{
+public class FractionCommand implements CommandExecutor {
+
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
-    {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Fraction userFraction = FractionUtil.getUserFraction(user.getUniqueId());
 
-        if(args.length < 1 && !user.isConsole())
-        {
-            if (userFraction != null)
-            {
+        if (args.length < 1 && !user.isConsole()) {
+            if (userFraction != null) {
                 sendFractionInfo(user, userFraction);
                 return true;
             }
             user.sendMessage(m("Fractions.NotInFraction"));
             return true;
-        }
-        else if (args.length < 1 && user.isConsole())
-        {
+        } else if (args.length < 1 && user.isConsole()) {
             return false;
         }
 
         List<String> tmp = new ArrayList<>(Arrays.asList(args));
         tmp.remove(args[0]);
-        String[] moreArgs= tmp.toArray(new String[tmp.size()]);
+        String[] moreArgs = tmp.toArray(new String[tmp.size()]);
 
-        switch(args[0].toLowerCase())
-        {
-            case "leader":
-            {
-                if (!user.isConsole())
-                {
-                    if (moreArgs.length < 1)
-                    {
-                        user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+        switch (args[0].toLowerCase()) {
+            case "leader": {
+                if (!user.isConsole()) {
+                    if (moreArgs.length < 1) {
+                        user.sendMessage(
+                                de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                         return true;
                     }
                     handleLeaderCommand(user, moreArgs, userFraction);
                     break;
                 }
             }
-            case "admin":
-            {
-                if (!user.hasPermission("reallifeplugin.fractions.admin"))
-                {
+            case "admin": {
+                if (!user.hasPermission("reallifeplugin.fractions.admin")) {
                     user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("Permissions.General"));
                     return true;
                 }
-                if (moreArgs.length < 1)
-                {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                if (moreArgs.length < 1) {
+                    user.sendMessage(
+                            de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return true;
                 }
                 handleAdminCommand(user, moreArgs);
                 break;
             }
 
-            default:
-            {
+            default: {
                 Fraction fraction = FractionUtil.getFraction(args[0]);
                 sendFractionInfo(user, fraction);
                 break;
@@ -102,15 +91,12 @@ public class FractionCommand implements CommandExecutor
         return true;
     }
 
-    private void handleAdminCommand(SinkUser user, String[] args)
-    {
-        switch(args[0])
-        {
-            case "new":
-            {
-                if (args.length < 5)
-                {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+    private void handleAdminCommand(SinkUser user, String[] args) {
+        switch (args[0]) {
+            case "new": {
+                if (args.length < 5) {
+                    user.sendMessage(
+                            de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
 
@@ -121,11 +107,10 @@ public class FractionCommand implements CommandExecutor
                 break;
             }
 
-            case "delete":
-            {
-                if (args.length < 2)
-                {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+            case "delete": {
+                if (args.length < 2) {
+                    user.sendMessage(
+                            de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
 
@@ -137,17 +122,15 @@ public class FractionCommand implements CommandExecutor
                 break;
             }
 
-            case "setbase":
-            {
-                if (args.length < 3)
-                {
-                    user.sendMessage(de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+            case "setbase": {
+                if (args.length < 3) {
+                    user.sendMessage(
+                            de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
                 Fraction fraction = FractionUtil.getFraction(args[1]);
-                if (fraction == null)
-                {
-                    user.sendMessage(StringUtil.format(m("Fractions.DoesntExists"),args[1]));
+                if (fraction == null) {
+                    user.sendMessage(StringUtil.format(m("Fractions.DoesntExists"), args[1]));
                     return;
                 }
                 fraction.setBase(args[2]);
@@ -157,39 +140,30 @@ public class FractionCommand implements CommandExecutor
         }
     }
 
-    private void handleLeaderCommand(SinkUser user, String[] args, Fraction fraction)
-    {
-        if (!FractionUtil.isLeader(user, fraction))
-        {
+    private void handleLeaderCommand(SinkUser user, String[] args, Fraction fraction) {
+        if (!FractionUtil.isLeader(user, fraction)) {
             user.sendMessage(m("Fractions.NotLeader"));
             return;
         }
-        switch(args[0].toLowerCase())
-        {
-            case "kick":
-            {
-                if (args.length < 2)
-                {
+        switch (args[0].toLowerCase()) {
+            case "kick": {
+                if (args.length < 2) {
                     return;
                 }
                 SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
                 fraction.removeMember(target.getUniqueId());
-                if (user.isOnline())
-                {
+                if (user.isOnline()) {
                     user.sendMessage(StringUtil.format(m("Fractions.Kicked"), fraction.getName()));
                 }
                 break;
             }
-            case "add":
-            {
-                if (args.length < 2)
-                {
+            case "add": {
+                if (args.length < 2) {
                     return;
                 }
                 SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
                 fraction.addMember(target.getUniqueId());
-                if (user.isOnline())
-                {
+                if (user.isOnline()) {
                     user.sendMessage(StringUtil.format(m("Fractions.Added"), fraction.getName()));
                 }
                 break;
@@ -197,8 +171,7 @@ public class FractionCommand implements CommandExecutor
         }
     }
 
-    private void sendFractionInfo(SinkUser user, Fraction fraction)
-    {
+    private void sendFractionInfo(SinkUser user, Fraction fraction) {
         throw new NotImplementedException();
     }
 }

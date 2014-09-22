@@ -17,8 +17,8 @@
 
 package de.static_interface.reallifeplugin.fractions;
 
-public class FractionValues
-{
+public class FractionValues {
+
     public static final String BASE = "Base";
     public static final String LEADER = "Leader";
     public static final String GRIEFING_ALOWED = "Griefing.Allowed";

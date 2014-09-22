@@ -25,88 +25,67 @@ import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultHelper;
 import org.bukkit.entity.Player;
 
-public class TaxesEntry extends Entry
-{
+public class TaxesEntry extends Entry {
+
     Player player;
     Group group;
 
-    public TaxesEntry(Player player, Group group)
-    {
+    public TaxesEntry(Player player, Group group) {
         this.player = player;
         this.group = group;
     }
 
 
     @Override
-    public String getSourceAccount()
-    {
+    public String getSourceAccount() {
         return player.getName();
     }
 
     @Override
-    public String getReason()
-    {
+    public String getReason() {
         return StringUtil.format("{0}%% Steuern", MathUtil.round(getTaxesModifier() * 100));
     }
 
     @Override
-    public double getAmount()
-    {
+    public double getAmount() {
         return -MathUtil.round(getTaxes());
     }
 
-    private double getTaxesModifier()
-    {
+    private double getTaxesModifier() {
         double money = VaultHelper.getBalance(player) + group.payday;
         double taxesBase = ReallifeMain.getSettings().getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
-        if ( money <= 25000 )
-        {
+        if (money <= 25000) {
             taxesmodifier *= 20;
-        }
-        else if ( money <= 50000 )
-        {
+        } else if (money <= 50000) {
             taxesmodifier *= 16;
-        }
-        else if ( money <= 100000 )
-        {
+        } else if (money <= 100000) {
             taxesmodifier *= 12;
-        }
-        else if ( money <= 250000 )
-        {
+        } else if (money <= 250000) {
             taxesmodifier *= 8;
-        }
-        else if ( money <= 500000 )
-        {
+        } else if (money <= 500000) {
             taxesmodifier *= 6;
-        }
-        else if ( money <= 750000 )
-        {
+        } else if (money <= 750000) {
             taxesmodifier *= 5;
-        }
-        else
-        {
+        } else {
             taxesmodifier *= 2.5;
         }
 
         return (taxesBase * taxesmodifier) / 100;
     }
 
-    private double getTaxes()
-    {
+    private double getTaxes() {
         return getTaxesModifier() * (VaultHelper.getBalance(player) + group.payday);
     }
 
     @Override
-    public boolean sendToTarget()
-    {
+    public boolean sendToTarget() {
         return true;
     }
 
     @Override
-    public String getTargetAccount()
-    {
+    public String getTargetAccount() {
         return ReallifeMain.getSettings().getEconomyAccount();
     }
 }

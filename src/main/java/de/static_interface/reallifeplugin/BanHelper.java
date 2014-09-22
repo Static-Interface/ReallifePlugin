@@ -26,52 +26,41 @@ import java.util.UUID;
  * Bans are stored in memory (HashMaps), <b>they will be erased on restarts/reloads</b>
  */
 
-public class BanHelper
-{
+public class BanHelper {
+
     static HashMap<UUID, Long> bannedPlayers = new HashMap<>();
     static HashMap<UUID, String> reasons = new HashMap<>();
 
-    public static void banPlayer(UUID uuid, String reason, long timeout)
-    {
+    public static void banPlayer(UUID uuid, String reason, long timeout) {
         bannedPlayers.put(uuid, timeout);
         reasons.put(uuid, reason);
     }
 
-    public static void unbanPlayer(UUID uuid)
-    {
-        try
-        {
+    public static void unbanPlayer(UUID uuid) {
+        try {
             bannedPlayers.remove(uuid);
             reasons.remove(uuid);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
 
-    public static boolean isBanned(UUID uuid)
-    {
-        try
-        {
+    public static boolean isBanned(UUID uuid) {
+        try {
             long unbanTime = bannedPlayers.get(uuid);
 
-            if (unbanTime <= System.currentTimeMillis())
-            {
+            if (unbanTime <= System.currentTimeMillis()) {
                 unbanPlayer(uuid);
                 return false;
             }
             return true;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
             return false;
         }
     }
 
-    public static String getBanReason(UUID uuid)
-    {
+    public static String getBanReason(UUID uuid) {
         return reasons.get(uuid);
     }
 }

@@ -30,27 +30,23 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-public class AdCommand extends Command
-{
-    public AdCommand(Plugin plugin)
-    {
+public class AdCommand extends Command {
+
+    public AdCommand(Plugin plugin) {
         super(plugin);
     }
 
     @Override
-    public boolean isPlayerOnly()
-    {
+    public boolean isPlayerOnly() {
         return true;
     }
 
     @Override
-    protected boolean onExecute(CommandSender sender, String label, String[] args)
-    {
+    protected boolean onExecute(CommandSender sender, String label, String[] args) {
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
-        Player p = (Player)sender;
+        Player p = (Player) sender;
         double price = ReallifeMain.getSettings().getAdPrice();
-        if(user.getBalance() > price)
-        {
+        if (user.getBalance() > price) {
             user.sendMessage(m("General.NotEnoughMoney"));
             return true;
         }

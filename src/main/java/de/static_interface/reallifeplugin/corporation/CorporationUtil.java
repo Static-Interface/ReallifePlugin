@@ -33,85 +33,80 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class CorporationUtil
-{
+public class CorporationUtil {
+
     private static List<Corporation> corporations;
     private static CorporationConfig config;
 
-    public static Corporation getUserCorporation(UUID uuid)
-    {
-        for(Corporation corporation : corporations )
-        {
-            if (corporation.getMembers().contains(uuid) || corporation.getCEO() == uuid)
-            {
+    public static Corporation getUserCorporation(UUID uuid) {
+        for (Corporation corporation : corporations) {
+            if (corporation.getMembers().contains(uuid) || corporation.getCEO() == uuid) {
                 return corporation;
             }
         }
         return null;
     }
 
-    public static void registerCorporationsFromConfig()
-    {
+    public static void registerCorporationsFromConfig() {
         corporations = new ArrayList<>();
         YamlConfiguration yconfig = config.getYamlConfiguration();
         ConfigurationSection section = yconfig.getConfigurationSection("Corporations");
-        if(section == null) return;
-        for(String corpName : section.getKeys(false))
-        {
+        if (section == null) {
+            return;
+        }
+        for (String corpName : section.getKeys(false)) {
             SinkLibrary.getInstance().getCustomLogger().debug("Registering corporation: " + corpName);
             Corporation corp = new Corporation(config, corpName);
             register(corp);
         }
     }
 
-    public static String getFormattedName(UUID user)
-    {
+    public static String getFormattedName(UUID user) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(user);
         Corporation corp = getUserCorporation(user);
-        if(corp == null) return ChatColor.WHITE + player.getName();
+        if (corp == null) {
+            return ChatColor.WHITE + player.getName();
+        }
         String rank = corp.getRank(user);
-        if (ChatColor.stripColor(rank).isEmpty())
-        {
+        if (ChatColor.stripColor(rank).isEmpty()) {
             return rank + player.getName();
         }
         return rank + " " + player.getName();
     }
 
-    public static CorporationConfig getCorporationConfig()
-    {
-        if (config == null)
-        {
+    public static CorporationConfig getCorporationConfig() {
+        if (config == null) {
             config = new CorporationConfig();
         }
         return config;
     }
 
-    public static Corporation getCorporation(String name)
-    {
-        for(Corporation corporation : corporations)
-        {
-            if(corporation.getName().equalsIgnoreCase(name)) return corporation;
+    public static Corporation getCorporation(String name) {
+        for (Corporation corporation : corporations) {
+            if (corporation.getName().equalsIgnoreCase(name)) {
+                return corporation;
+            }
         }
 
         return null;
     }
 
-    public static boolean isCEO(SinkUser user, Corporation corporation)
-    {
+    public static boolean isCEO(SinkUser user, Corporation corporation) {
         return corporation != null && corporation.getCEO().toString().equals(user.getUniqueId().toString());
     }
 
-    public static boolean createCorporation(SinkUser user, String name, UUID ceo, String base, World world)
-    {
-        if(name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help"))
-        {
-            if (user != null) user.sendMessage(m("Corporation.InvalidName"));
+    public static boolean createCorporation(SinkUser user, String name, UUID ceo, String base, World world) {
+        if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help")) {
+            if (user != null) {
+                user.sendMessage(m("Corporation.InvalidName"));
+            }
             return false;
         }
 
-        if ( getCorporation(name) != null)
-        {
-            if (user != null) user.sendMessage(m("Corporation.Exists"));
+        if (getCorporation(name) != null) {
+            if (user != null) {
+                user.sendMessage(m("Corporation.Exists"));
+            }
             return false;
         }
 
@@ -130,20 +125,16 @@ public class CorporationUtil
         return true;
     }
 
-    private static void register(Corporation corporation)
-    {
+    private static void register(Corporation corporation) {
         corporations.add(corporation);
     }
 
-    private static void unregister(Corporation corporation)
-    {
+    private static void unregister(Corporation corporation) {
         corporations.remove(corporation);
     }
 
-    public static boolean deleteCorporation(SinkUser user, Corporation corporation)
-    {
-        if (corporation == null)
-        {
+    public static boolean deleteCorporation(SinkUser user, Corporation corporation) {
+        if (corporation == null) {
             user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
             return false;
         }

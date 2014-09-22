@@ -39,64 +39,18 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class CorporationListener implements Listener
-{
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event)
-    {
-        if(event.getMaterial() != Material.SIGN && event.getMaterial() != Material.SIGN_POST)
-        {
-            return;
-        }
-
-        Sign sign = (Sign) event.getClickedBlock().getState();
-        if ( !ChatColor.stripColor(sign.getLine(1)).equals("[CBuy]") ) return;
-
-        String line2 = sign.getLine(2);
-        String line3 = sign.getLine(3);
-        String line4 = sign.getLine(4);
-
-        ItemStack boughtItems = getItem(line2);
-        double price = Double.valueOf(line3);
-        Corporation corp = CorporationUtil.getCorporation(line4);
-
-        SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
-
-        if(CorporationUtil.getUserCorporation(user.getUniqueId()) == corp)
-        {
-            user.sendMessage(m("Corporation.BuyingFromSameCorporation"));
-            return;
-        }
-
-        if(!user.getPlayer().getCanPickupItems())
-        {
-            user.sendMessage(m("Corporation.BuySign.CantPickup"));
-            return;
-        }
-        user.getPlayer().getInventory().addItem(boughtItems);
-        VaultHelper.addBalance(user.getPlayer(), -price);
-        user.sendMessage(StringUtil.format(m("Corporation.BuySign.Bought"), boughtItems.getAmount() + boughtItems.getItemMeta().getDisplayName(),
-                                           price + VaultHelper.getCurrenyName()));
-    }
-
-    private ItemStack getItem(String line3)
-    {
-        return null;
-    }
+public class CorporationListener implements Listener {
 
     @EventHandler
-    public static void onSignChange(SignChangeEvent event)
-    {
+    public static void onSignChange(SignChangeEvent event) {
         Block signBlock = event.getBlock();
         String[] lines = event.getLines();
         SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
-        if (!(signBlock.getState() instanceof Sign))
-        {
+        if (!(signBlock.getState() instanceof Sign)) {
             return;
         }
 
-        if (!validateSign(lines, signBlock.getLocation(), user))
-        {
+        if (!validateSign(lines, signBlock.getLocation(), user)) {
             return;
         }
 
@@ -104,22 +58,20 @@ public class CorporationListener implements Listener
 
     }
 
-    private static void createCorpSign(String[] lines)
-    {
+    private static void createCorpSign(String[] lines) {
 
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static boolean validateSign(String[] lines, Location location, SinkUser user)
-    {
+    private static boolean validateSign(String[] lines, Location location, SinkUser user) {
         Corporation corp = CorporationUtil.getUserCorporation(user.getUniqueId());
-        if (corp == null) return false;
+        if (corp == null) {
+            return false;
+        }
 
-        try
-        {
+        try {
             //Validate sign prefix
-            if ( !lines[0].equals("[Corp]") )
-            {
+            if (!lines[0].equals("[Corp]")) {
                 return false;
             }
 
@@ -132,19 +84,55 @@ public class CorporationListener implements Listener
             //Validate location
             ProtectedRegion region = corp.getBase();
             Vector vec = BukkitUtil.toVector(location);
-            if (!region.contains(vec))
-            {
+            if (!region.contains(vec)) {
                 user.sendMessage(""); //Todo: Can only create signs in base
                 return false;
             }
 
-
             return true;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             SinkLibrary.getInstance().getCustomLogger().debug("Exception while trying to create sign:" + e);
             return false;
         }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getMaterial() != Material.SIGN && event.getMaterial() != Material.SIGN_POST) {
+            return;
+        }
+
+        Sign sign = (Sign) event.getClickedBlock().getState();
+        if (!ChatColor.stripColor(sign.getLine(1)).equals("[CBuy]")) {
+            return;
+        }
+
+        String line2 = sign.getLine(2);
+        String line3 = sign.getLine(3);
+        String line4 = sign.getLine(4);
+
+        ItemStack boughtItems = getItem(line2);
+        double price = Double.valueOf(line3);
+        Corporation corp = CorporationUtil.getCorporation(line4);
+
+        SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
+
+        if (CorporationUtil.getUserCorporation(user.getUniqueId()) == corp) {
+            user.sendMessage(m("Corporation.BuyingFromSameCorporation"));
+            return;
+        }
+
+        if (!user.getPlayer().getCanPickupItems()) {
+            user.sendMessage(m("Corporation.BuySign.CantPickup"));
+            return;
+        }
+        user.getPlayer().getInventory().addItem(boughtItems);
+        VaultHelper.addBalance(user.getPlayer(), -price);
+        user.sendMessage(StringUtil.format(m("Corporation.BuySign.Bought"), boughtItems.getAmount() + boughtItems.getItemMeta().getDisplayName(),
+                                           price + VaultHelper.getCurrenyName()));
+    }
+
+    private ItemStack getItem(String line3) {
+        return null;
     }
 }

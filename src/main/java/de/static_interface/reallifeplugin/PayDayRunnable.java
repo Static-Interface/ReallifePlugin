@@ -36,21 +36,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PayDayRunnable implements Runnable
-{
-    public void givePayDay(Player player, Group group)
-    {
+public class PayDayRunnable implements Runnable {
+
+    public void givePayDay(Player player, Group group) {
         PayDayEvent event = new PayDayEvent(player, group);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
-        if (event.isCancelled()) return;
+        if (event.isCancelled()) {
+            return;
+        }
 
         List<Entry> entries = new ArrayList<>();
         entries.add(new PayDayEntry(player, group));
         entries.add(new TaxesEntry(player, group));
         entries.addAll(event.getEntries());
         List<Entry> queue = PayDayQueue.getPlayerQueue(player.getUniqueId());
-        if (queue != null) entries.addAll(queue);
+        if (queue != null) {
+            entries.addAll(queue);
+        }
 
         List<String> out = new ArrayList<>();
 
@@ -59,15 +62,13 @@ public class PayDayRunnable implements Runnable
 
         Collections.sort(entries);
 
-        for ( Entry entry : entries )
-        {
+        for (Entry entry : entries) {
             EntryResult entryResult = handleEntry(entry);
             out.add(entryResult.out);
             result += entryResult.amount;
         }
 
-        if ( result == 0 )
-        {
+        if (result == 0) {
             return;
         }
 
@@ -86,8 +87,7 @@ public class PayDayRunnable implements Runnable
         player.sendMessage(out.toArray(new String[out.size()]));
     }
 
-    private EntryResult handleEntry(Entry entry)
-    {
+    private EntryResult handleEntry(Entry entry) {
         EntryResult result = new EntryResult();
         double amount = entry.getAmount();
 
@@ -97,13 +97,12 @@ public class PayDayRunnable implements Runnable
         String curreny = VaultHelper.getCurrenyName();
 
         String entryPrefix = "|- ";
-        if ( negative )
-        {
+        if (negative) {
             text = StringUtil.format(ChatColor.RED + entryPrefix + "-{0} " + curreny + " wurden abgezogen. (Grund: {1})", -amount, entry.getReason());
-        }
-        else
-        {
-            text = StringUtil.format(ChatColor.GREEN + entryPrefix + "+{0} " + curreny + " wurden hinzugefuegt. (Grund: {1})", amount, entry.getReason());
+        } else {
+            text =
+                    StringUtil.format(ChatColor.GREEN + entryPrefix + "+{0} " + curreny + " wurden hinzugefuegt. (Grund: {1})", amount,
+                                      entry.getReason());
         }
 
         result.out = text;
@@ -111,8 +110,7 @@ public class PayDayRunnable implements Runnable
 
         String source = entry.getSourceAccount();
         VaultHelper.addBalance(source, amount);
-        if ( entry.sendToTarget() )
-        {
+        if (entry.sendToTarget()) {
             String target = entry.getTargetAccount();
             VaultHelper.addBalance(target, -amount);
         }
@@ -120,30 +118,24 @@ public class PayDayRunnable implements Runnable
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
-        for ( Player player : Bukkit.getOnlinePlayers() )
-        {
+        for (Player player : Bukkit.getOnlinePlayers()) {
             boolean isInGroup = false;
-            for ( Group group : ReallifeMain.getSettings().readGroups() )
-            {
-                if ( ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup()).equals(group.name) )
-                {
+            for (Group group : ReallifeMain.getSettings().readGroups()) {
+                if (ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup()).equals(group.name)) {
                     givePayDay(player, group);
                     isInGroup = true;
                     break;
                 }
             }
-            if ( !isInGroup )
-            {
+            if (!isInGroup) {
                 givePayDay(player, getDefaultGroup(player));
             }
         }
     }
 
-    public Group getDefaultGroup(Player player)
-    {
+    public Group getDefaultGroup(Player player) {
         Group group = new Group();
         group.payday = ReallifeMain.getSettings().getDefaultPayday();
         group.taxesmodifier = ReallifeMain.getSettings().getDefaultTaxesModifier();

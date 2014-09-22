@@ -23,28 +23,34 @@ import org.bukkit.ChatColor;
 
 import java.io.File;
 
-public class LanguageConfiguration extends ConfigurationBase
-{
+public class LanguageConfiguration extends ConfigurationBase {
+
     private static LanguageConfiguration instance;
 
-    public LanguageConfiguration()
-    {
+    public LanguageConfiguration() {
         super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Language.yml")); //DIRTY
     }
 
-    public static LanguageConfiguration getInstance()
-    {
-        if ( instance == null )
-        {
+    public static LanguageConfiguration getInstance() {
+        if (instance == null) {
             instance = new LanguageConfiguration();
             instance.load();
         }
         return instance;
     }
 
+    /**
+     * Get language as String from key
+     *
+     * @param path Path to language variable
+     * @return Language String
+     */
+    public static String m(String path) {
+        return ChatColor.translateAlternateColorCodes('&', (String) getInstance().get(path));
+    }
+
     @Override
-    public void addDefaults()
-    {
+    public void addDefaults() {
         addDefault("General.NotEnoughMoney", "&4You don't have enough money.");
 
         addDefault("Fractions.Fraction", "&6Fraction");
@@ -82,16 +88,5 @@ public class LanguageConfiguration extends ConfigurationBase
         addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
-    }
-
-    /**
-     * Get language as String from key
-     *
-     * @param path Path to language variable
-     * @return Language String
-     */
-    public static String m(String path)
-    {
-        return ChatColor.translateAlternateColorCodes('&', (String) getInstance().get(path));
     }
 }

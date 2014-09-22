@@ -30,8 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Corporation
-{
+public class Corporation {
+
     final String name;
     final ConfigurationBase config;
 
@@ -39,46 +39,37 @@ public class Corporation
     protected List<UUID> members;
     protected UUID ceo;
 
-    public Corporation(ConfigurationBase config, String name)
-    {
+    public Corporation(ConfigurationBase config, String name) {
         this.config = config;
         this.name = name;
-        String[] baseraw =  ((String) getValue(CorporationValues.BASE)).split(":");
+        String[] baseraw = ((String) getValue(CorporationValues.BASE)).split(":");
         String world = baseraw[0];
         String regionId = baseraw[1];
 
         base = ReallifeMain.getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
         members = getMembersFromConfig();
-        ceo = UUID.fromString((String)getValue(CorporationValues.CEO));
+        ceo = UUID.fromString((String) getValue(CorporationValues.CEO));
     }
 
-    public void setCEO(UUID ceo)
-    {
-        this.ceo = ceo;
-        setValue(CorporationValues.CEO, ceo.toString());
-        save();
-    }
-
-    public void setBase(World world, String regionId)
-    {
+    public void setBase(World world, String regionId) {
         this.base = ReallifeMain.getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);
         setValue(CorporationValues.BASE, world.getName() + ":" + base);
         save();
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void addMember(UUID uuid)
-    {
+    public void addMember(UUID uuid) {
         members.add(uuid);
         List<String> tmp = new ArrayList<>();
-        for(UUID member : members)
-        {
-            if (member == uuid) tmp.add(uuid.toString() + ":" + CorporationValues.DEFAULT_RANK);
-            else tmp.add(member.toString() + ":" + getRank(member));
+        for (UUID member : members) {
+            if (member == uuid) {
+                tmp.add(uuid.toString() + ":" + CorporationValues.DEFAULT_RANK);
+            } else {
+                tmp.add(member.toString() + ":" + getRank(member));
+            }
         }
         setValue(CorporationValues.MEMBERS, tmp);
         DefaultDomain rgMembers = getBase().getMembers();
@@ -87,12 +78,10 @@ public class Corporation
         save();
     }
 
-    public void removeMember(UUID uuid)
-    {
+    public void removeMember(UUID uuid) {
         members.remove(uuid);
         List<String> tmp = new ArrayList<>();
-        for(UUID member : members)
-        {
+        for (UUID member : members) {
             tmp.add(member.toString() + ":" + getRank(member));
         }
         setValue(CorporationValues.MEMBERS, tmp);
@@ -102,73 +91,68 @@ public class Corporation
         save();
     }
 
-    public void save()
-    {
+    public void save() {
         config.save();
     }
 
-    public double getMoney()
-    {
+    public double getMoney() {
         return VaultHelper.getBalance(name);
     }
 
-    public void addBalance(double amount)
-    {
+    public void addBalance(double amount) {
         VaultHelper.addBalance(name, amount);
     }
-    public ProtectedRegion getBase()
-    {
+
+    public ProtectedRegion getBase() {
         return base;
     }
 
-    public String getFormattedName()
-    {
+    public String getFormattedName() {
         return ChatColor.DARK_GREEN + name.replace("_", " ");
     }
 
-    public List<UUID> getMembers()
-    {
+    public List<UUID> getMembers() {
         return members;
     }
 
-    public UUID getCEO()
-    {
+    public UUID getCEO() {
         return ceo;
     }
 
-    private List<UUID> getMembersFromConfig()
-    {
+    public void setCEO(UUID ceo) {
+        this.ceo = ceo;
+        setValue(CorporationValues.CEO, ceo.toString());
+        save();
+    }
+
+    private List<UUID> getMembersFromConfig() {
         List<UUID> tmp = new ArrayList<>();
 
-        for(String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS))
-        {
+        for (String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS)) {
             tmp.add(UUID.fromString(s.split(":")[0]));
         }
         return tmp;
     }
 
-    public Object getValue(String path)
-    {
+    public Object getValue(String path) {
         return config.get("Corporations." + getName() + "." + path);
     }
 
-    public void setValue(String path, Object value)
-    {
+    public void setValue(String path, Object value) {
         config.set("Corporations." + getName() + "." + path, value);
     }
 
-    public String getRank(UUID user)
-    {
+    public String getRank(UUID user) {
         String line = null;
-        for(String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS))
-        {
-            if( s.split(":")[0].equals(user.toString()) )
-            {
+        for (String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS)) {
+            if (s.split(":")[0].equals(user.toString())) {
                 line = s;
                 break;
             }
         }
-        if(line == null) throw new AssertionError("This shouldn't happen :(");
+        if (line == null) {
+            throw new AssertionError("This shouldn't happen :(");
+        }
         return ChatColor.GOLD + line.split(":")[1];
     }
 }

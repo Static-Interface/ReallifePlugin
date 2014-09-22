@@ -23,46 +23,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class FractionUtil
-{
+public class FractionUtil {
+
     private static List<Fraction> fractions = new ArrayList<>();
     private static FractionConfig config;
 
-    public static Fraction getUserFraction(UUID uuid)
-    {
-        for(Fraction fraction : fractions)
-        {
-            if (fraction.getMembers().contains(uuid))
-            {
+    public static Fraction getUserFraction(UUID uuid) {
+        for (Fraction fraction : fractions) {
+            if (fraction.getMembers().contains(uuid)) {
                 return fraction;
             }
         }
         return null;
     }
 
-    public static FractionConfig getFractionConfig()
-    {
-        if (config == null)
-        {
+    public static FractionConfig getFractionConfig() {
+        if (config == null) {
             config = new FractionConfig();
         }
         return config;
     }
 
-    public static Fraction getFraction(String name)
-    {
+    public static Fraction getFraction(String name) {
         return new Fraction(getFractionConfig(), name);
     }
 
-    public static boolean isLeader(SinkUser user, Fraction fraction)
-    {
+    public static boolean isLeader(SinkUser user, Fraction fraction) {
         return fraction.getLeader() == user.getUniqueId();
     }
 
-    public static boolean createFraction(String[] args)
-    {
-        if (getFraction(args[0]) != null)
-        {
+    public static boolean createFraction(String[] args) {
+        if (getFraction(args[0]) != null) {
             return false;
         }
 
@@ -86,20 +77,19 @@ public class FractionUtil
         return true;
     }
 
-    private static void register(Fraction fraction)
-    {
+    private static void register(Fraction fraction) {
         fractions.add(fraction);
     }
 
-    private static void unregister(Fraction fraction)
-    {
+    private static void unregister(Fraction fraction) {
         fractions.remove(fraction);
     }
 
-    public static boolean deleteFraction(String name)
-    {
+    public static boolean deleteFraction(String name) {
         Fraction fraction = getFraction(name);
-        if (fraction == null) return false;
+        if (fraction == null) {
+            return false;
+        }
 
         unregister(fraction);
         return false;

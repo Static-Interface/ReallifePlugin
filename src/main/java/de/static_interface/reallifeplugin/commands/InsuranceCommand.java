@@ -28,37 +28,31 @@ import org.bukkit.entity.Player;
 
 import java.util.concurrent.TimeUnit;
 
-public class InsuranceCommand implements CommandExecutor
-{
+public class InsuranceCommand implements CommandExecutor {
+
     public static final String ACTIVATED_PATH = "Insurance.Activated";
     public static final String TIMEOUT_TIMESTAMP = "Insurance.Timestamp";
 
-    public static void createVars(SinkUser user)
-    {
+    public static void createVars(SinkUser user) {
         PlayerConfiguration config = user.getPlayerConfiguration();
-        if ( config.get(ACTIVATED_PATH) == null )
-        {
+        if (config.get(ACTIVATED_PATH) == null) {
             config.set(ACTIVATED_PATH, false);
         }
-        if ( config.get(TIMEOUT_TIMESTAMP) == null )
-        {
+        if (config.get(TIMEOUT_TIMESTAMP) == null) {
             config.set(TIMEOUT_TIMESTAMP, 0);
         }
     }
 
-    public static boolean isActive(Player player)
-    {
+    public static boolean isActive(Player player) {
         SinkUser user = SinkLibrary.getInstance().getUser(player);
         return (boolean) user.getPlayerConfiguration().get(ACTIVATED_PATH);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
-    {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
 
-        if ( user.isConsole() || args.length < 1 )
-        {
+        if (user.isConsole() || args.length < 1) {
             return false;
         }
 
@@ -69,11 +63,9 @@ public class InsuranceCommand implements CommandExecutor
         boolean active = (boolean) config.get(ACTIVATED_PATH);
         long timestamp = Long.parseLong(String.valueOf(config.get(TIMEOUT_TIMESTAMP)));
 
-        switch ( args[0].toLowerCase() )
-        {
+        switch (args[0].toLowerCase()) {
             case "on":
-                if ( active )
-                {
+                if (active) {
                     user.sendMessage(ChatColor.DARK_RED + "Fehler: " + ChatColor.RED + "Die Versicherung ist schon aktiviert!");
                     return true;
                 }
@@ -84,19 +76,21 @@ public class InsuranceCommand implements CommandExecutor
                 user.sendMessage(ChatColor.DARK_GREEN + "Die Versicherung wurde erfolgreich aktiviert");
                 break;
             case "off":
-                if ( !active )
-                {
+                if (!active) {
                     user.sendMessage(ChatColor.DARK_RED + "Fehler: " + ChatColor.RED + "Die Versicherung ist schon deaktiviert!");
                     return true;
                 }
 
-                if ( timestamp != 0 && timestamp > System.currentTimeMillis() )
-                {
-                    user.sendMessage(ChatColor.DARK_RED + "Fehler: " + ChatColor.RED + "Die Versicherung kann erst nach 12 Stunden deaktiviert werden.");
+                if (timestamp != 0 && timestamp > System.currentTimeMillis()) {
+                    user.sendMessage(
+                            ChatColor.DARK_RED + "Fehler: " + ChatColor.RED + "Die Versicherung kann erst nach 12 Stunden deaktiviert werden.");
 
                     long millis = timestamp - System.currentTimeMillis();
 
-                    String timeleft = String.format("Es sind noch %d Stunde(n) und %d Minute(n) uebrig!", TimeUnit.MILLISECONDS.toHours(millis), TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)));
+                    String
+                            timeleft =
+                            String.format("Es sind noch %d Stunde(n) und %d Minute(n) uebrig!", TimeUnit.MILLISECONDS.toHours(millis),
+                                          TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)));
 
                     user.sendMessage(ChatColor.RED + timeleft);
                     return true;

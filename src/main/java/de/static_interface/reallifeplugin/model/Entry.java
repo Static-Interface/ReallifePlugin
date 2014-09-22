@@ -17,8 +17,8 @@
 
 package de.static_interface.reallifeplugin.model;
 
-public abstract class Entry implements Comparable<Entry>
-{
+public abstract class Entry implements Comparable<Entry> {
+
     public abstract String getSourceAccount();
 
     public abstract String getReason();
@@ -30,15 +30,18 @@ public abstract class Entry implements Comparable<Entry>
     public abstract String getTargetAccount();
 
     @Override
-    public int compareTo(Entry entry)
-    {
-        if(entry == null) throw new NullPointerException();
+    public int compareTo(Entry entry) {
+        if (entry == null) {
+            throw new NullPointerException();
+        }
 
-        if (getAmount() < entry.getAmount())
+        if (getAmount() < entry.getAmount()) {
             return 1;
-        if (getAmount() == entry.getAmount())
+        }
+        if (getAmount() == entry.getAmount()) {
             return 0;
-        else
+        } else {
             return -1;
+        }
     }
 }

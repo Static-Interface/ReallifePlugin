@@ -22,45 +22,39 @@ import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
 import org.bukkit.entity.Player;
 
-public class InsuranceEntry extends Entry
-{
+public class InsuranceEntry extends Entry {
+
     Player player;
     Group group;
 
-    public InsuranceEntry(Player player, Group group)
-    {
+    public InsuranceEntry(Player player, Group group) {
         this.player = player;
         this.group = group;
     }
 
 
     @Override
-    public String getSourceAccount()
-    {
+    public String getSourceAccount() {
         return player.getName();
     }
 
     @Override
-    public String getReason()
-    {
+    public String getReason() {
         return "Versicherung";
     }
 
     @Override
-    public double getAmount()
-    {
+    public double getAmount() {
         return -750;
     }
 
     @Override
-    public boolean sendToTarget()
-    {
+    public boolean sendToTarget() {
         return true;
     }
 
     @Override
-    public String getTargetAccount()
-    {
+    public String getTargetAccount() {
         return ReallifeMain.getSettings().getInsuranceAccount();
     }
 }

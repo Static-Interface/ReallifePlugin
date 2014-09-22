@@ -35,28 +35,30 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.logging.Level;
 
-public class ReallifeMain extends JavaPlugin
-{
+public class ReallifeMain extends JavaPlugin {
+
     public static final long TICKS = 20L;
+    static WorldGuardPlugin wgp;
     private static Settings settings = null;
     private static PayDayRunnable payDayRunnable = null;
     private BukkitTask payDayTask;
 
-    public static PayDayRunnable getPayDayRunnable()
-    {
+    public static PayDayRunnable getPayDayRunnable() {
         return payDayRunnable;
     }
 
-    public static Settings getSettings()
-    {
+    public static Settings getSettings() {
         return settings;
     }
 
-    static WorldGuardPlugin wgp;
+    public static WorldGuardPlugin getWorldGuardPlugin() {
+        return wgp;
+    }
 
-    public void onEnable()
-    {
-        if ( !checkDependencies() ) return;
+    public void onEnable() {
+        if (!checkDependencies()) {
+            return;
+        }
 
         settings = new Settings(this);
         settings.load();
@@ -72,36 +74,26 @@ public class ReallifeMain extends JavaPlugin
         SinkLibrary.getInstance().registerPlugin(this);
 
         SinkLibrary.getInstance().getCustomLogger().info("Enabled");
-        if( CorporationUtil.getCorporationConfig().isEnabled())
-        {
+        if (CorporationUtil.getCorporationConfig().isEnabled()) {
             wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
             CorporationUtil.registerCorporationsFromConfig();
         }
     }
 
-    public static WorldGuardPlugin getWorldGuardPlugin()
-    {
-        return wgp;
-    }
-
-    public void onDisable()
-    {
+    public void onDisable() {
         payDayTask.cancel();
     }
 
-    private boolean checkDependencies()
-    {
+    private boolean checkDependencies() {
         Plugin sinkLibrary = Bukkit.getPluginManager().getPlugin("SinkLibrary");
 
-        if ( sinkLibrary == null )
-        {
+        if (sinkLibrary == null) {
             Bukkit.getLogger().log(Level.WARNING, "This Plugin requires SinkLibrary!");
             Bukkit.getPluginManager().disablePlugin(this);
             return false;
         }
 
-        if( !SinkLibrary.getInstance().isEconomyAvailable())
-        {
+        if (!SinkLibrary.getInstance().isEconomyAvailable()) {
             Bukkit.getLogger().log(Level.WARNING, "Economy not available. Please install vault and an economy plugin");
             Bukkit.getPluginManager().disablePlugin(this);
             return false;
@@ -109,25 +101,20 @@ public class ReallifeMain extends JavaPlugin
         return true;
     }
 
-    private void registerCommands()
-    {
+    private void registerCommands() {
         Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand());
-        if (getSettings().isInsuranceEnabled())
-        {
+        if (getSettings().isInsuranceEnabled()) {
             Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand());
         }
         Bukkit.getPluginCommand("corporation").setExecutor(new CorporationCommand());
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 
-    private void registerListeners()
-    {
-        if (getSettings().isInsuranceEnabled())
-        {
+    private void registerListeners() {
+        if (getSettings().isInsuranceEnabled()) {
             Bukkit.getPluginManager().registerEvents(new InsuranceListener(), this);
         }
-        if (getSettings().isAntiEscapeEnabled())
-        {
+        if (getSettings().isAntiEscapeEnabled()) {
             Bukkit.getPluginManager().registerEvents(new AntiEscapeListener(), this);
         }
         Bukkit.getPluginManager().registerEvents(new BanListener(), this);

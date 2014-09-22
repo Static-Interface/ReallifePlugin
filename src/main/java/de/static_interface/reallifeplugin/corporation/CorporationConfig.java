@@ -22,21 +22,18 @@ import org.bukkit.Bukkit;
 
 import java.io.File;
 
-public class CorporationConfig extends ConfigurationBase
-{
-    public CorporationConfig()
-    {
+public class CorporationConfig extends ConfigurationBase {
+
+    public CorporationConfig() {
         super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Corporations.yml"), true);
     }
 
     @Override
-    public void addDefaults()
-    {
+    public void addDefaults() {
         addDefault("Enabled", true);
     }
 
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return (boolean) get("Enabled");
     }
 }

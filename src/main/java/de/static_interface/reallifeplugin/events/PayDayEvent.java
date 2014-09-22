@@ -30,58 +30,49 @@ import java.util.List;
  * This event is fired when a payday starts
  * Its fired seperatly for each player, so not only one time
  */
-public class PayDayEvent extends Event
-{
+public class PayDayEvent extends Event {
+
     private static final HandlerList handlers = new HandlerList();
     List<Entry> entries = new ArrayList<>();
     private Player player;
     private Group group;
     private boolean cancelled;
 
-    public PayDayEvent(Player player, Group group)
-    {
-        this.player= player;
+    public PayDayEvent(Player player, Group group) {
+        this.player = player;
         this.group = group;
     }
 
-    public static HandlerList getHandlerList()
-    {
+    public static HandlerList getHandlerList() {
         return handlers;
     }
 
-    public Player getPlayer()
-    {
+    public Player getPlayer() {
         return player;
     }
 
-    public Group getGroup()
-    {
+    public Group getGroup() {
         return group;
     }
 
     @Override
-    public HandlerList getHandlers()
-    {
+    public HandlerList getHandlers() {
         return handlers;
     }
 
-    public void addEntry(Entry entry)
-    {
+    public void addEntry(Entry entry) {
         entries.add(entry);
     }
 
-    public List<Entry> getEntries()
-    {
+    public List<Entry> getEntries() {
         return entries;
     }
 
-    public boolean isCancelled()
-    {
+    public boolean isCancelled() {
         return cancelled;
     }
 
-    public void setCancelled(boolean cancel)
-    {
+    public void setCancelled(boolean cancel) {
         cancelled = cancel;
     }
 }

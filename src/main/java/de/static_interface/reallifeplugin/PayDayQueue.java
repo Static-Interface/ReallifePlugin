@@ -24,34 +24,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class PayDayQueue
-{
+public class PayDayQueue {
     //Todo: Dump data with json when plugin is beeing unloaded, load with onEnable
 
     private static HashMap<UUID, List<Entry>> queue = new HashMap<>();
 
-    public static void addToQueue(UUID uuid, Entry entry)
-    {
+    public static void addToQueue(UUID uuid, Entry entry) {
         List<Entry> list;
-        if (!queue.containsKey(uuid))
-        {
+        if (!queue.containsKey(uuid)) {
             list = new ArrayList<>();
-        }
-        else
-        {
+        } else {
             list = queue.get(uuid);
         }
         list.add(entry);
         queue.put(uuid, list);
     }
 
-    public static HashMap<UUID, List<Entry>> getQueues()
-    {
+    public static HashMap<UUID, List<Entry>> getQueues() {
         return queue;
     }
 
-    public static List<Entry> getPlayerQueue(UUID uuid)
-    {
+    public static List<Entry> getPlayerQueue(UUID uuid) {
         return queue.get(uuid);
     }
 }

@@ -37,20 +37,22 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AntiEscapeListener implements Listener
-{
-    HashMap<UUID, Damage> damageInstances = new HashMap<>();
+public class AntiEscapeListener implements Listener {
 
     public static final int COOLDOWN = 10 * 1000;
+    HashMap<UUID, Damage> damageInstances = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerDamageByEntity(EntityDamageByEntityEvent event)
-    {
-        if(event.isCancelled()) return;
+    public void onPlayerDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
 
-        if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) return;
+        if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) {
+            return;
+        }
 
-        Player player = (Player)event.getEntity();
+        Player player = (Player) event.getEntity();
 
         //if(player.hasPermission("reallifeplugin.escapebypass"))
         //{
@@ -58,8 +60,9 @@ public class AntiEscapeListener implements Listener
         //}
 
         Damage damage = new Damage();
-        if (damageInstances.containsKey(player.getUniqueId()))
+        if (damageInstances.containsKey(player.getUniqueId())) {
             damage = damageInstances.get(player.getUniqueId());
+        }
 
         damage.damager = event.getDamager();
         damage.millis = System.currentTimeMillis();
@@ -67,49 +70,51 @@ public class AntiEscapeListener implements Listener
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerDamage(EntityDamageEvent event)
-    {
-        if(event.isCancelled()) return;
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
 
-        if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) return;
+        if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) {
+            return;
+        }
 
-        Player player = (Player)event.getEntity();
+        Player player = (Player) event.getEntity();
 
-        if(player.hasPermission("reallifeplugin.escapebypass"))
-        {
+        if (player.hasPermission("reallifeplugin.escapebypass")) {
             return;
         }
 
         Damage damage = new Damage();
-        if (damageInstances.containsKey(player.getUniqueId()))
+        if (damageInstances.containsKey(player.getUniqueId())) {
             damage = damageInstances.get(player.getUniqueId());
+        }
 
         damage.millis = System.currentTimeMillis();
     }
 
-    private boolean isValidCause(DamageCause cause)
-    {
+    private boolean isValidCause(DamageCause cause) {
         return cause != DamageCause.SUICIDE;
     }
 
-    private boolean isPlayerDamager(Entity entity)
-    {
+    private boolean isPlayerDamager(Entity entity) {
         return entity instanceof Player;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerTeleport(PlayerTeleportEvent event)
-    {
-        if(event.isCancelled()) return;
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
 
-        if (!damageInstances.containsKey(event.getPlayer().getUniqueId())) return;
-        try
-        {
+        if (!damageInstances.containsKey(event.getPlayer().getUniqueId())) {
+            return;
+        }
+        try {
             Damage damage = damageInstances.get(event.getPlayer().getUniqueId());
             long cooldownTime = System.currentTimeMillis() - damage.millis;
 
-            if ( cooldownTime > COOLDOWN )
-            {
+            if (cooldownTime > COOLDOWN) {
                 damageInstances.remove(event.getPlayer().getUniqueId());
                 return;
             }
@@ -117,48 +122,44 @@ public class AntiEscapeListener implements Listener
             long timeLeft = TimeUnit.MILLISECONDS.toSeconds(cooldownTime - COOLDOWN);
 
             event.getPlayer().sendMessage(ChatColor.DARK_RED + "Teleport wurde abgebrochen da du innerhalb der letzten "
-                    + TimeUnit.MILLISECONDS.toSeconds(COOLDOWN) + " Sekunden Schaden bekommen hast. Du musst noch "
-                    + (Math.abs(timeLeft) + 1) + " Sekunden warten!");
+                                          + TimeUnit.MILLISECONDS.toSeconds(COOLDOWN) + " Sekunden Schaden bekommen hast. Du musst noch "
+                                          + (Math.abs(timeLeft) + 1) + " Sekunden warten!");
 
             event.setCancelled(true);
-        }
-        catch(NullPointerException e)
-        {
+        } catch (NullPointerException e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event)
-    {
-        if (!damageInstances.containsKey(event.getPlayer().getUniqueId())) return;
-        try
-        {
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (!damageInstances.containsKey(event.getPlayer().getUniqueId())) {
+            return;
+        }
+        try {
             Damage damage = damageInstances.get(event.getPlayer().getUniqueId());
             long cooldownTime = System.currentTimeMillis() - damage.millis;
 
-            if ( cooldownTime > COOLDOWN )
-            {
+            if (cooldownTime > COOLDOWN) {
                 damageInstances.remove(event.getPlayer().getUniqueId());
                 return;
             }
 
             Entity damager = damage.damager;
 
-            if(!isPlayerDamager(damager))
-            {
+            if (!isPlayerDamager(damager)) {
                 damageInstances.remove(event.getPlayer().getUniqueId());
                 return;
             }
 
             int banMinutes = 5;
 
-            long unbanTimeStamp = System.currentTimeMillis() +  (banMinutes * 60* 1000);
+            long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 
-            BanHelper.banPlayer(event.getPlayer().getUniqueId(), ChatColor.RED + "Du wurdest automatisch temporär für " + banMinutes + " Minuten gesperrt. Grund: PvP Flucht", unbanTimeStamp);
-        }
-        catch(NullPointerException e)
-        {
+            BanHelper.banPlayer(event.getPlayer().getUniqueId(),
+                                ChatColor.RED + "Du wurdest automatisch temporär für " + banMinutes + " Minuten gesperrt. Grund: PvP Flucht",
+                                unbanTimeStamp);
+        } catch (NullPointerException e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
