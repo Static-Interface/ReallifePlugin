@@ -17,6 +17,8 @@
 
 package de.static_interface.reallifeplugin.listener;
 
+import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+
 import de.static_interface.reallifeplugin.BanHelper;
 import de.static_interface.reallifeplugin.model.Damage;
 import de.static_interface.sinklibrary.SinkLibrary;
@@ -34,8 +36,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 public class AntiEscapeListener implements Listener
 {
@@ -124,7 +124,7 @@ public class AntiEscapeListener implements Listener
         }
         catch(NullPointerException e)
         {
-            SinkLibrary.getCustomLogger().debug(e.getMessage());
+            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
 
@@ -159,7 +159,7 @@ public class AntiEscapeListener implements Listener
         }
         catch(NullPointerException e)
         {
-            SinkLibrary.getCustomLogger().debug(e.getMessage());
+            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
 }

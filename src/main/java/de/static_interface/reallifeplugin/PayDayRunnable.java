@@ -23,7 +23,11 @@ import de.static_interface.reallifeplugin.events.PayDayEvent;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.EntryResult;
 import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.sinklibrary.BukkitUtil;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -67,15 +71,15 @@ public class PayDayRunnable implements Runnable
             return;
         }
 
-        double money = VaultBridge.getBalance(player);
+        double money = VaultHelper.getBalance(player);
 
         String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
         String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
 
-        String curreny = VaultBridge.getCurrenyName();
+        String curreny = VaultHelper.getCurrenyName();
 
-        out.add(ChatColor.AQUA + String.format("|- Summe: " + resultPrefix + "%s " + curreny, MathHelper.round(result)));
-        out.add(ChatColor.AQUA + String.format("|- Geld: " + moneyPrefix + "%s " + curreny, money));
+        out.add(ChatColor.AQUA + StringUtil.format("|- Summe: " + resultPrefix + "{0} " + curreny, MathUtil.round(result)));
+        out.add(ChatColor.AQUA + StringUtil.format("|- Geld: " + moneyPrefix + "{0} " + curreny, money));
 
         String seperator = ChatColor.BLUE + "------------------------------------------------";
         out.add(seperator);
@@ -90,27 +94,27 @@ public class PayDayRunnable implements Runnable
         boolean negative = amount < 0;
         String text;
 
-        String curreny = VaultBridge.getCurrenyName();
+        String curreny = VaultHelper.getCurrenyName();
 
         String entryPrefix = "|- ";
         if ( negative )
         {
-            text = String.format(ChatColor.RED + entryPrefix + "-%s " + curreny +" wurden abgezogen. (Grund: %s)", -amount, entry.getReason());
+            text = StringUtil.format(ChatColor.RED + entryPrefix + "-{0} " + curreny + " wurden abgezogen. (Grund: {1})", -amount, entry.getReason());
         }
         else
         {
-            text = String.format(ChatColor.GREEN + entryPrefix + "+%s " + curreny + " wurden hinzugefuegt. (Grund: %s)", amount, entry.getReason());
+            text = StringUtil.format(ChatColor.GREEN + entryPrefix + "+{0} " + curreny + " wurden hinzugefuegt. (Grund: {1})", amount, entry.getReason());
         }
 
         result.out = text;
         result.amount = amount;
 
         String source = entry.getSourceAccount();
-        VaultBridge.addBalance(source, amount);
+        VaultHelper.addBalance(source, amount);
         if ( entry.sendToTarget() )
         {
             String target = entry.getTargetAccount();
-            VaultBridge.addBalance(target, -amount);
+            VaultHelper.addBalance(target, -amount);
         }
         return result;
     }
@@ -124,7 +128,7 @@ public class PayDayRunnable implements Runnable
             boolean isInGroup = false;
             for ( Group group : ReallifeMain.getSettings().readGroups() )
             {
-                if ( ChatColor.stripColor(VaultBridge.getPlayerGroup(player)).equals(group.name) )
+                if ( ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup()).equals(group.name) )
                 {
                     givePayDay(player, group);
                     isInGroup = true;
@@ -143,8 +147,8 @@ public class PayDayRunnable implements Runnable
         Group group = new Group();
         group.payday = ReallifeMain.getSettings().getDefaultPayday();
         group.taxesmodifier = ReallifeMain.getSettings().getDefaultTaxesModifier();
-        group.shownName = VaultBridge.getPlayerGroup(player);
-        group.name = ChatColor.stripColor(VaultBridge.getPlayerGroup(player));
+        group.shownName = SinkLibrary.getInstance().getUser(player).getPrimaryGroup();
+        group.name = ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup());
         group.excluded = ReallifeMain.getSettings().isDefaultExcluded();
         return group;
     }

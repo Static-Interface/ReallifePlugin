@@ -17,14 +17,17 @@
 
 package de.static_interface.reallifeplugin.listener;
 
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.SinkUser;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultHelper;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,8 +38,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class CorporationListener implements Listener
 {
@@ -59,7 +60,7 @@ public class CorporationListener implements Listener
         double price = Double.valueOf(line3);
         Corporation corp = CorporationUtil.getCorporation(line4);
 
-        SinkUser user = SinkLibrary.getUser(event.getPlayer());
+        SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
 
         if(CorporationUtil.getUserCorporation(user.getUniqueId()) == corp)
         {
@@ -73,8 +74,9 @@ public class CorporationListener implements Listener
             return;
         }
         user.getPlayer().getInventory().addItem(boughtItems);
-        VaultBridge.addBalance(user.getName(), -price);
-        user.sendMessage(String.format(m("Corporation.BuySign.Bought"), boughtItems.getAmount() + boughtItems.getItemMeta().getDisplayName(), price + VaultBridge.getCurrenyName()));
+        VaultHelper.addBalance(user.getPlayer(), -price);
+        user.sendMessage(StringUtil.format(m("Corporation.BuySign.Bought"), boughtItems.getAmount() + boughtItems.getItemMeta().getDisplayName(),
+                                           price + VaultHelper.getCurrenyName()));
     }
 
     private ItemStack getItem(String line3)
@@ -87,7 +89,7 @@ public class CorporationListener implements Listener
     {
         Block signBlock = event.getBlock();
         String[] lines = event.getLines();
-        SinkUser user = SinkLibrary.getUser(event.getPlayer());
+        SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
         if (!(signBlock.getState() instanceof Sign))
         {
             return;
@@ -141,7 +143,7 @@ public class CorporationListener implements Listener
         }
         catch(Exception e)
         {
-            SinkLibrary.getCustomLogger().debug("Exception while trying to create sign:" + e);
+            SinkLibrary.getInstance().getCustomLogger().debug("Exception while trying to create sign:" + e);
             return false;
         }
     }

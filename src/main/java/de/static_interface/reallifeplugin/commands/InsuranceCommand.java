@@ -48,14 +48,14 @@ public class InsuranceCommand implements CommandExecutor
 
     public static boolean isActive(Player player)
     {
-        SinkUser user = SinkLibrary.getUser(player);
+        SinkUser user = SinkLibrary.getInstance().getUser(player);
         return (boolean) user.getPlayerConfiguration().get(ACTIVATED_PATH);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        SinkUser user = SinkLibrary.getUser(sender);
+        SinkUser user = SinkLibrary.getInstance().getUser(sender);
 
         if ( user.isConsole() || args.length < 1 )
         {

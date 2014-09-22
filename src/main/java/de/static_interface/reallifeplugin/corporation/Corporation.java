@@ -20,8 +20,8 @@ package de.static_interface.reallifeplugin.corporation;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import de.static_interface.sinklibrary.util.VaultHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -109,12 +109,12 @@ public class Corporation
 
     public double getMoney()
     {
-        return VaultBridge.getBalance(name);
+        return VaultHelper.getBalance(name);
     }
 
     public void addBalance(double amount)
     {
-        VaultBridge.addBalance(name, amount);
+        VaultHelper.addBalance(name, amount);
     }
     public ProtectedRegion getBase()
     {

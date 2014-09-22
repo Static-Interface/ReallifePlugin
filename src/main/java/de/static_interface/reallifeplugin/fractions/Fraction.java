@@ -17,8 +17,8 @@
 
 package de.static_interface.reallifeplugin.fractions;
 
-import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import de.static_interface.sinklibrary.util.VaultHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,12 +87,12 @@ public class Fraction
 
     public double getBalance()
     {
-        return VaultBridge.getBalance(name);
+        return VaultHelper.getBalance(name);
     }
 
     public void addBalance(int amount)
     {
-        VaultBridge.addBalance(name, amount);
+        VaultHelper.addBalance(name, amount);
     }
 
     public boolean isPvPAllowed()

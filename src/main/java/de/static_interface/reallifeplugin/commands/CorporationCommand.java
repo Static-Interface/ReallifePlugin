@@ -17,12 +17,15 @@
 
 package de.static_interface.reallifeplugin.commands;
 
-import de.static_interface.reallifeplugin.VaultBridge;
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -35,14 +38,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
-
 public class CorporationCommand implements CommandExecutor
 {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        SinkUser user = SinkLibrary.getUser(sender);
+        SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Corporation userCorp = CorporationUtil.getUserCorporation(user.getUniqueId());
 
         if(args.length < 1 && !user.isConsole())
@@ -145,13 +146,13 @@ public class CorporationCommand implements CommandExecutor
                 //Todo: remove ceo from any corporation
                 //Todo cancel if ceo is already a ceo of another corporation
                 String name = args[1];
-                UUID ceo = SinkLibrary.getUser(args[2]).getUniqueId();
+                UUID ceo = SinkLibrary.getInstance().getUser(args[2]).getUniqueId();
                 String base = args[3];
 
                 boolean successful = CorporationUtil.createCorporation(user, name, ceo , base, user.getPlayer().getWorld());
                 Corporation corp = CorporationUtil.getCorporation(name);
                 String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
-                msg = String.format(msg, corp.getFormattedName());
+                msg = StringUtil.format(msg, corp.getFormattedName());
                 user.sendMessage(msg);
                 break;
             }
@@ -169,7 +170,7 @@ public class CorporationCommand implements CommandExecutor
 
                 if (successful)
                 {
-                    user.sendMessage(String.format(m("Corporation.Deleted"), corp.getFormattedName()));
+                    user.sendMessage(StringUtil.format(m("Corporation.Deleted"), corp.getFormattedName()));
                 }
                 break;
             }
@@ -184,7 +185,7 @@ public class CorporationCommand implements CommandExecutor
                 Corporation corporation= CorporationUtil.getCorporation(args[1]);
                 if (corporation == null)
                 {
-                    user.sendMessage(String.format(m("Corporation.DoesntExists"),args[1]));
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"),args[1]));
                     return;
                 }
                 corporation.setBase(user.getPlayer().getWorld(), args[2]);
@@ -202,10 +203,10 @@ public class CorporationCommand implements CommandExecutor
                 Corporation corporation= CorporationUtil.getCorporation(args[1]);
                 if (corporation == null)
                 {
-                    user.sendMessage(String.format(m("Corporation.DoesntExists"),args[1]));
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"),args[1]));
                     return;
                 }
-                SinkUser newCEO = SinkLibrary.getUser(args[2]);
+                SinkUser newCEO = SinkLibrary.getInstance().getUser(args[2]);
                 corporation.setCEO(newCEO.getUniqueId());
                 user.sendMessage(m("Corporation.CEOSet"));
                 break;
@@ -248,17 +249,17 @@ public class CorporationCommand implements CommandExecutor
                     break;
                 }
                 //Todo: Check if targt is already in a corporation
-                SinkUser target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
 
                 if(corporation.getMembers().contains(target.getUniqueId()))
                 {
-                    user.sendMessage(String.format(m("Corporation.AlreadyMember"), target.getName()));
+                    user.sendMessage(StringUtil.format(m("Corporation.AlreadyMember"), target.getName()));
                     break;
                 }
 
                 corporation.addMember(target.getUniqueId());
-                if (target.isConsole()) target.sendMessage(String.format(m("Corporation.Added"), corporation.getName()));
-                user.sendMessage(String.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(target.getUniqueId())));
+                if (target.isConsole()) target.sendMessage(StringUtil.format(m("Corporation.Added"), corporation.getName()));
+                user.sendMessage(StringUtil.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(target.getUniqueId())));
                 break;
             }
 
@@ -269,17 +270,17 @@ public class CorporationCommand implements CommandExecutor
                     user.sendMessage(ChatColor.RED + "/corp ceo help");
                     break;
                 }
-                SinkUser target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
 
                 if(!corporation.getMembers().contains(target.getUniqueId()))
                 {
-                    user.sendMessage(String.format(m("Corporation.NotMember"), target.getName()));
+                    user.sendMessage(StringUtil.format(m("Corporation.NotMember"), target.getName()));
                     break;
                 }
 
                 corporation.removeMember(target.getUniqueId());
-                if (target.isConsole()) target.sendMessage(String.format(m("Corporation.Kicked"), corporation.getName()));
-                user.sendMessage(String.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(target.getUniqueId())));
+                if (target.isConsole()) target.sendMessage(StringUtil.format(m("Corporation.Kicked"), corporation.getName()));
+                user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(target.getUniqueId())));
                 break;
             }
         }
@@ -315,7 +316,7 @@ public class CorporationCommand implements CommandExecutor
     {
         if (corporation == null)
         {
-            user.sendMessage(String.format(m("Corporation.DoesntExists"), ""));
+            user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
             return;
         }
         user.sendMessage("");
@@ -330,7 +331,7 @@ public class CorporationCommand implements CommandExecutor
         OfflinePlayer ceo = Bukkit.getOfflinePlayer(corporation.getCEO());
         user.sendMessage(ChatColor.GRAY + "CEO: " + CorporationUtil.getFormattedName(ceo.getUniqueId()));
         user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBase().getId());
-        user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + corporation.getMoney() + " " + VaultBridge.getCurrenyName());
+        user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + corporation.getMoney() + " " + VaultHelper.getCurrenyName());
         String members = "";
         for(UUID member : corporation.getMembers())
         {

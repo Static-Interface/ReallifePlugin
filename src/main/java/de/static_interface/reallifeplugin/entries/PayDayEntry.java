@@ -17,10 +17,11 @@
 
 package de.static_interface.reallifeplugin.entries;
 
-import de.static_interface.reallifeplugin.MathHelper;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.entity.Player;
 
 public class PayDayEntry extends Entry
@@ -43,13 +44,13 @@ public class PayDayEntry extends Entry
     @Override
     public String getReason()
     {
-        return String.format("Lohn [%s]", group.shownName);
+        return StringUtil.format("Lohn [{0}]", group.shownName);
     }
 
     @Override
     public double getAmount()
     {
-        return MathHelper.round(group.payday);
+        return MathUtil.round(group.payday);
     }
 
     @Override

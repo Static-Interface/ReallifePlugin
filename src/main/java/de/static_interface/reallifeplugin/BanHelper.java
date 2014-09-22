@@ -46,7 +46,7 @@ public class BanHelper
         }
         catch(Exception e)
         {
-            SinkLibrary.getCustomLogger().debug(e.getMessage());
+            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
         }
     }
 
@@ -65,7 +65,7 @@ public class BanHelper
         }
         catch(Exception e)
         {
-            SinkLibrary.getCustomLogger().debug(e.getMessage());
+            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
             return false;
         }
     }

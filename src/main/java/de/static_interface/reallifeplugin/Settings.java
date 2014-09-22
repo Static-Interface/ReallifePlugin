@@ -54,6 +54,8 @@ public class Settings extends ConfigurationBase
         addDefault("Default.Excluded", true);
         addDefault("Default.ShownName", "%name%");
 
+        addDefault("Ad.Price", 500.0);
+
         addDefault("Groups.Guest.Payday", 0);
         addDefault("Groups.Guest.TaxesModifier", 1);
         addDefault("Groups.Guest.Excluded", true);
@@ -163,4 +165,6 @@ public class Settings extends ConfigurationBase
     public boolean isInsuranceEnabled() { return (boolean) get("Insurance.Enabled"); }
 
     public boolean isAntiEscapeEnabled() { return (boolean) get("General.AntiEscapeEnabled"); }
+
+    public double getAdPrice() { return Double.valueOf(String.valueOf(get("Ad.Price"))); }
 }

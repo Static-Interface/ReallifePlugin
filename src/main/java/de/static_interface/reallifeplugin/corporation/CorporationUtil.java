@@ -17,8 +17,11 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.SinkUser;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -29,8 +32,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 
 public class CorporationUtil
 {
@@ -57,7 +58,7 @@ public class CorporationUtil
         if(section == null) return;
         for(String corpName : section.getKeys(false))
         {
-            SinkLibrary.getCustomLogger().debug("Registering corporation: " + corpName);
+            SinkLibrary.getInstance().getCustomLogger().debug("Registering corporation: " + corpName);
             Corporation corp = new Corporation(config, corpName);
             register(corp);
         }
@@ -143,7 +144,7 @@ public class CorporationUtil
     {
         if (corporation == null)
         {
-            user.sendMessage(String.format(m("Corporation.DoesntExists"), ""));
+            user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
             return false;
         }
         unregister(corporation);

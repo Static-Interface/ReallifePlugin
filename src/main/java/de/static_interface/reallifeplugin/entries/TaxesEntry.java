@@ -17,11 +17,12 @@
 
 package de.static_interface.reallifeplugin.entries;
 
-import de.static_interface.reallifeplugin.MathHelper;
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.VaultBridge;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultHelper;
 import org.bukkit.entity.Player;
 
 public class TaxesEntry extends Entry
@@ -45,18 +46,18 @@ public class TaxesEntry extends Entry
     @Override
     public String getReason()
     {
-        return String.format("%s%% Steuern", MathHelper.round(getTaxesModifier() * 100));
+        return StringUtil.format("{0}%% Steuern", MathUtil.round(getTaxesModifier() * 100));
     }
 
     @Override
     public double getAmount()
     {
-        return -MathHelper.round(getTaxes());
+        return -MathUtil.round(getTaxes());
     }
 
     private double getTaxesModifier()
     {
-        double money = VaultBridge.getBalance(player) + group.payday;
+        double money = VaultHelper.getBalance(player) + group.payday;
         double taxesBase = ReallifeMain.getSettings().getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
@@ -94,7 +95,7 @@ public class TaxesEntry extends Entry
 
     private double getTaxes()
     {
-        return getTaxesModifier() * (VaultBridge.getBalance(player) + group.payday);
+        return getTaxesModifier() * (VaultHelper.getBalance(player) + group.payday);
     }
 
     @Override

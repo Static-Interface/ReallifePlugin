@@ -18,6 +18,7 @@
 package de.static_interface.reallifeplugin;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import de.static_interface.reallifeplugin.commands.AdCommand;
 import de.static_interface.reallifeplugin.commands.CorporationCommand;
 import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
@@ -27,7 +28,6 @@ import de.static_interface.reallifeplugin.listener.BanListener;
 import de.static_interface.reallifeplugin.listener.InsuranceListener;
 import de.static_interface.reallifeplugin.listener.OnlineTimeListener;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.exceptions.NotInitializedException;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -69,9 +69,9 @@ public class ReallifeMain extends JavaPlugin
         registerCommands();
         registerListeners();
 
-        SinkLibrary.registerPlugin(this);
+        SinkLibrary.getInstance().registerPlugin(this);
 
-        SinkLibrary.getCustomLogger().info("Enabled");
+        SinkLibrary.getInstance().getCustomLogger().info("Enabled");
         if( CorporationUtil.getCorporationConfig().isEnabled())
         {
             wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
@@ -100,12 +100,7 @@ public class ReallifeMain extends JavaPlugin
             return false;
         }
 
-        if ( !SinkLibrary.initialized )
-        {
-            throw new NotInitializedException("SinkLibrary is not initialized!");
-        }
-
-        if( !SinkLibrary.isEconomyAvailable())
+        if( !SinkLibrary.getInstance().isEconomyAvailable())
         {
             Bukkit.getLogger().log(Level.WARNING, "Economy not available. Please install vault and an economy plugin");
             Bukkit.getPluginManager().disablePlugin(this);
@@ -122,6 +117,7 @@ public class ReallifeMain extends JavaPlugin
             Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand());
         }
         Bukkit.getPluginCommand("corporation").setExecutor(new CorporationCommand());
+        SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 
     private void registerListeners()

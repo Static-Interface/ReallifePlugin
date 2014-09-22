@@ -45,39 +45,43 @@ public class LanguageConfiguration extends ConfigurationBase
     @Override
     public void addDefaults()
     {
+        addDefault("General.NotEnoughMoney", "&4You don't have enough money.");
+
         addDefault("Fractions.Fraction", "&6Fraction");
-        addDefault("Fractions.DoesntExists", "&4Error: &cCouldn't find fraction: %s!");
+        addDefault("Fractions.DoesntExists", "&4Error: &cCouldn't find fraction: {0}!");
         addDefault("Fractions.BaseSet", "&6Base has been updated!");
         addDefault("Fractions.NotInFraction", "&4Error: &cYou're not a member of any fraction!");
         addDefault("Fractions.NotLeader", "&4Error: &cYou're not a leader!");
-        addDefault("Fractions.Added", "&4You've been added to the %s fraction!");
-        addDefault("Fractions.Kick", "&eYou've been kicked from the %s fraction!");
-        addDefault("Fractions.Created", "&eYou've successfully created %s!");
-        addDefault("Fractions.CreationFailed", "&4Error: &cCouldn't create %s!");
-        addDefault("Fractions.Deleted", "&eYou've successfully deleted %s!");
-        addDefault("Fractions.DeletionFailed", "&4Error: &cCouldn't delete %s!");
+        addDefault("Fractions.Added", "&4You've been added to the {0} fraction!");
+        addDefault("Fractions.Kick", "&eYou've been kicked from the {0} fraction!");
+        addDefault("Fractions.Created", "&eYou've successfully created {0}!");
+        addDefault("Fractions.CreationFailed", "&4Error: &cCouldn't create {0}!");
+        addDefault("Fractions.Deleted", "&eYou've successfully deleted {0}!");
+        addDefault("Fractions.DeletionFailed", "&4Error: &cCouldn't delete {0}!");
 
         addDefault("Corporation.Corporation", "&6Corporation");
         addDefault("Corporation.Exists", "&4Error: &cCorporation already exists!");
-        addDefault("Corporation.DoesntExists", "&4Error: &cCouldn't find corporation %s!");
+        addDefault("Corporation.DoesntExists", "&4Error: &cCouldn't find corporation {0}!");
         addDefault("Corporation.BaseSet", "&6Base has been updated!");
         addDefault("Corporation.CEOSet", "&6CEO has been updated!");
         addDefault("Corporation.NotInCorporation", "&4Error: &cYou're not a member of any corporation!");
         addDefault("Corporation.NotCEO", "&4Error: &cYou're not a CEO!");
-        addDefault("Corporation.CEOAdded", "%s &ehas been added to the corporation!");
-        addDefault("Corporation.Added", "&eYou've been added to the %s corporation!");
-        addDefault("Corporation.CEOKicked", "%s &4has been kicked from the corporation!");
-        addDefault("Corporation.Kicked", "&4You've been kicked from the %s corporation!");
-        addDefault("Corporation.Created", "&eYou've successfully created %s!");
-        addDefault("Corporation.CreationFailed", "&4Error: &cCouldn't create %s!");
-        addDefault("Corporation.Deleted", "&eYou've successfully deleted %s!");
-        addDefault("Corporation.DeletionFailed", "&4Error: &cCouldn't delete %s!");
+        addDefault("Corporation.CEOAdded", "{0} &ehas been added to the corporation!");
+        addDefault("Corporation.Added", "&eYou've been added to the {0} corporation!");
+        addDefault("Corporation.CEOKicked", "{DISPLAYNAME} &4has been kicked from the corporation!");
+        addDefault("Corporation.Kicked", "&4You've been kicked from the {0} corporation!");
+        addDefault("Corporation.Created", "&eYou've successfully created {0}!");
+        addDefault("Corporation.CreationFailed", "&4Error: &cCouldn't create {0}!");
+        addDefault("Corporation.Deleted", "&eYou've successfully deleted {0}!");
+        addDefault("Corporation.DeletionFailed", "&4Error: &cCouldn't delete {0}!");
         addDefault("Corporation.InvalidName", "&4Error:&c Invalid name");
         addDefault("Corporation.BuyingFromSameCorporation", "&4Error:&c You can't buy from your corporation");
         addDefault("Corporation.BuySign.CantPickup", "&4Error:&c You can't pickup items!");
-        addDefault("Corporation.BuySign.Bought", "&aSuccessfully bought %s for %s!");
-        addDefault("Corporation.AlreadyMember", "&c%s is already a member of your corporation");
-        addDefault("Corporation.NotMember", "&c%s is not a member of your corporation!");
+        addDefault("Corporation.BuySign.Bought", "&aSuccessfully bought {0} for {1}!");
+        addDefault("Corporation.AlreadyMember", "&c{0} is already a member of your corporation");
+        addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
+
+        addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
     }
 
     /**

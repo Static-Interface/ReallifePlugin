@@ -21,6 +21,9 @@ commands:
     description: Corporation Command
     permission: reallifeplugin.corporation
     aliases: corp
+  ad:
+    description: Ad Command
+    permission: reallifeplugin.ad
 
 permissions:
   reallifeplugin.command:
@@ -30,4 +33,6 @@ permissions:
   reallifeplugin.escapebypass:
      default: false
   reallifeplugin.corporation:
+     default: true
+  reallifeplugin.ad:
      default: true

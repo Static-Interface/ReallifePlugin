@@ -59,7 +59,7 @@ public class OnlineTimeListener implements Listener
         }
         catch(Exception e)
         {
-            SinkLibrary.getCustomLogger().debug(e.getMessage()); //Will this be thrown?
+            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage()); //Will this be thrown?
         }
     }
 

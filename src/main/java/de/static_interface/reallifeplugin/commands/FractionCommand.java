@@ -17,10 +17,13 @@
 
 package de.static_interface.reallifeplugin.commands;
 
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+
 import de.static_interface.reallifeplugin.fractions.Fraction;
 import de.static_interface.reallifeplugin.fractions.FractionUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.SinkUser;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -30,15 +33,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
-
 public class FractionCommand implements CommandExecutor
 {
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
-        SinkUser user = SinkLibrary.getUser(sender);
+        SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Fraction userFraction = FractionUtil.getUserFraction(user.getUniqueId());
 
         if(args.length < 1 && !user.isConsole())
@@ -116,7 +116,7 @@ public class FractionCommand implements CommandExecutor
 
                 boolean successful = FractionUtil.createFraction(args);
                 String msg = successful ? m("Fractions.Created") : m("Fractions.CreationFailed");
-                msg = String.format(msg, args[1]);
+                msg = StringUtil.format(msg, args[1]);
                 user.sendMessage(msg);
                 break;
             }
@@ -132,7 +132,7 @@ public class FractionCommand implements CommandExecutor
                 boolean successful = FractionUtil.deleteFraction(args[1]);
 
                 String msg = successful ? m("Fractions.Deleted") : m("Fractions.DeletionFailed");
-                msg = String.format(msg, args[1]);
+                msg = StringUtil.format(msg, args[1]);
                 user.sendMessage(msg);
                 break;
             }
@@ -147,7 +147,7 @@ public class FractionCommand implements CommandExecutor
                 Fraction fraction = FractionUtil.getFraction(args[1]);
                 if (fraction == null)
                 {
-                    user.sendMessage(String.format(m("Fractions.DoesntExists"),args[1]));
+                    user.sendMessage(StringUtil.format(m("Fractions.DoesntExists"),args[1]));
                     return;
                 }
                 fraction.setBase(args[2]);
@@ -172,11 +172,11 @@ public class FractionCommand implements CommandExecutor
                 {
                     return;
                 }
-                SinkUser target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
                 fraction.removeMember(target.getUniqueId());
                 if (user.isOnline())
                 {
-                    user.sendMessage(String.format(m("Fractions.Kicked"), fraction.getName()));
+                    user.sendMessage(StringUtil.format(m("Fractions.Kicked"), fraction.getName()));
                 }
                 break;
             }
@@ -186,11 +186,11 @@ public class FractionCommand implements CommandExecutor
                 {
                     return;
                 }
-                SinkUser target = SinkLibrary.getUser(args[1]);
+                SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
                 fraction.addMember(target.getUniqueId());
                 if (user.isOnline())
                 {
-                    user.sendMessage(String.format(m("Fractions.Added"), fraction.getName()));
+                    user.sendMessage(StringUtil.format(m("Fractions.Added"), fraction.getName()));
                 }
                 break;
             }
