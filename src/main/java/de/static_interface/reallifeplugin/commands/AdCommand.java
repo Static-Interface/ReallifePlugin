@@ -43,17 +43,20 @@ public class AdCommand extends Command {
 
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) {
+        if(args.length < 1) {
+            return false;
+        }
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Player p = (Player) sender;
         double price = ReallifeMain.getSettings().getAdPrice();
-        if (user.getBalance() > price) {
+        if (user.getBalance() < price) {
             user.sendMessage(m("General.NotEnoughMoney"));
             return true;
         }
 
         String message = StringUtil.formatArrayToString(args, " ");
 
-        user.addBalance(price);
+        user.addBalance(-price);
         BukkitUtil.broadcastMessage(StringUtil.format(m("Ad.Message"), p, message), false);
         return true;
     }

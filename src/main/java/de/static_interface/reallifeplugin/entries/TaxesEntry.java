@@ -53,6 +53,9 @@ public class TaxesEntry extends Entry {
 
     private double getTaxesModifier() {
         double money = VaultHelper.getBalance(player) + group.payday;
+
+        if (money <= 0) return 0; /* no taxes */
+
         double taxesBase = ReallifeMain.getSettings().getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
