@@ -30,8 +30,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-public class AdCommand extends Command {
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+public class AdCommand extends Command {
+    HashMap<UUID, Long> timeouts = new HashMap<>();
     public AdCommand(Plugin plugin) {
         super(plugin);
     }
@@ -43,21 +47,36 @@ public class AdCommand extends Command {
 
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) {
-        if(args.length < 1) {
-            return false;
-        }
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Player p = (Player) sender;
+
         double price = ReallifeMain.getSettings().getAdPrice();
         if (user.getBalance() < price) {
             user.sendMessage(m("General.NotEnoughMoney"));
             return true;
         }
 
+        long currenttime = System.currentTimeMillis();
+        long settingsTimeout = ReallifeMain.getSettings().getAdTimeout() * 1000 * 60;
+
+        Long timeout = timeouts.get(p.getUniqueId());
+        if(timeout != null && timeout > currenttime) {
+            long timeleft = TimeUnit.MILLISECONDS.toMinutes(currenttime - timeout);
+            p.sendMessage(StringUtil.format(m("Ad.Timout"), TimeUnit.MILLISECONDS.toMinutes(settingsTimeout), (Math.abs(timeleft) + 1)));
+            return true;
+        }
+
+        if(args.length < 1) {
+            return false;
+        }
+
         String message = StringUtil.formatArrayToString(args, " ");
 
         user.addBalance(-price);
         BukkitUtil.broadcastMessage(StringUtil.format(m("Ad.Message"), p, message), false);
+        if(settingsTimeout > 0) {
+            timeouts.put(p.getUniqueId(), currenttime + settingsTimeout);
+        }
         return true;
     }
 }

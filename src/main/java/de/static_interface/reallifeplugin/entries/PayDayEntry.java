@@ -17,6 +17,8 @@
 
 package de.static_interface.reallifeplugin.entries;
 
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
@@ -41,7 +43,7 @@ public class PayDayEntry extends Entry {
 
     @Override
     public String getReason() {
-        return StringUtil.format("Lohn [{0}]", group.shownName);
+        return StringUtil.format(m("Payday.Payay"), group.shownName);
     }
 
     @Override

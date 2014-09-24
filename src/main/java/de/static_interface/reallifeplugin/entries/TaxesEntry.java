@@ -17,6 +17,8 @@
 
 package de.static_interface.reallifeplugin.entries;
 
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
@@ -43,7 +45,7 @@ public class TaxesEntry extends Entry {
 
     @Override
     public String getReason() {
-        return StringUtil.format("{0}%% Steuern", MathUtil.round(getTaxesModifier() * 100));
+        return StringUtil.format(m("Payay.Taxes"), MathUtil.round(getTaxesModifier() * 100));
     }
 
     @Override

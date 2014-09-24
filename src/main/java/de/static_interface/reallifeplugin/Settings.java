@@ -64,6 +64,9 @@ public class Settings extends ConfigurationBase {
         addDefault("Groups.Member.TaxesModifier", 1);
         addDefault("Groups.Member.Excluded", false);
         addDefault("Groups.Member.ShownName", "Arbeitsloser");
+
+        addDefault("Ad.Timeout", 30);
+        addDefault("AntiPvPEscape.BanTime", 5);
     }
 
     public List<Group> readGroups() {
@@ -157,5 +160,11 @@ public class Settings extends ConfigurationBase {
 
     public double getAdPrice() {
         return Double.valueOf(String.valueOf(get("Ad.Price")));
+    }
+
+    public int getAdTimeout() { return Integer.valueOf(String.valueOf(get("Ad.Timeout"))); }
+
+    public int getPvPEscapeBanTime() {
+        return Integer.valueOf(String.valueOf(get("AntiPvPEscape.BanTime")));
     }
 }

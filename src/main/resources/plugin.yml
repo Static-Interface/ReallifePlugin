@@ -24,6 +24,7 @@ commands:
   ad:
     description: Ad Command
     permission: reallifeplugin.ad
+    usage: "/<command> text"
 
 permissions:
   reallifeplugin.command:

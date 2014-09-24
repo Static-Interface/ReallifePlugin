@@ -88,5 +88,10 @@ public class LanguageConfiguration extends ConfigurationBase {
         addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
+        addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes.");
+
+        addDefault("Payay.Taxes", "{0}% Taxes");
+        addDefault("Payay.Payday", "Payday ({0} {CURRENCY})");
+        addDefault("AntiPvPEscape.BanMessage", "You have been banned for {0} Minutes. Reason: Escape from PvP by quit");
     }
 }

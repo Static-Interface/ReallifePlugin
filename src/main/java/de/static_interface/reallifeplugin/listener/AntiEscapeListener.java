@@ -17,11 +17,14 @@
 
 package de.static_interface.reallifeplugin.listener;
 
+import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.static_interface.reallifeplugin.BanHelper;
+import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Damage;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -152,12 +155,12 @@ public class AntiEscapeListener implements Listener {
                 return;
             }
 
-            int banMinutes = 5;
+            int banMinutes = ReallifeMain.getSettings().getPvPEscapeBanTime();
 
             long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 
             BanHelper.banPlayer(event.getPlayer().getUniqueId(),
-                                ChatColor.RED + "Du wurdest automatisch temporär für " + banMinutes + " Minuten gesperrt. Grund: PvP Flucht",
+                                StringUtil.format(m("AntiPvPEscape.BanMessage"), banMinutes),
                                 unbanTimeStamp);
         } catch (NullPointerException e) {
             SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());

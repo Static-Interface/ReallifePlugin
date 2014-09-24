@@ -29,7 +29,7 @@ import org.bukkit.entity.Player;
 import java.util.concurrent.TimeUnit;
 
 public class InsuranceCommand implements CommandExecutor {
-
+    // Todo: Replace hardcode with LanguageConfiguration
     public static final String ACTIVATED_PATH = "Insurance.Activated";
     public static final String TIMEOUT_TIMESTAMP = "Insurance.Timestamp";
 
