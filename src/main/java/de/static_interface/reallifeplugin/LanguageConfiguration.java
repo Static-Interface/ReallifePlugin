@@ -88,7 +88,7 @@ public class LanguageConfiguration extends ConfigurationBase {
         addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
-        addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes.");
+        addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");
 
         addDefault("Payay.Taxes", "{0}% Taxes");
         addDefault("Payay.Payday", "Payday ({0} {CURRENCY})");
