@@ -18,7 +18,7 @@
 package de.static_interface.reallifeplugin;
 
 import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Settings extends ConfigurationBase {
+public class Settings extends Configuration {
 
     public static final String PAYDAY = "payday";
     public static final String TAXES_MODIFIER = "taxesmodifier";
@@ -34,7 +34,7 @@ public class Settings extends ConfigurationBase {
     public static final String EXCLUDED = "excluded";
 
     public Settings(Plugin plugin) {
-        super(new File(plugin.getDataFolder(), "Settings.yml"));
+        super(new File(plugin.getDataFolder(), "Settings.yml"), true);
     }
 
     @Override
@@ -162,7 +162,9 @@ public class Settings extends ConfigurationBase {
         return Double.valueOf(String.valueOf(get("Ad.Price")));
     }
 
-    public int getAdTimeout() { return Integer.valueOf(String.valueOf(get("Ad.Timeout"))); }
+    public int getAdTimeout() {
+        return Integer.valueOf(String.valueOf(get("Ad.Timeout")));
+    }
 
     public int getPvPEscapeBanTime() {
         return Integer.valueOf(String.valueOf(get("AntiPvPEscape.BanTime")));

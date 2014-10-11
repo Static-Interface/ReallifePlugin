@@ -17,12 +17,12 @@
 
 package de.static_interface.reallifeplugin.fractions;
 
-import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.Bukkit;
 
 import java.io.File;
 
-public class FractionConfig extends ConfigurationBase {
+public class FractionConfig extends Configuration {
 
     public FractionConfig() {
         super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Fractions.yml"), true);

@@ -27,7 +27,7 @@ import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
-import de.static_interface.sinklibrary.util.VaultHelper;
+import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -72,12 +72,12 @@ public class PayDayRunnable implements Runnable {
             return;
         }
 
-        double money = VaultHelper.getBalance(player);
+        double money = VaultBridge.getBalance(player);
 
         String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
         String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
 
-        String curreny = VaultHelper.getCurrenyName();
+        String curreny = VaultBridge.getCurrenyName();
 
         out.add(ChatColor.AQUA + StringUtil.format("|- Summe: " + resultPrefix + "{0} " + curreny, MathUtil.round(result)));
         out.add(ChatColor.AQUA + StringUtil.format("|- Geld: " + moneyPrefix + "{0} " + curreny, money));
@@ -94,7 +94,7 @@ public class PayDayRunnable implements Runnable {
         boolean negative = amount < 0;
         String text;
 
-        String curreny = VaultHelper.getCurrenyName();
+        String curreny = VaultBridge.getCurrenyName();
 
         String entryPrefix = "|- ";
         if (negative) {
@@ -109,10 +109,10 @@ public class PayDayRunnable implements Runnable {
         result.amount = amount;
 
         String source = entry.getSourceAccount();
-        VaultHelper.addBalance(source, amount);
+        VaultBridge.addBalance(source, amount);
         if (entry.sendToTarget()) {
             String target = entry.getTargetAccount();
-            VaultHelper.addBalance(target, -amount);
+            VaultBridge.addBalance(target, -amount);
         }
         return result;
     }
@@ -120,7 +120,7 @@ public class PayDayRunnable implements Runnable {
     @Override
     public void run() {
         BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        for (Player player : BukkitUtil.getOnlinePlayers()) {
             boolean isInGroup = false;
             for (Group group : ReallifeMain.getSettings().readGroups()) {
                 if (ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup()).equals(group.name)) {

@@ -21,6 +21,7 @@ import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.entries.InsuranceEntry;
 import de.static_interface.reallifeplugin.events.PayDayEvent;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,7 +43,7 @@ public class InsuranceListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        InsuranceCommand.createVars(SinkLibrary.getInstance().getUser(event.getPlayer()));
+        InsuranceCommand.createVars((IngameUser) SinkLibrary.getInstance().getUser(event.getPlayer()));
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

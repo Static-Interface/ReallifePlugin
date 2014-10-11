@@ -17,19 +17,21 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
+import com.google.gson.Gson;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.SinkUser;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +42,7 @@ public class CorporationUtil {
 
     public static Corporation getUserCorporation(UUID uuid) {
         for (Corporation corporation : corporations) {
-            if (corporation.getMembers().contains(uuid) || corporation.getCEO() == uuid) {
+            if (corporation.getAllMembers().contains(uuid)) {
                 return corporation;
             }
         }
@@ -62,16 +64,17 @@ public class CorporationUtil {
     }
 
     public static String getFormattedName(UUID user) {
-        OfflinePlayer player = Bukkit.getOfflinePlayer(user);
+        String name =
+                ChatColor.stripColor(SinkLibrary.getInstance().getIngameUser(user).getDisplayName());
         Corporation corp = getUserCorporation(user);
         if (corp == null) {
-            return ChatColor.WHITE + player.getName();
+            return ChatColor.GOLD + name;
         }
         String rank = corp.getRank(user);
         if (ChatColor.stripColor(rank).isEmpty()) {
-            return rank + player.getName();
+            return rank + name;
         }
-        return rank + " " + player.getName();
+        return rank + " " + name;
     }
 
     public static CorporationConfig getCorporationConfig() {
@@ -91,12 +94,14 @@ public class CorporationUtil {
         return null;
     }
 
-    public static boolean isCEO(SinkUser user, Corporation corporation) {
-        return corporation != null && corporation.getCEO().toString().equals(user.getUniqueId().toString());
+    public static boolean isCEO(IngameUser user, Corporation corporation) {
+        return corporation != null && (corporation.getCEO().equals(user.getUniqueId())
+                                       || corporation.getCoCEOs().contains(user.getUniqueId()));
     }
 
-    public static boolean createCorporation(SinkUser user, String name, UUID ceo, String base, World world) {
-        if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help")) {
+    public static boolean createCorporation(IngameUser user, String name, UUID ceo, String base, World world) {
+        if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help")
+            || name.equals("deposit") || name.equals("list")) {
             if (user != null) {
                 user.sendMessage(m("Corporation.InvalidName"));
             }
@@ -113,11 +118,12 @@ public class CorporationUtil {
         String pathPrefix = "Corporations." + name + ".";
 
         CorporationConfig config = new CorporationConfig();
-        config.set(pathPrefix + CorporationValues.CEO, ceo.toString());
-        config.set(pathPrefix + CorporationValues.BASE, world.getName() + ":" + base);
-        List<String> members = new ArrayList<>();
-        members.add(ceo.toString() + ":" + CorporationValues.CEO_RANK); //uuid:rank
-        config.set(pathPrefix + CorporationValues.MEMBERS, members);
+        config.set(pathPrefix + CorporationValues.VALUE_CEO, ceo.toString());
+        config.set(pathPrefix + CorporationValues.VALUE_BASE, world.getName() + ":" + base);
+        HashMap<String, String> members = new HashMap<>();
+        members.put(ceo.toString(), CorporationValues.RANK_CEO);
+
+        config.set(pathPrefix + CorporationValues.VALUE_MEMBERS, new Gson().toJson(members));
         config.save();
 
         Corporation corporation = new Corporation(config, name);
@@ -133,7 +139,7 @@ public class CorporationUtil {
         corporations.remove(corporation);
     }
 
-    public static boolean deleteCorporation(SinkUser user, Corporation corporation) {
+    public static boolean deleteCorporation(IngameUser user, Corporation corporation) {
         if (corporation == null) {
             user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
             return false;
@@ -142,5 +148,22 @@ public class CorporationUtil {
         config.getYamlConfiguration().set("Corporations." + corporation.getName(), null);
         config.save();
         return true;
+    }
+
+    public static void sendMessage(Corporation corp, String message) {
+        message = ChatColor.GRAY + "[" + corp.getFormattedName() + ChatColor.GRAY + "] " + message;
+        for (UUID uuid : corp.getAllMembers()) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p == null) {
+                continue;
+            }
+            p.sendMessage(message);
+        }
+
+        SinkLibrary.getInstance().getConsoleUser().sendMessage(message);
+    }
+
+    public static List<Corporation> getCorporations() {
+        return corporations;
     }
 }

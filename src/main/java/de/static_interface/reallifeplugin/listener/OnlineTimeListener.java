@@ -20,7 +20,7 @@ package de.static_interface.reallifeplugin.listener;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.events.PayDayEvent;
 import de.static_interface.sinklibrary.SinkLibrary;
-import org.bukkit.Bukkit;
+import de.static_interface.sinklibrary.util.BukkitUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,7 +37,7 @@ public class OnlineTimeListener implements Listener {
     public HashMap<UUID, Long> onlineTimes = new HashMap<>();
 
     public OnlineTimeListener() {
-        for (Player player : Bukkit.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
+        for (Player player : BukkitUtil.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
         {
             onlineTimes.put(player.getUniqueId(), System.currentTimeMillis());
         }

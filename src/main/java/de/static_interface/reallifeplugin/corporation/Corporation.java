@@ -17,43 +17,54 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.sinklibrary.configuration.ConfigurationBase;
-import de.static_interface.sinklibrary.util.VaultHelper;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class Corporation {
 
+    final String accountName;
     final String name;
-    final ConfigurationBase config;
+    final Configuration config;
 
-    protected ProtectedRegion base;
-    protected List<UUID> members;
-    protected UUID ceo;
-
-    public Corporation(ConfigurationBase config, String name) {
+    public Corporation(Configuration config, String name) {
         this.config = config;
         this.name = name;
-        String[] baseraw = ((String) getValue(CorporationValues.BASE)).split(":");
-        String world = baseraw[0];
-        String regionId = baseraw[1];
+        this.accountName = "Corp_" + name.replace("_", "");
 
-        base = ReallifeMain.getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
-        members = getMembersFromConfig();
-        ceo = UUID.fromString((String) getValue(CorporationValues.CEO));
+        if (!VaultBridge.isAccountAvailable(accountName)) {
+            VaultBridge.createAccount(accountName);
+        }
+    }
+
+    public List<UUID> getCoCEOs() {
+        List<UUID> tmp = new ArrayList<>();
+
+        for (String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.VALUE_CO_CEO)) {
+            tmp.add(UUID.fromString(s));
+        }
+        return tmp;
     }
 
     public void setBase(World world, String regionId) {
-        this.base = ReallifeMain.getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);
-        setValue(CorporationValues.BASE, world.getName() + ":" + base);
+        setValue(CorporationValues.VALUE_BASE, world.getName() + ":" + regionId);
         save();
     }
 
@@ -61,33 +72,33 @@ public class Corporation {
         return name;
     }
 
+    public String getAccountName() {
+        return accountName;
+    }
+
     public void addMember(UUID uuid) {
-        members.add(uuid);
-        List<String> tmp = new ArrayList<>();
-        for (UUID member : members) {
-            if (member == uuid) {
-                tmp.add(uuid.toString() + ":" + CorporationValues.DEFAULT_RANK);
-            } else {
-                tmp.add(member.toString() + ":" + getRank(member));
-            }
+        HashMap<UUID, String> allMembers = getMembersFromConfig();
+        allMembers.put(uuid, CorporationValues.RANK_DEFAULT);
+        Gson gson = new Gson();
+        setValue(CorporationValues.VALUE_MEMBERS, gson.toJson(uuidHashMapToStringHashMap(allMembers)));
+        if (getBase() != null) {
+            DefaultDomain rgMembers = getBase().getMembers();
+            rgMembers.addPlayer(BukkitUtil.getNameByUniqueId(uuid));
+            getBase().setMembers(rgMembers);
         }
-        setValue(CorporationValues.MEMBERS, tmp);
-        DefaultDomain rgMembers = getBase().getMembers();
-        rgMembers.addPlayer(Bukkit.getOfflinePlayer(uuid).getName());
-        getBase().setMembers(rgMembers);
         save();
     }
 
     public void removeMember(UUID uuid) {
-        members.remove(uuid);
-        List<String> tmp = new ArrayList<>();
-        for (UUID member : members) {
-            tmp.add(member.toString() + ":" + getRank(member));
+        HashMap<UUID, String> allMembers = getMembersFromConfig();
+        allMembers.remove(uuid);
+        Gson gson = new Gson();
+        setValue(CorporationValues.VALUE_MEMBERS, gson.toJson(uuidHashMapToStringHashMap(allMembers)));
+        if (getBase() != null && getBase().getMembers() != null) {
+            DefaultDomain rgMembers = getBase().getMembers();
+            rgMembers.removePlayer(BukkitUtil.getNameByUniqueId(uuid));
+            getBase().setMembers(rgMembers);
         }
-        setValue(CorporationValues.MEMBERS, tmp);
-        DefaultDomain rgMembers = getBase().getMembers();
-        rgMembers.removePlayer(Bukkit.getOfflinePlayer(uuid).getName());
-        getBase().setMembers(rgMembers);
         save();
     }
 
@@ -95,41 +106,102 @@ public class Corporation {
         config.save();
     }
 
-    public double getMoney() {
-        return VaultHelper.getBalance(name);
+    public double getBalance() {
+        return VaultBridge.getBalance(accountName);
     }
 
     public void addBalance(double amount) {
-        VaultHelper.addBalance(name, amount);
+        VaultBridge.addBalance(accountName, amount);
     }
 
     public ProtectedRegion getBase() {
-        return base;
+        String[] baseraw = ((String) getValue(CorporationValues.VALUE_BASE)).split(":");
+        String world = baseraw[0];
+        String regionId = baseraw[1];
+
+        return ReallifeMain.getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
     }
 
     public String getFormattedName() {
-        return ChatColor.DARK_GREEN + name.replace("_", " ");
+        return ChatColor.DARK_GREEN + name.replace("_", " ") + ChatColor.RESET;
     }
 
-    public List<UUID> getMembers() {
-        return members;
+    public Set<UUID> getMembers() {
+        Set<UUID> tmp = getMembersFromConfig().keySet();
+        tmp.removeAll(getCoCEOs());
+        tmp.remove(getCEO());
+        return tmp;
+    }
+
+    public Set<UUID> getAllMembers() {
+        return getMembersFromConfig().keySet();
     }
 
     public UUID getCEO() {
-        return ceo;
+        return UUID.fromString((String) getValue(CorporationValues.VALUE_CEO));
     }
 
-    public void setCEO(UUID ceo) {
-        this.ceo = ceo;
-        setValue(CorporationValues.CEO, ceo.toString());
-        save();
+    public void setCEO(UUID uuid) {
+        setValue(CorporationValues.VALUE_CEO, uuid.toString());
+        setRank(uuid, CorporationValues.RANK_CEO);
     }
 
-    private List<UUID> getMembersFromConfig() {
-        List<UUID> tmp = new ArrayList<>();
+    public void addCoCeo(UUID uuid) {
+        Set<String> tmp = new HashSet<>();
+        for (UUID key : getCoCEOs()) {
+            tmp.add(key.toString());
+        }
+        tmp.add(uuid.toString());
+        ArrayList<String> asdf = new ArrayList<>();
+        asdf.addAll(tmp);
+        setValue(CorporationValues.VALUE_CO_CEO, asdf);
+        setRank(uuid, CorporationValues.RANK_CO_CEO);
+    }
 
-        for (String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS)) {
-            tmp.add(UUID.fromString(s.split(":")[0]));
+    public void removeCoCeo(UUID uuid) {
+        Set<String> tmp = new HashSet<>();
+        for (UUID key : getCoCEOs()) {
+            tmp.add(key.toString());
+        }
+        tmp.remove(uuid.toString());
+        ArrayList<String> asdf = new ArrayList<>();
+        asdf.addAll(tmp);
+        setValue(CorporationValues.VALUE_CO_CEO, asdf);
+        setRank(uuid, CorporationValues.RANK_DEFAULT);
+    }
+
+    public boolean isCoCeo(UUID uuid) {
+        return getCoCEOs().contains(uuid);
+    }
+
+    public void setRank(UUID user, String rank) {
+        HashMap<UUID, String> members = getMembersFromConfig();
+        members.put(user, rank);
+        Gson gson = new Gson();
+        setValue(CorporationValues.VALUE_MEMBERS, gson.toJson(uuidHashMapToStringHashMap(members)));
+    }
+
+    private HashMap<UUID, String> getMembersFromConfig() {
+        Gson gson = new Gson();
+        String json = (String) getValue(CorporationValues.VALUE_MEMBERS);
+        Type typetoken = new TypeToken<HashMap<String, String>>() {
+        }.getType();
+        HashMap<String, String> map = gson.fromJson(json, typetoken);
+        return stringHashMapToUuidHashMap(map);
+    }
+
+    private HashMap<String, String> uuidHashMapToStringHashMap(HashMap<UUID, String> convertMap) {
+        HashMap<String, String> tmp = new HashMap<>();
+        for (UUID uuid : convertMap.keySet()) {
+            tmp.put(uuid.toString(), convertMap.get(uuid));
+        }
+        return tmp;
+    }
+
+    private HashMap<UUID, String> stringHashMapToUuidHashMap(HashMap<String, String> convertMap) {
+        HashMap<UUID, String> tmp = new HashMap<>();
+        for (String key : convertMap.keySet()) {
+            tmp.put(UUID.fromString(key), convertMap.get(key));
         }
         return tmp;
     }
@@ -140,19 +212,21 @@ public class Corporation {
 
     public void setValue(String path, Object value) {
         config.set("Corporations." + getName() + "." + path, value);
+        save();
     }
 
     public String getRank(UUID user) {
-        String line = null;
-        for (String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.MEMBERS)) {
-            if (s.split(":")[0].equals(user.toString())) {
-                line = s;
-                break;
+        String rank = getMembersFromConfig().get(user);
+        if (StringUtil.isStringEmptyOrNull(rank)) {
+            if (getCEO() == user) {
+                setRank(user, CorporationValues.RANK_CEO);
+            } else if (getCoCEOs().contains(user)) {
+                setRank(user, CorporationValues.RANK_CO_CEO);
+            } else {
+                setRank(user, CorporationValues.RANK_DEFAULT);
             }
+            return getRank(user);
         }
-        if (line == null) {
-            throw new AssertionError("This shouldn't happen :(");
-        }
-        return ChatColor.GOLD + line.split(":")[1];
+        return ChatColor.GOLD + rank;
     }
 }

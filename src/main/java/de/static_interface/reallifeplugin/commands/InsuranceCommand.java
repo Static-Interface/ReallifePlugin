@@ -18,23 +18,28 @@
 package de.static_interface.reallifeplugin.commands;
 
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.SinkUser;
-import de.static_interface.sinklibrary.configuration.UserConfiguration;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.configuration.IngameUserConfiguration;
+import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.concurrent.TimeUnit;
 
-public class InsuranceCommand implements CommandExecutor {
+public class InsuranceCommand extends SinkCommand {
+
     // Todo: Replace hardcode with LanguageConfiguration
     public static final String ACTIVATED_PATH = "Insurance.Activated";
     public static final String TIMEOUT_TIMESTAMP = "Insurance.Timestamp";
 
-    public static void createVars(SinkUser user) {
-        UserConfiguration config = user.getConfiguration();
+    public InsuranceCommand(Plugin plugin) {
+        super(plugin);
+    }
+
+    public static void createVars(IngameUser user) {
+        IngameUserConfiguration config = user.getConfiguration();
         if (config.get(ACTIVATED_PATH) == null) {
             config.set(ACTIVATED_PATH, false);
         }
@@ -44,19 +49,19 @@ public class InsuranceCommand implements CommandExecutor {
     }
 
     public static boolean isActive(Player player) {
-        SinkUser user = SinkLibrary.getInstance().getUser(player);
+        IngameUser user = (IngameUser) SinkLibrary.getInstance().getUser(player);
         return (boolean) user.getConfiguration().get(ACTIVATED_PATH);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        SinkUser user = SinkLibrary.getInstance().getUser(sender);
+    public boolean isPlayerOnly() {
+        return true;
+    }
 
-        if (user.isConsole() || args.length < 1) {
-            return false;
-        }
-
-        UserConfiguration config = user.getConfiguration();
+    @Override
+    public boolean onExecute(CommandSender sender, String label, String[] args) {
+        IngameUser user = (IngameUser) SinkLibrary.getInstance().getUser(sender);
+        IngameUserConfiguration config = user.getConfiguration();
 
         createVars(user);
 

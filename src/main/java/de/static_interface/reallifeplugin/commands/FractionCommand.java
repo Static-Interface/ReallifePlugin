@@ -17,38 +17,46 @@
 
 package de.static_interface.reallifeplugin.commands;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.fractions.Fraction;
 import de.static_interface.reallifeplugin.fractions.FractionUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.SinkUser;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FractionCommand implements CommandExecutor {
+public class FractionCommand extends SinkCommand {
+
+    public FractionCommand(Plugin plugin) {
+        super(plugin);
+    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        SinkUser user = SinkLibrary.getInstance().getUser(sender);
+    public boolean isPlayerOnly() {
+        return true;
+    }
+
+    @Override
+    public boolean onExecute(CommandSender sender, String label, String[] args) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
         Fraction userFraction = FractionUtil.getUserFraction(user.getUniqueId());
 
-        if (args.length < 1 && !user.isConsole()) {
+        if (args.length < 1) {
             if (userFraction != null) {
                 sendFractionInfo(user, userFraction);
                 return true;
             }
             user.sendMessage(m("Fractions.NotInFraction"));
             return true;
-        } else if (args.length < 1 && user.isConsole()) {
-            return false;
         }
 
         List<String> tmp = new ArrayList<>(Arrays.asList(args));
@@ -57,15 +65,13 @@ public class FractionCommand implements CommandExecutor {
 
         switch (args[0].toLowerCase()) {
             case "leader": {
-                if (!user.isConsole()) {
-                    if (moreArgs.length < 1) {
-                        user.sendMessage(
-                                de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                        return true;
-                    }
-                    handleLeaderCommand(user, moreArgs, userFraction);
-                    break;
+                if (moreArgs.length < 1) {
+                    user.sendMessage(
+                            de.static_interface.sinklibrary.configuration.LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return true;
                 }
+                handleLeaderCommand(user, moreArgs, userFraction);
+                break;
             }
             case "admin": {
                 if (!user.hasPermission("reallifeplugin.fractions.admin")) {
@@ -91,7 +97,7 @@ public class FractionCommand implements CommandExecutor {
         return true;
     }
 
-    private void handleAdminCommand(SinkUser user, String[] args) {
+    private void handleAdminCommand(IngameUser user, String[] args) {
         switch (args[0]) {
             case "new": {
                 if (args.length < 5) {
@@ -140,7 +146,7 @@ public class FractionCommand implements CommandExecutor {
         }
     }
 
-    private void handleLeaderCommand(SinkUser user, String[] args, Fraction fraction) {
+    private void handleLeaderCommand(IngameUser user, String[] args, Fraction fraction) {
         if (!FractionUtil.isLeader(user, fraction)) {
             user.sendMessage(m("Fractions.NotLeader"));
             return;
@@ -150,7 +156,7 @@ public class FractionCommand implements CommandExecutor {
                 if (args.length < 2) {
                     return;
                 }
-                SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
+                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
                 fraction.removeMember(target.getUniqueId());
                 if (user.isOnline()) {
                     user.sendMessage(StringUtil.format(m("Fractions.Kicked"), fraction.getName()));
@@ -161,7 +167,7 @@ public class FractionCommand implements CommandExecutor {
                 if (args.length < 2) {
                     return;
                 }
-                SinkUser target = SinkLibrary.getInstance().getUser(args[1]);
+                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
                 fraction.addMember(target.getUniqueId());
                 if (user.isOnline()) {
                     user.sendMessage(StringUtil.format(m("Fractions.Added"), fraction.getName()));
@@ -171,7 +177,7 @@ public class FractionCommand implements CommandExecutor {
         }
     }
 
-    private void sendFractionInfo(SinkUser user, Fraction fraction) {
+    private void sendFractionInfo(IngameUser user, Fraction fraction) {
         throw new NotImplementedException();
     }
 }

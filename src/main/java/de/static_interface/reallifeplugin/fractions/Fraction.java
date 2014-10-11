@@ -17,8 +17,8 @@
 
 package de.static_interface.reallifeplugin.fractions;
 
-import de.static_interface.sinklibrary.configuration.ConfigurationBase;
-import de.static_interface.sinklibrary.util.VaultHelper;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.util.VaultBridge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.UUID;
 public class Fraction {
 
     final String name;
-    final ConfigurationBase config;
+    final Configuration config;
 
     protected boolean isPvPAllowed;
     protected boolean isGriefingAllowed;
@@ -67,11 +67,11 @@ public class Fraction {
     }
 
     public double getBalance() {
-        return VaultHelper.getBalance(name);
+        return VaultBridge.getBalance(name);
     }
 
     public void addBalance(int amount) {
-        VaultHelper.addBalance(name, amount);
+        VaultBridge.addBalance(name, amount);
     }
 
     public boolean isPvPAllowed() {

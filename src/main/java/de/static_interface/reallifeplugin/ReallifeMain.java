@@ -61,7 +61,6 @@ public class ReallifeMain extends JavaPlugin {
         }
 
         settings = new Settings(this);
-        settings.load();
 
         long delay = settings.getPaydayTime() * 60 * TICKS;
 
@@ -70,8 +69,6 @@ public class ReallifeMain extends JavaPlugin {
 
         registerCommands();
         registerListeners();
-
-        SinkLibrary.getInstance().registerPlugin(this);
 
         SinkLibrary.getInstance().getCustomLogger().info("Enabled");
         if (CorporationUtil.getCorporationConfig().isEnabled()) {
@@ -98,13 +95,14 @@ public class ReallifeMain extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
             return false;
         }
-        return true;
+
+        return SinkLibrary.getInstance().validateApiVersion(SinkLibrary.API_VERSION, this);
     }
 
     private void registerCommands() {
         Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand());
         if (getSettings().isInsuranceEnabled()) {
-            Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand());
+            Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand(this));
         }
         Bukkit.getPluginCommand("corporation").setExecutor(new CorporationCommand());
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));

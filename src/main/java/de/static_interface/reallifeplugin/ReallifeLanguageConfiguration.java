@@ -17,23 +17,26 @@
 
 package de.static_interface.reallifeplugin;
 
-import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.io.File;
 
-public class LanguageConfiguration extends ConfigurationBase {
+import javax.annotation.Nullable;
 
-    private static LanguageConfiguration instance;
+public class ReallifeLanguageConfiguration extends Configuration {
 
-    public LanguageConfiguration() {
-        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Language.yml")); //DIRTY
+    private static ReallifeLanguageConfiguration instance;
+
+    public ReallifeLanguageConfiguration() {
+        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Language.yml"));
     }
 
-    public static LanguageConfiguration getInstance() {
+    public static ReallifeLanguageConfiguration getInstance() {
         if (instance == null) {
-            instance = new LanguageConfiguration();
+            instance = new ReallifeLanguageConfiguration();
             instance.load();
         }
         return instance;
@@ -46,12 +49,31 @@ public class LanguageConfiguration extends ConfigurationBase {
      * @return Language String
      */
     public static String m(String path) {
-        return ChatColor.translateAlternateColorCodes('&', (String) getInstance().get(path));
+        return m(path, null);
+    }
+
+    /**
+     * Get language as String from key
+     *
+     * @param path Path to language variable
+     * @param paramValues Varargs for {@link StringUtil#format(String, Object...)}
+     * @return Language String
+     */
+    public static String m(String path, @Nullable Object... paramValues) {
+        String s = (String) getInstance().get(path);
+        if (paramValues != null) {
+            s = StringUtil.format(s, paramValues);
+        }
+        s = s.replace("\\n", System.lineSeparator());
+        return ChatColor.translateAlternateColorCodes('&', s);
     }
 
     @Override
     public void addDefaults() {
         addDefault("General.NotEnoughMoney", "&4You don't have enough money.");
+        addDefault("General.UnknownSubCommand", "&4Unknown subcommand: {0}");
+        addDefault("General.InvalidValue", "Invalid Value: {0}");
+        addDefault("General.Success", "&aSuccess");
 
         addDefault("Fractions.Fraction", "&6Fraction");
         addDefault("Fractions.DoesntExists", "&4Error: &cCouldn't find fraction: {0}!");
@@ -71,7 +93,7 @@ public class LanguageConfiguration extends ConfigurationBase {
         addDefault("Corporation.BaseSet", "&6Base has been updated!");
         addDefault("Corporation.CEOSet", "&6CEO has been updated!");
         addDefault("Corporation.NotInCorporation", "&4Error: &cYou're not a member of any corporation!");
-        addDefault("Corporation.NotCEO", "&4Error: &cYou're not a CEO!");
+        addDefault("Corporation.NotCEO", "&4Error: &cYou're not the CEO!");
         addDefault("Corporation.CEOAdded", "{0} &ehas been added to the corporation!");
         addDefault("Corporation.Added", "&eYou've been added to the {0} corporation!");
         addDefault("Corporation.CEOKicked", "{DISPLAYNAME} &4has been kicked from the corporation!");
@@ -84,8 +106,19 @@ public class LanguageConfiguration extends ConfigurationBase {
         addDefault("Corporation.BuyingFromSameCorporation", "&4Error:&c You can't buy from your corporation");
         addDefault("Corporation.BuySign.CantPickup", "&4Error:&c You can't pickup items!");
         addDefault("Corporation.BuySign.Bought", "&aSuccessfully bought {0} for {1}!");
-        addDefault("Corporation.AlreadyMember", "&c{0} is already a member of your corporation");
+        addDefault("Corporation.AlreadyMember", "&c{0} is already a member of your corporation!");
+        addDefault("Corporation.AlreadyMemberOther", "&c{0} is already a member of another corporation!");
         addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
+        addDefault("Corporation.RankSet", "&2Succesfully set {0}'s rank to {1}&2!");
+        addDefault("Corporation.NotCoCEO", "&4{0} is not a Co CEO!");
+        addDefault("Corporation.AlreadyCoCEO", "&4{0} is already a Co CEO!");
+        addDefault("Corporation.UserLeftCorporation", "&4{DISPLAYNAME} has left the corporation");
+        addDefault("Corporation.LeftCorporation", "&4You left the corporation");
+        addDefault("Corporation.CoCeoAdded", "&2Successfully added {0} as co-CEO!");
+        addDefault("Corporation.CoCeoRemoved", "&2Successfully removed {0} as co-CEO!");
+        addDefault("Corporation.Withdraw", "&4{0} has withdrawn {1} {CURRENCY} from corporation account");
+        addDefault("Corporation.Deposit", "&4{0} has deposited {1} {CURRENCY} to corporation account");
+        addDefault("Corporation.NotEnoughMoney", "&4 The Corporation doesn't have enough money!");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");

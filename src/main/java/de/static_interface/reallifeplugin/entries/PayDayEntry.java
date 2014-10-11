@@ -17,7 +17,7 @@
 
 package de.static_interface.reallifeplugin.entries;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;

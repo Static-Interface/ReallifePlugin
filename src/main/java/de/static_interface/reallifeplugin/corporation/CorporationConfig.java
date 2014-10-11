@@ -17,12 +17,12 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
-import de.static_interface.sinklibrary.configuration.ConfigurationBase;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.Bukkit;
 
 import java.io.File;
 
-public class CorporationConfig extends ConfigurationBase {
+public class CorporationConfig extends Configuration {
 
     public CorporationConfig() {
         super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Corporations.yml"), true);

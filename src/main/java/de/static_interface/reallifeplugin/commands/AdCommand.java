@@ -18,14 +18,15 @@
 package de.static_interface.reallifeplugin.commands;
 
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.SinkUser;
-import de.static_interface.sinklibrary.command.Command;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -34,8 +35,10 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AdCommand extends Command {
+public class AdCommand extends SinkCommand {
+
     HashMap<UUID, Long> timeouts = new HashMap<>();
+
     public AdCommand(Plugin plugin) {
         super(plugin);
     }
@@ -47,7 +50,7 @@ public class AdCommand extends Command {
 
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) {
-        SinkUser user = SinkLibrary.getInstance().getUser(sender);
+        IngameUser user = (IngameUser) SinkLibrary.getInstance().getUser(sender);
         Player p = (Player) sender;
 
         double price = ReallifeMain.getSettings().getAdPrice();
@@ -60,21 +63,21 @@ public class AdCommand extends Command {
         long settingsTimeout = ReallifeMain.getSettings().getAdTimeout() * 1000 * 60;
 
         Long timeout = timeouts.get(p.getUniqueId());
-        if(timeout != null && timeout > currenttime) {
+        if (timeout != null && timeout > currenttime) {
             long timeleft = TimeUnit.MILLISECONDS.toMinutes(currenttime - timeout);
             p.sendMessage(StringUtil.format(m("Ad.Timout"), TimeUnit.MILLISECONDS.toMinutes(settingsTimeout), (Math.abs(timeleft) + 1)));
             return true;
         }
 
-        if(args.length < 1) {
+        if (args.length < 1) {
             return false;
         }
 
-        String message = StringUtil.formatArrayToString(args, " ");
+        String message = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " "));
 
         user.addBalance(-price);
         BukkitUtil.broadcastMessage(StringUtil.format(m("Ad.Message"), p, message), false);
-        if(settingsTimeout > 0) {
+        if (settingsTimeout > 0) {
             timeouts.put(p.getUniqueId(), currenttime + settingsTimeout);
         }
         return true;

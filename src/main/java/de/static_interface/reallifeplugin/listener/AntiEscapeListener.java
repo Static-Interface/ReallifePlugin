@@ -17,7 +17,7 @@
 
 package de.static_interface.reallifeplugin.listener;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.static_interface.reallifeplugin.BanHelper;

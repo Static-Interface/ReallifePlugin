@@ -17,7 +17,7 @@
 
 package de.static_interface.reallifeplugin.listener;
 
-import static de.static_interface.reallifeplugin.LanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
@@ -25,9 +25,9 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.SinkUser;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
-import de.static_interface.sinklibrary.util.VaultHelper;
+import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -45,7 +45,7 @@ public class CorporationListener implements Listener {
     public static void onSignChange(SignChangeEvent event) {
         Block signBlock = event.getBlock();
         String[] lines = event.getLines();
-        SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
+        IngameUser user = (IngameUser) SinkLibrary.getInstance().getUser(event.getPlayer());
         if (!(signBlock.getState() instanceof Sign)) {
             return;
         }
@@ -63,7 +63,7 @@ public class CorporationListener implements Listener {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static boolean validateSign(String[] lines, Location location, SinkUser user) {
+    private static boolean validateSign(String[] lines, Location location, IngameUser user) {
         Corporation corp = CorporationUtil.getUserCorporation(user.getUniqueId());
         if (corp == null) {
             return false;
@@ -115,7 +115,7 @@ public class CorporationListener implements Listener {
         double price = Double.valueOf(line3);
         Corporation corp = CorporationUtil.getCorporation(line4);
 
-        SinkUser user = SinkLibrary.getInstance().getUser(event.getPlayer());
+        IngameUser user = (IngameUser) SinkLibrary.getInstance().getUser(event.getPlayer());
 
         if (CorporationUtil.getUserCorporation(user.getUniqueId()) == corp) {
             user.sendMessage(m("Corporation.BuyingFromSameCorporation"));
@@ -127,9 +127,9 @@ public class CorporationListener implements Listener {
             return;
         }
         user.getPlayer().getInventory().addItem(boughtItems);
-        VaultHelper.addBalance(user.getPlayer(), -price);
+        VaultBridge.addBalance(user.getPlayer(), -price);
         user.sendMessage(StringUtil.format(m("Corporation.BuySign.Bought"), boughtItems.getAmount() + boughtItems.getItemMeta().getDisplayName(),
-                                           price + VaultHelper.getCurrenyName()));
+                                           price + VaultBridge.getCurrenyName()));
     }
 
     private ItemStack getItem(String line3) {

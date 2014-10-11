@@ -21,10 +21,12 @@ import org.bukkit.ChatColor;
 
 public class CorporationValues {
 
-    public static final String BASE = "Base";
-    public static final String CEO = "CEO";
-    public static final String MEMBERS = "Members";
+    public static final String VALUE_BASE = "Base";
+    public static final String VALUE_CEO = "CEO";
+    public static final String VALUE_CO_CEO = "CoCEOs";
+    public static final String VALUE_MEMBERS = "Members";
 
-    public static final String DEFAULT_RANK = ChatColor.WHITE + "";
-    public static final String CEO_RANK = ChatColor.GOLD + "CEO" + ChatColor.RED;
+    public static final String RANK_DEFAULT = ChatColor.GOLD.toString();
+    public static final String RANK_CEO = ChatColor.DARK_RED + "CEO" + ChatColor.RED;
+    public static final String RANK_CO_CEO = ChatColor.DARK_GREEN + "Co-CEO" + ChatColor.GREEN;
 }
