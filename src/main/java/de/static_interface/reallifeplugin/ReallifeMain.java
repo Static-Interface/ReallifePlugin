@@ -78,7 +78,9 @@ public class ReallifeMain extends JavaPlugin {
     }
 
     public void onDisable() {
-        payDayTask.cancel();
+        if (payDayTask != null) {
+            payDayTask.cancel();
+        }
     }
 
     private boolean checkDependencies() {
