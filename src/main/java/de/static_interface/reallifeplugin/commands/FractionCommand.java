@@ -38,11 +38,7 @@ public class FractionCommand extends SinkCommand {
 
     public FractionCommand(Plugin plugin) {
         super(plugin);
-    }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return true;
+        getCommandOptions().setPlayerOnly(true);
     }
 
     @Override

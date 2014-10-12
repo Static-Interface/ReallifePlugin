@@ -106,7 +106,7 @@ public class ReallifeMain extends JavaPlugin {
         if (getSettings().isInsuranceEnabled()) {
             Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand(this));
         }
-        Bukkit.getPluginCommand("corporation").setExecutor(new CorporationCommand());
+        SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 

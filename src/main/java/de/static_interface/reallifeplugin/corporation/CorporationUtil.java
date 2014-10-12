@@ -21,6 +21,7 @@ import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m
 
 import com.google.gson.Gson;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
@@ -99,7 +100,7 @@ public class CorporationUtil {
                                        || corporation.getCoCEOs().contains(user.getUniqueId()));
     }
 
-    public static boolean createCorporation(IngameUser user, String name, UUID ceo, String base, World world) {
+    public static boolean createCorporation(SinkUser user, String name, UUID ceo, String base, World world) {
         if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help")
             || name.equals("deposit") || name.equals("list")) {
             if (user != null) {
@@ -139,7 +140,7 @@ public class CorporationUtil {
         corporations.remove(corporation);
     }
 
-    public static boolean deleteCorporation(IngameUser user, Corporation corporation) {
+    public static boolean deleteCorporation(SinkUser user, Corporation corporation) {
         if (corporation == null) {
             user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
             return false;

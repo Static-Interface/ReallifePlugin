@@ -41,11 +41,7 @@ public class AdCommand extends SinkCommand {
 
     public AdCommand(Plugin plugin) {
         super(plugin);
-    }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return true;
+        getCommandOptions().setPlayerOnly(true);
     }
 
     @Override

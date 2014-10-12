@@ -36,6 +36,7 @@ public class InsuranceCommand extends SinkCommand {
 
     public InsuranceCommand(Plugin plugin) {
         super(plugin);
+        getCommandOptions().setPlayerOnly(true);
     }
 
     public static void createVars(IngameUser user) {
@@ -53,10 +54,6 @@ public class InsuranceCommand extends SinkCommand {
         return (boolean) user.getConfiguration().get(ACTIVATED_PATH);
     }
 
-    @Override
-    public boolean isPlayerOnly() {
-        return true;
-    }
 
     @Override
     public boolean onExecute(CommandSender sender, String label, String[] args) {

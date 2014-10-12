@@ -22,16 +22,18 @@ import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.user.IrcUser;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,10 +41,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class CorporationCommand implements CommandExecutor {
+public class CorporationCommand extends SinkCommand {
+
+    public CorporationCommand(Plugin plugin) {
+        super(plugin);
+    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onExecute(CommandSender sender, String label, String[] args) {
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Corporation userCorp = null;
         if (user instanceof IngameUser) {
@@ -82,8 +88,7 @@ public class CorporationCommand implements CommandExecutor {
             }
 
             case "admin": {
-                if (user instanceof IngameUser) {
-
+                if (user instanceof IngameUser || (user instanceof IrcUser && user.isOp())) {
                     if (!user.hasPermission("reallifeplugin.corporations.admin")) {
                         user.sendMessage(LanguageConfiguration.m("Permissions.General"));
                         break;
@@ -206,7 +211,7 @@ public class CorporationCommand implements CommandExecutor {
         user.sendMessage(msg);
     }
 
-    private void handleAdminCommand(IngameUser user, String[] args) {
+    private void handleAdminCommand(SinkUser user, String[] args) {
         switch (args[0].toLowerCase()) {
             case "?":
             case "help":
@@ -214,7 +219,7 @@ public class CorporationCommand implements CommandExecutor {
                 break;
 
             case "new": {
-                if (args.length < 4) {
+                if (args.length < 4 || !(user instanceof IngameUser && args.length < 5)) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
@@ -225,8 +230,14 @@ public class CorporationCommand implements CommandExecutor {
                 String name = args[1];
                 UUID ceo = SinkLibrary.getInstance().getIngameUser(args[2]).getUniqueId();
                 String base = args[3];
+                World world;
+                if (user instanceof IngameUser) {
+                    world = ((IngameUser) user).getPlayer().getWorld();
+                } else {
+                    world = Bukkit.getWorld(args[4]);
+                }
 
-                boolean successful = CorporationUtil.createCorporation(user, name, ceo, base, user.getPlayer().getWorld());
+                boolean successful = CorporationUtil.createCorporation(user, name, ceo, base, world);
                 Corporation corp = CorporationUtil.getCorporation(name);
                 String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
                 msg = StringUtil.format(msg, corp.getFormattedName());
@@ -249,20 +260,21 @@ public class CorporationCommand implements CommandExecutor {
                 break;
             }
 
-            case "setbase": {
-                if (args.length < 3) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+            case "setbase":
+                if (user instanceof IngameUser) {
+                    if (args.length < 3) {
+                        user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                        return;
+                    }
+                    Corporation corporation = CorporationUtil.getCorporation(args[1]);
+                    if (corporation == null) {
+                        user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                        return;
+                    }
+                    corporation.setBase(((IngameUser) user).getPlayer().getWorld(), args[2]);
+                    user.sendMessage(m("Corporation.BaseSet"));
+                    break;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-                corporation.setBase(user.getPlayer().getWorld(), args[2]);
-                user.sendMessage(m("Corporation.BaseSet"));
-                break;
-            }
 
             case "setceo": {
                 if (args.length < 3) {
