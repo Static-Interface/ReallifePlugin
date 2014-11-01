@@ -35,12 +35,14 @@ public class PayDayEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     List<Entry> entries = new ArrayList<>();
     private Player player;
+    private boolean checkTime;
     private Group group;
     private boolean cancelled;
 
-    public PayDayEvent(Player player, Group group) {
+    public PayDayEvent(Player player, Group group, boolean checkTime) {
         this.player = player;
         this.group = group;
+        this.checkTime = checkTime;
     }
 
     public static HandlerList getHandlerList() {
@@ -74,5 +76,13 @@ public class PayDayEvent extends Event {
 
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
+    }
+
+    public boolean isCheckTimeEnabled() {
+        return checkTime;
+    }
+
+    public void setCheckTimeEnabled(boolean checkTime) {
+        this.checkTime = checkTime;
     }
 }

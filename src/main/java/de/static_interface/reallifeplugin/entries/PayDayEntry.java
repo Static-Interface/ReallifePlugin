@@ -43,7 +43,7 @@ public class PayDayEntry extends Entry {
 
     @Override
     public String getReason() {
-        return StringUtil.format(m("Payday.Payay"), group.shownName);
+        return StringUtil.format(m("Payday.Payday"), group.shownName);
     }
 
     @Override
@@ -58,6 +58,6 @@ public class PayDayEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return ReallifeMain.getSettings().getEconomyAccount();
+        return ReallifeMain.getInstance().getSettings().getEconomyAccount();
     }
 }

@@ -27,6 +27,7 @@ import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
+import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.Bukkit;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class CorporationCommand extends SinkCommand {
 
@@ -97,7 +99,7 @@ public class CorporationCommand extends SinkCommand {
                         user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                         break;
                     }
-                    handleAdminCommand((IngameUser) user, moreArgs);
+                    handleAdminCommand(user, moreArgs);
                     break;
                 }
             }
@@ -219,7 +221,7 @@ public class CorporationCommand extends SinkCommand {
                 break;
 
             case "new": {
-                if (args.length < 4 || !(user instanceof IngameUser && args.length < 5)) {
+                if (args.length < 4 || (user instanceof IngameUser && args.length < 5)) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
@@ -227,7 +229,13 @@ public class CorporationCommand extends SinkCommand {
                 //Todo cancel if ceo is already a ceo of another corporation
 
                 //Todo check for "." (problems with yaml files) and "&" (problems with color codes)
+
                 String name = args[1];
+                if (name.contains(".") || name.contains("&")) {
+                    sender.sendMessage(m("Corporation.InvalidName"));
+                    return;
+                }
+
                 UUID ceo = SinkLibrary.getInstance().getIngameUser(args[2]).getUniqueId();
                 String base = args[3];
                 World world;
@@ -260,21 +268,29 @@ public class CorporationCommand extends SinkCommand {
                 break;
             }
 
-            case "setbase":
-                if (user instanceof IngameUser) {
-                    if (args.length < 3) {
-                        user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                        return;
-                    }
-                    Corporation corporation = CorporationUtil.getCorporation(args[1]);
-                    if (corporation == null) {
-                        user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                        return;
-                    }
-                    corporation.setBase(((IngameUser) user).getPlayer().getWorld(), args[2]);
-                    user.sendMessage(m("Corporation.BaseSet"));
-                    break;
+            case "setbase": {
+                if (args.length < 3 || (!(user instanceof IngameUser) && args.length < 4)) {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
                 }
+
+                Corporation corporation = CorporationUtil.getCorporation(args[1]);
+
+                World world;
+                if (user instanceof IngameUser) {
+                    world = ((IngameUser) user).getPlayer().getWorld();
+                } else {
+                    world = Bukkit.getWorld(args[3]);
+                }
+
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
+                corporation.setBase(world, args[2]);
+                user.sendMessage(m("Corporation.BaseSet"));
+                break;
+            }
 
             case "setceo": {
                 if (args.length < 3) {
@@ -519,7 +535,7 @@ public class CorporationCommand extends SinkCommand {
             for (UUID coCeo : corporation.getCoCEOs()) {
                 String name = CorporationUtil.getFormattedName(coCeo);
                 if (StringUtil.isStringEmptyOrNull(name)) {
-                    SinkLibrary.getInstance().getCustomLogger().debug("Warning: empty or null name at CorporationCommand: " + name);
+                    Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
                     continue;
                 }
                 if (coCeos.equals("")) {
@@ -534,6 +550,7 @@ public class CorporationCommand extends SinkCommand {
         if (corporation.getBase() != null) {
             user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBase().getId());
         }
+
         user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + corporation.getBalance() + " " + VaultBridge.getCurrenyName());
         Set<UUID> members = corporation.getMembers();
         if (members.size() > 0) {
@@ -541,11 +558,11 @@ public class CorporationCommand extends SinkCommand {
             for (UUID member : members) {
                 String name = CorporationUtil.getFormattedName(member);
                 if (StringUtil.isStringEmptyOrNull(name)) {
-                    SinkLibrary.getInstance().getCustomLogger().debug("Warning: empty or null name at CorporationCommand: " + name);
+                    Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
                     continue;
                 }
                 if (Bukkit.getOfflinePlayer(member).getName() == null) {
-                    SinkLibrary.getInstance().getCustomLogger().warn("Couldn't find user: " + member.toString() + ": Wrong UUID?");
+                    Debug.log(Level.WARNING, "Couldn't find user: " + member.toString() + ": Wrong UUID?");
                     continue;
                 }
 

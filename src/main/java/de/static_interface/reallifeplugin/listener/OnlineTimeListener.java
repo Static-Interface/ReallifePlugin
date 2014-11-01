@@ -19,11 +19,12 @@ package de.static_interface.reallifeplugin.listener;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.events.PayDayEvent;
-import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -53,21 +54,20 @@ public class OnlineTimeListener implements Listener {
         try {
             onlineTimes.remove(event.getPlayer().getUniqueId());
         } catch (Exception e) {
-            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage()); //Will this be thrown?
+            Debug.log(e);
+            //shouldnt happen?
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPayDay(PayDayEvent event) {
-        long minTime = TimeUnit.MINUTES.toMillis(ReallifeMain.getSettings().getMinOnlineTime());
+        long minTime = TimeUnit.MINUTES.toMillis(ReallifeMain.getInstance().getSettings().getMinOnlineTime());
 
-        if (minTime <= 0) {
+        if (minTime <= 0 || !event.isCheckTimeEnabled()) {
             return; //Don't check...
         }
 
         long onlineTime = System.currentTimeMillis() - onlineTimes.get(event.getPlayer().getUniqueId());
-
-        event.getPlayer().getPlayerTimeOffset();
 
         if (onlineTime > minTime) {
             return;

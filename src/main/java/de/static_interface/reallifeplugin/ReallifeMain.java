@@ -24,9 +24,9 @@ import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
-import de.static_interface.reallifeplugin.listener.BanListener;
 import de.static_interface.reallifeplugin.listener.InsuranceListener;
 import de.static_interface.reallifeplugin.listener.OnlineTimeListener;
+import de.static_interface.sinklibrary.Constants;
 import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -37,32 +37,39 @@ import java.util.logging.Level;
 
 public class ReallifeMain extends JavaPlugin {
 
-    public static final long TICKS = 20L;
     static WorldGuardPlugin wgp;
-    private static Settings settings = null;
-    private static PayDayRunnable payDayRunnable = null;
+    private static ReallifeMain instance;
+    private Settings settings = null;
+    private PayDayRunnable payDayRunnable = null;
     private BukkitTask payDayTask;
 
-    public static PayDayRunnable getPayDayRunnable() {
+    public static ReallifeMain getInstance() {
+        return instance;
+    }
+
+    public PayDayRunnable getPayDayRunnable() {
         return payDayRunnable;
     }
 
-    public static Settings getSettings() {
+    public Settings getSettings() {
         return settings;
     }
 
-    public static WorldGuardPlugin getWorldGuardPlugin() {
+    public WorldGuardPlugin getWorldGuardPlugin() {
         return wgp;
     }
 
+    @Override
     public void onEnable() {
         if (!checkDependencies()) {
             return;
         }
 
+        instance = this;
+
         settings = new Settings(this);
 
-        long delay = settings.getPaydayTime() * 60 * TICKS;
+        long delay = settings.getPaydayTime() * 60 * (long) Constants.TICK;
 
         payDayRunnable = new PayDayRunnable();
         payDayTask = Bukkit.getScheduler().runTaskTimer(this, payDayRunnable, delay, delay);
@@ -70,17 +77,18 @@ public class ReallifeMain extends JavaPlugin {
         registerCommands();
         registerListeners();
 
-        SinkLibrary.getInstance().getCustomLogger().info("Enabled");
         if (CorporationUtil.getCorporationConfig().isEnabled()) {
             wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
             CorporationUtil.registerCorporationsFromConfig();
         }
     }
 
+    @Override
     public void onDisable() {
         if (payDayTask != null) {
             payDayTask.cancel();
         }
+        instance = null;
     }
 
     private boolean checkDependencies() {
@@ -117,7 +125,7 @@ public class ReallifeMain extends JavaPlugin {
         if (getSettings().isAntiEscapeEnabled()) {
             Bukkit.getPluginManager().registerEvents(new AntiEscapeListener(), this);
         }
-        Bukkit.getPluginManager().registerEvents(new BanListener(), this);
+
         Bukkit.getPluginManager().registerEvents(new OnlineTimeListener(), this);
     }
 }

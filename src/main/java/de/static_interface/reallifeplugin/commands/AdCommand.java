@@ -49,14 +49,14 @@ public class AdCommand extends SinkCommand {
         IngameUser user = (IngameUser) SinkLibrary.getInstance().getUser(sender);
         Player p = (Player) sender;
 
-        double price = ReallifeMain.getSettings().getAdPrice();
+        double price = ReallifeMain.getInstance().getSettings().getAdPrice();
         if (user.getBalance() < price) {
             user.sendMessage(m("General.NotEnoughMoney"));
             return true;
         }
 
         long currenttime = System.currentTimeMillis();
-        long settingsTimeout = ReallifeMain.getSettings().getAdTimeout() * 1000 * 60;
+        long settingsTimeout = ReallifeMain.getInstance().getSettings().getAdTimeout() * 1000 * 60;
 
         Long timeout = timeouts.get(p.getUniqueId());
         if (timeout != null && timeout > currenttime) {

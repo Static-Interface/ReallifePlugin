@@ -119,7 +119,7 @@ public class Corporation {
         String world = baseraw[0];
         String regionId = baseraw[1];
 
-        return ReallifeMain.getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
+        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
     }
 
     public String getFormattedName() {

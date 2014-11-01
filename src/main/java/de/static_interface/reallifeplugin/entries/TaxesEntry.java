@@ -45,7 +45,7 @@ public class TaxesEntry extends Entry {
 
     @Override
     public String getReason() {
-        return StringUtil.format(m("Payay.Taxes"), MathUtil.round(getTaxesModifier() * 100));
+        return StringUtil.format(m("Payday.Taxes"), MathUtil.round(getTaxesModifier() * 100));
     }
 
     @Override
@@ -60,7 +60,7 @@ public class TaxesEntry extends Entry {
             return 0; /* no taxes */
         }
 
-        double taxesBase = ReallifeMain.getSettings().getTaxesBase();
+        double taxesBase = ReallifeMain.getInstance().getSettings().getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
         if (money <= 25000) {
@@ -93,6 +93,6 @@ public class TaxesEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return ReallifeMain.getSettings().getEconomyAccount();
+        return ReallifeMain.getInstance().getSettings().getEconomyAccount();
     }
 }

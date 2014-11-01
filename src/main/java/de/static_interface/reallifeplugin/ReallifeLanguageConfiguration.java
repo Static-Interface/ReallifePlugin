@@ -119,12 +119,13 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Withdraw", "&4{0} has withdrawn {1} {CURRENCY} from corporation account");
         addDefault("Corporation.Deposit", "&4{0} has deposited {1} {CURRENCY} to corporation account");
         addDefault("Corporation.NotEnoughMoney", "&4 The Corporation doesn't have enough money!");
+        addDefault("Corporation.InvalidName", "Invalid Corporation Name");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");
 
-        addDefault("Payay.Taxes", "{0}% Taxes");
-        addDefault("Payay.Payday", "Payday ({0} {CURRENCY})");
+        addDefault("Payday.Taxes", "{0}% Taxes");
+        addDefault("Payday.Payday", "Payday ({0} {CURRENCY})");
         addDefault("AntiPvPEscape.BanMessage", "You have been banned for {0} Minutes. Reason: Escape from PvP by quit");
     }
 }

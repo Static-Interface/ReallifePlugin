@@ -55,6 +55,6 @@ public class InsuranceEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return ReallifeMain.getSettings().getInsuranceAccount();
+        return ReallifeMain.getInstance().getSettings().getInsuranceAccount();
     }
 }

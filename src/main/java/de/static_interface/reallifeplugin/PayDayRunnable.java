@@ -38,8 +38,8 @@ import java.util.List;
 
 public class PayDayRunnable implements Runnable {
 
-    public void givePayDay(Player player, Group group) {
-        PayDayEvent event = new PayDayEvent(player, group);
+    public void givePayDay(Player player, Group group, boolean checkTime) {
+        PayDayEvent event = new PayDayEvent(player, group, checkTime);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
@@ -63,9 +63,13 @@ public class PayDayRunnable implements Runnable {
         Collections.sort(entries);
 
         for (Entry entry : entries) {
-            EntryResult entryResult = handleEntry(entry);
-            out.add(entryResult.out);
-            result += entryResult.amount;
+            try {
+                EntryResult entryResult = handleEntry(entry);
+                out.add(entryResult.out);
+                result += entryResult.amount;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         if (result == 0) {
@@ -119,29 +123,33 @@ public class PayDayRunnable implements Runnable {
 
     @Override
     public void run() {
+        run(true);
+    }
+
+    public void run(boolean checktime) {
         BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
         for (Player player : BukkitUtil.getOnlinePlayers()) {
             boolean isInGroup = false;
-            for (Group group : ReallifeMain.getSettings().readGroups()) {
+            for (Group group : ReallifeMain.getInstance().getSettings().readGroups()) {
                 if (ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup()).equals(group.name)) {
-                    givePayDay(player, group);
+                    givePayDay(player, group, checktime);
                     isInGroup = true;
                     break;
                 }
             }
             if (!isInGroup) {
-                givePayDay(player, getDefaultGroup(player));
+                givePayDay(player, getDefaultGroup(player), checktime);
             }
         }
     }
 
     public Group getDefaultGroup(Player player) {
         Group group = new Group();
-        group.payday = ReallifeMain.getSettings().getDefaultPayday();
-        group.taxesmodifier = ReallifeMain.getSettings().getDefaultTaxesModifier();
+        group.payday = ReallifeMain.getInstance().getSettings().getDefaultPayday();
+        group.taxesmodifier = ReallifeMain.getInstance().getSettings().getDefaultTaxesModifier();
         group.shownName = SinkLibrary.getInstance().getUser(player).getPrimaryGroup();
         group.name = ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup());
-        group.excluded = ReallifeMain.getSettings().isDefaultExcluded();
+        group.excluded = ReallifeMain.getInstance().getSettings().isDefaultExcluded();
         return group;
     }
 }

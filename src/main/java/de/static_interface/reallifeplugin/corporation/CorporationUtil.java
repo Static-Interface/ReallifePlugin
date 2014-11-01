@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -58,20 +59,27 @@ public class CorporationUtil {
             return;
         }
         for (String corpName : section.getKeys(false)) {
-            SinkLibrary.getInstance().getCustomLogger().debug("Registering corporation: " + corpName);
+            Debug.log("Registering corporation: " + corpName);
             Corporation corp = new Corporation(config, corpName);
             register(corp);
         }
     }
 
-    public static String getFormattedName(UUID user) {
+    public static String getFormattedName(UUID uuid) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
+
         String name =
-                ChatColor.stripColor(SinkLibrary.getInstance().getIngameUser(user).getDisplayName());
-        Corporation corp = getUserCorporation(user);
+                ChatColor.stripColor(user.getDisplayName() == null ? user.getName() : user.getDisplayName());
+
+        if (StringUtil.isStringEmptyOrNull(name) || name.equals("null")) {
+            return null;
+        }
+
+        Corporation corp = getUserCorporation(uuid);
         if (corp == null) {
             return ChatColor.GOLD + name;
         }
-        String rank = corp.getRank(user);
+        String rank = corp.getRank(uuid);
         if (ChatColor.stripColor(rank).isEmpty()) {
             return rank + name;
         }

@@ -31,10 +31,19 @@ public class ReallifePluginCommand implements CommandExecutor {
         }
         switch (args[0]) {
             case "payday":
-                ReallifeMain.getPayDayRunnable().run();
+                boolean skipTime = false;
+
+                for (String s : args) {
+                    if (s.equalsIgnoreCase("--skiptime")) {
+                        skipTime = true;
+                        break;
+                    }
+                }
+
+                ReallifeMain.getInstance().getPayDayRunnable().run(!skipTime);
                 break;
             case "reload":
-                ReallifeMain.getSettings().reload();
+                ReallifeMain.getInstance().getSettings().reload();
                 break;
             default:
                 return false;

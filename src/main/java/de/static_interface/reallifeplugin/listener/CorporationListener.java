@@ -26,6 +26,7 @@ import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.ChatColor;
@@ -91,7 +92,7 @@ public class CorporationListener implements Listener {
 
             return true;
         } catch (Exception e) {
-            SinkLibrary.getInstance().getCustomLogger().debug("Exception while trying to create sign:" + e);
+            Debug.log("Exception while trying to create sign: ", e);
             return false;
         }
     }

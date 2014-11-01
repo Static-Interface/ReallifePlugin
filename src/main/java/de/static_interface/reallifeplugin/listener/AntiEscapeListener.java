@@ -20,11 +20,11 @@ package de.static_interface.reallifeplugin.listener;
 import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import de.static_interface.reallifeplugin.BanHelper;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Damage;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -130,7 +130,7 @@ public class AntiEscapeListener implements Listener {
 
             event.setCancelled(true);
         } catch (NullPointerException e) {
-            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
+            Debug.log(e);
         }
     }
 
@@ -155,15 +155,15 @@ public class AntiEscapeListener implements Listener {
                 return;
             }
 
-            int banMinutes = ReallifeMain.getSettings().getPvPEscapeBanTime();
+            int banMinutes = ReallifeMain.getInstance().getSettings().getPvPEscapeBanTime();
 
             long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 
-            BanHelper.banPlayer(event.getPlayer().getUniqueId(),
-                                StringUtil.format(m("AntiPvPEscape.BanMessage"), banMinutes),
-                                unbanTimeStamp);
+            IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+            user.ban(m("AntiPvPEscape.BanMessage", banMinutes), unbanTimeStamp);
+
         } catch (NullPointerException e) {
-            SinkLibrary.getInstance().getCustomLogger().debug(e.getMessage());
+            Debug.log(e);
         }
     }
 }

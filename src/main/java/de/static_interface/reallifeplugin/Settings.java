@@ -40,13 +40,13 @@ public class Settings extends Configuration {
     @Override
     public void addDefaults() {
         addDefault("General.Taxesbase", 0.1);
-        addDefault("General.PaydayTime", 60);
-        addDefault("General.TaxAccount", "Staatskasse");
+        addDefault("General.PaydayTime", 60, "Time in minutes");
+        addDefault("General.TaxAccount", "TaxAccount");
         addDefault("General.MinOnlineTime", 30);
         addDefault("General.AntiEscapeEnabled", true);
 
         addDefault("Insurance.Enabled", false);
-        addDefault("Insurance.Account", "Versicherung");
+        addDefault("Insurance.Account", "Insurances");
 
         addDefault("Default.PayDay", 0);
         addDefault("Default.TaxesModifier", 1);
