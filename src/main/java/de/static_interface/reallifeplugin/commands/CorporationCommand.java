@@ -1,47 +1,36 @@
 /*
- * Copyright (c) 2014 http://adventuria.eu, http://static-interface.de and contributors
- *
+ * Copyright (c) 2013 - 2014 <http://static-interface.de> and contributors
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package de.static_interface.reallifeplugin.commands;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.*;
 
-import de.static_interface.reallifeplugin.corporation.Corporation;
-import de.static_interface.reallifeplugin.corporation.CorporationUtil;
-import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.api.command.SinkCommand;
-import de.static_interface.sinklibrary.api.user.SinkUser;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
-import de.static_interface.sinklibrary.user.IngameUser;
-import de.static_interface.sinklibrary.user.IrcUser;
-import de.static_interface.sinklibrary.util.Debug;
-import de.static_interface.sinklibrary.util.StringUtil;
-import de.static_interface.sinklibrary.util.VaultBridge;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.World;
-import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
+import de.static_interface.reallifeplugin.corporation.*;
+import de.static_interface.sinklibrary.*;
+import de.static_interface.sinklibrary.api.command.*;
+import de.static_interface.sinklibrary.api.user.*;
+import de.static_interface.sinklibrary.configuration.*;
+import de.static_interface.sinklibrary.user.*;
+import de.static_interface.sinklibrary.util.*;
+import org.bukkit.*;
+import org.bukkit.command.*;
+import org.bukkit.plugin.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Level;
+import java.util.*;
+import java.util.logging.*;
 
 public class CorporationCommand extends SinkCommand {
 
@@ -376,8 +365,13 @@ public class CorporationCommand extends SinkCommand {
                     user.sendMessage(ChatColor.RED + "/corp ceo help");
                     break;
                 }
-                //Todo: Check if targt is already in a corporation
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
+
+                UUID uuid = target.getUniqueId();
+                if (StringUtil.isStringEmptyOrNull(Bukkit.getOfflinePlayer(uuid).getName())) {
+                    user.sendMessage(ChatColor.DARK_RED + "Unbekannter Spieler: " + ChatColor.RED + args[1]);
+                    return;
+                }
 
                 Corporation targetCorporation = CorporationUtil.getUserCorporation(target.getUniqueId());
                 if (targetCorporation != null) {
@@ -385,12 +379,12 @@ public class CorporationCommand extends SinkCommand {
                     return;
                 }
 
-                if (corporation.getAllMembers().contains(target.getUniqueId())) {
+                if (corporation.getAllMembers().contains(uuid)) {
                     user.sendMessage(StringUtil.format(m("Corporation.AlreadyMember"), target.getName()));
                     break;
                 }
 
-                corporation.addMember(target.getUniqueId());
+                corporation.addMember(uuid);
                 if (target.isOnline()) {
                     target.sendMessage(StringUtil.format(m("Corporation.Added"), corporation.getName()));
                 }

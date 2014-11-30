@@ -6,5 +6,5 @@ This Plugin adds paydays, insurances and taxes and provides an API for other plu
 
 License
 ===========
-This project is licensed under GPL v3. <p>
+This project is licensed under the GNU Affero General Public License Version 3. <p>
 See LICENSE file for more information

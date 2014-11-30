@@ -1,30 +1,27 @@
 /*
- * Copyright (c) 2014 http://adventuria.eu, http://static-interface.de and contributors
- *
+ * Copyright (c) 2013 - 2014 <http://static-interface.de> and contributors
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package de.static_interface.reallifeplugin;
 
-import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.sinklibrary.api.configuration.Configuration;
-import org.bukkit.plugin.Plugin;
+import de.static_interface.reallifeplugin.model.*;
+import de.static_interface.sinklibrary.api.configuration.*;
+import org.bukkit.plugin.*;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class Settings extends Configuration {
 
