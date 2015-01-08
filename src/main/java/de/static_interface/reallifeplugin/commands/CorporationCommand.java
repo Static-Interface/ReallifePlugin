@@ -16,21 +16,31 @@
 
 package de.static_interface.reallifeplugin.commands;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.*;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.corporation.*;
-import de.static_interface.sinklibrary.*;
-import de.static_interface.sinklibrary.api.command.*;
-import de.static_interface.sinklibrary.api.user.*;
-import de.static_interface.sinklibrary.configuration.*;
-import de.static_interface.sinklibrary.user.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.*;
-import org.bukkit.command.*;
-import org.bukkit.plugin.*;
+import de.static_interface.reallifeplugin.corporation.Corporation;
+import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.api.user.SinkUser;
+import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
+import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.user.IrcUser;
+import de.static_interface.sinklibrary.util.Debug;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultBridge;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
-import java.util.*;
-import java.util.logging.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.Level;
 
 public class CorporationCommand extends SinkCommand {
 
@@ -210,9 +220,8 @@ public class CorporationCommand extends SinkCommand {
                 break;
 
             case "new": {
-                if (args.length < 4 || (user instanceof IngameUser && args.length < 5)) {
+                if ((user instanceof IngameUser && args.length < 4) || (!(user instanceof IngameUser) && args.length < 5)) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
                 }
                 //Todo: remove ceo from any corporation
                 //Todo cancel if ceo is already a ceo of another corporation
@@ -480,6 +489,7 @@ public class CorporationCommand extends SinkCommand {
         user.sendMessage(ChatColor.GOLD + "/corp");
         user.sendMessage(ChatColor.GOLD + "/corp <corp>");
         user.sendMessage(ChatColor.GOLD + "/corp help");
+        user.sendMessage(ChatColor.GOLD + "/corp leave");
         user.sendMessage(ChatColor.GOLD + "/corp list");
         user.sendMessage(ChatColor.GOLD + "/corp deposit <amount>");
         user.sendMessage(ChatColor.GOLD + "/corp ceo help");
