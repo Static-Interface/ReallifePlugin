@@ -16,207 +16,245 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
-import com.google.gson.*;
-import com.google.gson.reflect.*;
-import com.sk89q.worldguard.domains.*;
-import com.sk89q.worldguard.protection.regions.*;
-import de.static_interface.reallifeplugin.*;
-import de.static_interface.sinklibrary.api.configuration.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.*;
+import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.reallifeplugin.database.table.CorpUsersTable;
+import de.static_interface.reallifeplugin.database.table.CorpsTable;
+import de.static_interface.reallifeplugin.database.table.row.CorpRow;
+import de.static_interface.reallifeplugin.database.table.row.CorpUserRow;
+import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class Corporation {
 
-    final String accountName;
-    final String name;
-    final Configuration config;
+    private final int id;
+    private final Database db;
 
-    public Corporation(Configuration config, String name) {
-        this.config = config;
-        this.name = name;
-        this.accountName = "Corp_" + name.replace("_", "");
+    private CorpsTable corpsTable;
+    private CorpUsersTable corpUsersTable;
 
-        if (!VaultBridge.isAccountAvailable(accountName)) {
-            VaultBridge.createAccount(accountName);
-        }
+    public Corporation(Database db, int id) {
+        this.id = id;
+        this.db = db;
+
+        corpsTable = db.getCorpsTable();
+        corpUsersTable = db.getCorpUsersTable();
     }
 
     public List<UUID> getCoCEOs() {
         List<UUID> tmp = new ArrayList<>();
-
-        for (String s : config.getYamlConfiguration().getStringList("Corporations." + getName() + "." + CorporationValues.VALUE_CO_CEO)) {
-            tmp.add(UUID.fromString(s));
+        ResultSet resultSet;
+        try {
+            resultSet = db.getCorpUsersTable().executeQuery("SELECT * FROM `{TABLE}` WHERE `corp_id`=? AND `isCoCeo`=1",
+                                                            id);
+            while (resultSet.next()) {
+                tmp.add(UUID.fromString(resultSet.getString("uuid")));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return tmp;
     }
 
     public void setBase(World world, String regionId) {
-        setValue(CorporationValues.VALUE_BASE, world.getName() + ":" + regionId);
-        save();
+        try {
+            corpsTable.executeQuery("UPDATE `{TABLE}` SET `base_id`=?, `base_world`=? WHERE `id`=?", regionId, world.getName(), id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getName() {
-        return name;
-    }
-
-    public String getAccountName() {
-        return accountName;
+        return getBase().corpName;
     }
 
     public void addMember(UUID uuid) {
-        HashMap<UUID, String> allMembers = getMembersFromConfig();
-        allMembers.put(uuid, CorporationValues.RANK_DEFAULT);
-        Gson gson = new Gson();
-        setValue(CorporationValues.VALUE_MEMBERS, gson.toJson(uuidHashMapToStringHashMap(allMembers)));
-        if (getBase() != null) {
-            DefaultDomain rgMembers = getBase().getMembers();
+        removeMember(uuid);
+        if (getBaseRegion() != null) {
+            DefaultDomain rgMembers = getBaseRegion().getMembers();
             rgMembers.addPlayer(BukkitUtil.getNameByUniqueId(uuid));
-            getBase().setMembers(rgMembers);
+            getBaseRegion().setMembers(rgMembers);
         }
-        save();
     }
 
     public void removeMember(UUID uuid) {
-        HashMap<UUID, String> allMembers = getMembersFromConfig();
-        allMembers.remove(uuid);
-        Gson gson = new Gson();
-        setValue(CorporationValues.VALUE_MEMBERS, gson.toJson(uuidHashMapToStringHashMap(allMembers)));
-        if (getBase() != null && getBase().getMembers() != null) {
-            DefaultDomain rgMembers = getBase().getMembers();
+        resetUser(uuid);
+        if (getBaseRegion() != null && getBaseRegion().getMembers() != null) {
+            DefaultDomain rgMembers = getBaseRegion().getMembers();
             rgMembers.removePlayer(BukkitUtil.getNameByUniqueId(uuid));
-            getBase().setMembers(rgMembers);
+            getBaseRegion().setMembers(rgMembers);
         }
-        save();
     }
 
-    public void save() {
-        config.save();
+    public void resetUser(UUID uuid) {
+        removeCoCeo(uuid);
+        setRank(uuid, CorporationRanks.RANK_DEFAULT);
     }
 
     public double getBalance() {
-        return VaultBridge.getBalance(accountName);
+        return getBase().balance;
     }
 
-    public void addBalance(double amount) {
-        VaultBridge.addBalance(accountName, amount);
+    private CorpRow getBase() {
+        try {
+            return db.getCorpsTable().get("SELECT * FROM `{TABLE}` WHERE `id`=?", id)[0];
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public ProtectedRegion getBase() {
-        String[] baseraw = ((String) getValue(CorporationValues.VALUE_BASE)).split(":");
-        String world = baseraw[0];
-        String regionId = baseraw[1];
+    public boolean addBalance(double amount) {
+        return addBalance(amount, true);
+    }
 
-        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(world)).getRegion(regionId);
+    public boolean addBalance(double amount, boolean checkAmount) {
+        if (checkAmount && getBalance() < amount) {
+            return false;
+        }
+
+        double newAmount = getBalance() + amount;
+
+        try {
+            corpsTable.executeQuery("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    public ProtectedRegion getBaseRegion() {
+        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().base_world)).getRegion(getBase().base_id);
     }
 
     public String getFormattedName() {
-        return ChatColor.DARK_GREEN + name.replace("_", " ") + ChatColor.RESET;
+        return ChatColor.DARK_GREEN + getName().replace("_", " ") + ChatColor.RESET;
     }
 
     public Set<UUID> getMembers() {
-        Set<UUID> tmp = getMembersFromConfig().keySet();
-        tmp.removeAll(getCoCEOs());
-        tmp.remove(getCEO());
-        return tmp;
+        Set<UUID> members = getAllMembers();
+        for (UUID member : members) {
+            if (isCeo(member) || isCoCeo(member)) {
+                members.remove(member);
+            }
+        }
+        return members;
     }
 
     public Set<UUID> getAllMembers() {
-        return getMembersFromConfig().keySet();
+        Set<UUID> members = new HashSet<>();
+        try {
+            CorpUserRow[] result = db.getCorpUsersTable().get("SELECT `uuid` from `{TABLE}` WHERE `corp_id`=?", id);
+            for (CorpUserRow row : result) {
+                members.add(row.uuid);
+            }
+            return members;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public UUID getCEO() {
-        return UUID.fromString((String) getValue(CorporationValues.VALUE_CEO));
+        return getBase().ceo;
     }
 
     public void setCEO(UUID uuid) {
-        setValue(CorporationValues.VALUE_CEO, uuid.toString());
-        setRank(uuid, CorporationValues.RANK_CEO);
+        try {
+            resetUser(uuid);
+            addMember(uuid);
+            corpsTable.executeQuery("UPDATE `{TABLE}` SET `ceo_uuid`=? WHERE `id`=?", uuid.toString(), id);
+            setRank(uuid, CorporationRanks.RANK_CEO);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void addCoCeo(UUID uuid) {
-        Set<String> tmp = new HashSet<>();
-        for (UUID key : getCoCEOs()) {
-            tmp.add(key.toString());
+        try {
+            if (!isMember(uuid)) {
+                resetUser(uuid);
+            }
+            addMember(uuid);
+            corpUsersTable.executeQuery("UPDATE `{TABLE}` SET `isCoCeo`=1 WHERE `uuid`=?", uuid.toString());
+            setRank(uuid, CorporationRanks.RANK_CO_CEO);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        tmp.add(uuid.toString());
-        ArrayList<String> asdf = new ArrayList<>();
-        asdf.addAll(tmp);
-        setValue(CorporationValues.VALUE_CO_CEO, asdf);
-        setRank(uuid, CorporationValues.RANK_CO_CEO);
+    }
+
+    public boolean isMember(UUID uuid) {
+        return getMembers().contains(uuid);
     }
 
     public void removeCoCeo(UUID uuid) {
-        Set<String> tmp = new HashSet<>();
-        for (UUID key : getCoCEOs()) {
-            tmp.add(key.toString());
+        try {
+            corpUsersTable.executeQuery("UPDATE `{TABLE}` SET `isCoCeo`=0 WHERE `uuid`=?", uuid.toString());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        tmp.remove(uuid.toString());
-        ArrayList<String> asdf = new ArrayList<>();
-        asdf.addAll(tmp);
-        setValue(CorporationValues.VALUE_CO_CEO, asdf);
-        setRank(uuid, CorporationValues.RANK_DEFAULT);
+        setRank(uuid, CorporationRanks.RANK_DEFAULT);
     }
 
     public boolean isCoCeo(UUID uuid) {
         return getCoCEOs().contains(uuid);
     }
 
-    public void setRank(UUID user, String rank) {
-        HashMap<UUID, String> members = getMembersFromConfig();
-        members.put(user, rank);
-        Gson gson = new Gson();
-        setValue(CorporationValues.VALUE_MEMBERS, gson.toJson(uuidHashMapToStringHashMap(members)));
-    }
+    public void setRank(UUID uuid, String rank) {
+        rank = ChatColor.translateAlternateColorCodes('&', rank);
 
-    private HashMap<UUID, String> getMembersFromConfig() {
-        Gson gson = new Gson();
-        String json = (String) getValue(CorporationValues.VALUE_MEMBERS);
-        Type typetoken = new TypeToken<HashMap<String, String>>() {
-        }.getType();
-        HashMap<String, String> map = gson.fromJson(json, typetoken);
-        return stringHashMapToUuidHashMap(map);
-    }
-
-    private HashMap<String, String> uuidHashMapToStringHashMap(HashMap<UUID, String> convertMap) {
-        HashMap<String, String> tmp = new HashMap<>();
-        for (UUID uuid : convertMap.keySet()) {
-            tmp.put(uuid.toString(), convertMap.get(uuid));
+        if (!rank.startsWith(ChatColor.COLOR_CHAR + "")) {
+            rank = ChatColor.GOLD + rank;
         }
-        return tmp;
-    }
 
-    private HashMap<UUID, String> stringHashMapToUuidHashMap(HashMap<String, String> convertMap) {
-        HashMap<UUID, String> tmp = new HashMap<>();
-        for (String key : convertMap.keySet()) {
-            tmp.put(UUID.fromString(key), convertMap.get(key));
+        try {
+            corpUsersTable.executeQuery("UPDATE `{TABLE}` SET `rank`=? WHERE `uuid`=?", rank, uuid.toString());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return tmp;
     }
 
-    public Object getValue(String path) {
-        return config.get("Corporations." + getName() + "." + path);
-    }
+    public String getRank(UUID uuid) {
+        try {
+            CorpUserRow[] rows = db.getCorpUsersTable().get("SELECT `rank` FROM `{TABLE}` WHERE `uuid`=?", uuid.toString());
+            String rank = rows[0].rank;
 
-    public void setValue(String path, Object value) {
-        config.set("Corporations." + getName() + "." + path, value);
-        save();
-    }
-
-    public String getRank(UUID user) {
-        String rank = getMembersFromConfig().get(user);
-        if (StringUtil.isStringEmptyOrNull(rank)) {
-            if (getCEO() == user) {
-                setRank(user, CorporationValues.RANK_CEO);
-            } else if (getCoCEOs().contains(user)) {
-                setRank(user, CorporationValues.RANK_CO_CEO);
-            } else {
-                setRank(user, CorporationValues.RANK_DEFAULT);
+            if (StringUtil.isEmptyOrNull(rank)) {
+                if (getCEO() == uuid) {
+                    setRank(uuid, CorporationRanks.RANK_CEO);
+                } else if (isCoCeo(uuid)) {
+                    setRank(uuid, CorporationRanks.RANK_CO_CEO);
+                } else {
+                    setRank(uuid, CorporationRanks.RANK_DEFAULT);
+                }
+                return getRank(uuid);
             }
-            return getRank(user);
+
+            return rank;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return ChatColor.GOLD + rank;
+    }
+
+    public boolean isCeo(UUID uniqueId) {
+        return getCEO().equals(uniqueId);
+    }
+
+    public final int getId() {
+        return id;
     }
 }

@@ -16,17 +16,30 @@
 
 package de.static_interface.reallifeplugin;
 
-import com.sk89q.worldguard.bukkit.*;
-import de.static_interface.reallifeplugin.commands.*;
-import de.static_interface.reallifeplugin.corporation.*;
-import de.static_interface.reallifeplugin.listener.*;
-import de.static_interface.sinklibrary.*;
-import org.bukkit.*;
-import org.bukkit.plugin.*;
-import org.bukkit.plugin.java.*;
-import org.bukkit.scheduler.*;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import de.static_interface.reallifeplugin.commands.AdCommand;
+import de.static_interface.reallifeplugin.commands.CorporationCommand;
+import de.static_interface.reallifeplugin.commands.InsuranceCommand;
+import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
+import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
+import de.static_interface.reallifeplugin.database.impl.MySqlDatabase;
+import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
+import de.static_interface.reallifeplugin.listener.CorporationListener;
+import de.static_interface.reallifeplugin.listener.InsuranceListener;
+import de.static_interface.reallifeplugin.listener.OnlineTimeListener;
+import de.static_interface.sinklibrary.Constants;
+import de.static_interface.sinklibrary.SinkLibrary;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.util.logging.*;
+import java.sql.SQLException;
+import java.util.logging.Level;
+
+import javax.annotation.Nullable;
 
 public class ReallifeMain extends JavaPlugin {
 
@@ -35,7 +48,8 @@ public class ReallifeMain extends JavaPlugin {
     private Settings settings = null;
     private PayDayRunnable payDayRunnable = null;
     private BukkitTask payDayTask;
-
+    private boolean lwcAvailable;
+    private Database db;
     public static ReallifeMain getInstance() {
         return instance;
     }
@@ -66,14 +80,36 @@ public class ReallifeMain extends JavaPlugin {
 
         payDayRunnable = new PayDayRunnable();
         payDayTask = Bukkit.getScheduler().runTaskTimer(this, payDayRunnable, delay, delay);
+        lwcAvailable = Bukkit.getPluginManager().getPlugin("LWC") != null;
+        if (getSettings().isCorporationsEnabled()) {
+            DatabaseConfiguration config = new DatabaseConfiguration(this);
+            //Todo: add support for other sql databases
+            db = new MySqlDatabase(config, this);
+            try {
+                db.setupConfig();
+                db.connect();
+                db.initTables();
+            } catch (SQLException e) {
+                getLogger().log(Level.SEVERE, "Database connection failed. Disabling database-based features.");
+                e.printStackTrace();
+                getSettings().setCorporationsEnabled(false);
+                db = null;
+            }
+        }
 
         registerCommands();
         registerListeners();
 
-        if (CorporationUtil.getCorporationConfig().isEnabled()) {
-            wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
-            CorporationUtil.registerCorporationsFromConfig();
+        wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
+
+        if (getSettings().isCorporationsEnabled()) {
+            CorporationUtil.registerCorporationsFromDatabase();
         }
+    }
+
+    @Nullable
+    public Database getDB() {
+        return db;
     }
 
     @Override
@@ -82,6 +118,10 @@ public class ReallifeMain extends JavaPlugin {
             payDayTask.cancel();
         }
         instance = null;
+    }
+
+    public com.griefcraft.lwc.LWC getLWC() {
+        return com.griefcraft.lwc.LWC.getInstance();
     }
 
     private boolean checkDependencies() {
@@ -107,7 +147,9 @@ public class ReallifeMain extends JavaPlugin {
         if (getSettings().isInsuranceEnabled()) {
             Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand(this));
         }
-        SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
+        if (getSettings().isCorporationsEnabled()) {
+            SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
+        }
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 
@@ -118,7 +160,13 @@ public class ReallifeMain extends JavaPlugin {
         if (getSettings().isAntiEscapeEnabled()) {
             Bukkit.getPluginManager().registerEvents(new AntiEscapeListener(), this);
         }
-
+        if (getSettings().isCorporationsEnabled()) {
+            Bukkit.getPluginManager().registerEvents(new CorporationListener(), this);
+        }
         Bukkit.getPluginManager().registerEvents(new OnlineTimeListener(), this);
+    }
+
+    public boolean isLwcAvailable() {
+        return lwcAvailable;
     }
 }

@@ -68,6 +68,10 @@
             <url>http://repo.bukkit.org/content/repositories/releases/</url>
         </repository>
         <repository>
+            <id>andune-nexus</id>
+            <url>http://andune.com/nexus/content/repositories/public/</url>
+        </repository>
+        <repository>
             <id>static-interface</id>
             <url>http://nexus.static-interface.de/nexus/content/repositories/snapshots/</url>
             <snapshots>
@@ -92,6 +96,18 @@
             <version>2.3</version>
             <scope>provided</scope>
             <!-- provided by SinkLibrary -->
+        </dependency>
+        <dependency>
+            <groupId>com.griefcraft</groupId>
+            <artifactId>LWC</artifactId>
+            <version>4.2.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP-java6</artifactId>
+            <version>2.2.5</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>

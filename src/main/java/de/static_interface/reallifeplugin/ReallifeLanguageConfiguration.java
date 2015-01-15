@@ -16,13 +16,14 @@
 
 package de.static_interface.reallifeplugin;
 
-import de.static_interface.sinklibrary.api.configuration.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.*;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.util.StringUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
-import java.io.*;
+import java.io.File;
 
-import javax.annotation.*;
+import javax.annotation.Nullable;
 
 public class ReallifeLanguageConfiguration extends Configuration {
 
@@ -102,8 +103,6 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.DeletionFailed", "&4Error: &cCouldn't delete {0}!");
         addDefault("Corporation.InvalidName", "&4Error:&c Invalid name");
         addDefault("Corporation.BuyingFromSameCorporation", "&4Error:&c You can't buy from your corporation");
-        addDefault("Corporation.BuySign.CantPickup", "&4Error:&c You can't pickup items!");
-        addDefault("Corporation.BuySign.Bought", "&aSuccessfully bought {0} for {1}!");
         addDefault("Corporation.AlreadyMember", "&c{0} is already a member of your corporation!");
         addDefault("Corporation.AlreadyMemberOther", "&c{0} is already a member of another corporation!");
         addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
@@ -118,6 +117,20 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Deposit", "&4{0} has deposited {1} {CURRENCY} to corporation account");
         addDefault("Corporation.NotEnoughMoney", "&4 The Corporation doesn't have enough money!");
         addDefault("Corporation.InvalidName", "Invalid Corporation Name");
+        addDefault("Corporation.NotInCorporation", "&4Error:&c You aren't in any corporation!");
+
+        addDefault("Corporation.NotEnoughMoney", "&cYour corporation doesn't have enough money!");
+
+        addDefault("Corporation.Sign.CantPickup", "&4Error:&c Your inventory is full!");
+        addDefault("Corporation.Sign.Bought", "&aSuccessfully bought {0} {1} for {2}{CURRENCY}!");
+        addDefault("Corporation.Sign.Sold", "&aSuccessfully sold {0} {1} for {2}{CURRENCY}!");
+        addDefault("Corporation.Sign.InvalidCreateLocation", "&cYou can create trade signs only in your own corporation!");
+        addDefault("Corporation.Sign.InvalidSellCorporation", "&cYou can only sell items to your own corporation!");
+        addDefault("Corporation.Sign.InvalidBuyCorporation", "&cYou can only buy items from own corporation!");
+        addDefault("Corporation.Sign.InvalidChest", "&cChest not found!");
+        addDefault("Corporation.Sign.NoItemsFound", "&cNo Items left!");
+        addDefault("Corporation.Sign.ChestFull", "&cThe chest is full!");
+        addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");

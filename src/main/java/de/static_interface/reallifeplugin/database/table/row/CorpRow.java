@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - 2014 <http://static-interface.de> and contributors
+ * Copyright (c) 2013 - 2015 <http://static-interface.de> and contributors
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
@@ -14,18 +14,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.corporation;
+package de.static_interface.reallifeplugin.database.table.row;
 
-import org.bukkit.*;
+import java.util.UUID;
 
-public class CorporationValues {
+public class CorpRow {
 
-    public static final String VALUE_BASE = "Base";
-    public static final String VALUE_CEO = "CEO";
-    public static final String VALUE_CO_CEO = "CoCEOs";
-    public static final String VALUE_MEMBERS = "Members";
-
-    public static final String RANK_DEFAULT = ChatColor.GOLD.toString();
-    public static final String RANK_CEO = ChatColor.DARK_RED + "CEO" + ChatColor.RED;
-    public static final String RANK_CO_CEO = ChatColor.DARK_GREEN + "Co-CEO" + ChatColor.GREEN;
+    public Integer id;
+    public double balance;
+    public String base_id;
+    public String base_world;
+    public UUID ceo;
+    public String corpName;
+    public long creationTime;
+    public boolean isdeleted;
 }

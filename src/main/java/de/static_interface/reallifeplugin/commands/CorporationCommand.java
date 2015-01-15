@@ -359,7 +359,7 @@ public class CorporationCommand extends SinkCommand {
     }
 
     private void handleCEOCommand(IngameUser user, String[] args, Corporation corporation) {
-        if (!CorporationUtil.isCEO(user, corporation)) {
+        if (!CorporationUtil.hasCeoPermissions(user, corporation)) {
             user.sendMessage(m("Corporation.NotCEO"));
             return;
         }
@@ -551,8 +551,8 @@ public class CorporationCommand extends SinkCommand {
             user.sendMessage(ChatColor.GRAY + "Co-CEO's: " + coCeos);
         }
 
-        if (corporation.getBase() != null) {
-            user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBase().getId());
+        if (corporation.getBaseRegion() != null) {
+            user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBaseRegion().getId());
         }
 
         user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + corporation.getBalance() + " " + VaultBridge.getCurrenyName());

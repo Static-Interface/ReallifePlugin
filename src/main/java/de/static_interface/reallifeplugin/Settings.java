@@ -16,12 +16,14 @@
 
 package de.static_interface.reallifeplugin;
 
-import de.static_interface.reallifeplugin.model.*;
-import de.static_interface.sinklibrary.api.configuration.*;
-import org.bukkit.plugin.*;
+import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
+import org.bukkit.plugin.Plugin;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Settings extends Configuration {
 
@@ -29,6 +31,7 @@ public class Settings extends Configuration {
     public static final String TAXES_MODIFIER = "taxesmodifier";
     public static final String SHOWN_NAME = "shownname";
     public static final String EXCLUDED = "excluded";
+    private boolean corporationsEnabled;
 
     public Settings(Plugin plugin) {
         super(new File(plugin.getDataFolder(), "Settings.yml"), true);
@@ -41,6 +44,7 @@ public class Settings extends Configuration {
         addDefault("General.TaxAccount", "TaxAccount");
         addDefault("General.MinOnlineTime", 30);
         addDefault("General.AntiEscapeEnabled", true);
+        addDefault("General.CorporationsEnabled", true);
 
         addDefault("Insurance.Enabled", false);
         addDefault("Insurance.Account", "Insurances");
@@ -153,6 +157,14 @@ public class Settings extends Configuration {
 
     public boolean isAntiEscapeEnabled() {
         return (boolean) get("General.AntiEscapeEnabled");
+    }
+
+    public boolean isCorporationsEnabled() {
+        return (boolean) get("General.CorporationsEnabled");
+    }
+
+    public void setCorporationsEnabled(boolean value) {
+        set("General.CorporationsEnabled", value);
     }
 
     public double getAdPrice() {

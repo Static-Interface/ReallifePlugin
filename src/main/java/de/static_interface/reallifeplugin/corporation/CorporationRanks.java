@@ -16,23 +16,10 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
-import de.static_interface.sinklibrary.api.configuration.*;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
 
-import java.io.*;
-
-public class CorporationConfig extends Configuration {
-
-    public CorporationConfig() {
-        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Corporations.yml"), true);
-    }
-
-    @Override
-    public void addDefaults() {
-        addDefault("Enabled", true);
-    }
-
-    public boolean isEnabled() {
-        return (boolean) get("Enabled");
-    }
+public class CorporationRanks {
+    public static final String RANK_DEFAULT = ChatColor.GOLD.toString();
+    public static final String RANK_CEO = ChatColor.DARK_RED + "CEO" + ChatColor.RED;
+    public static final String RANK_CO_CEO = ChatColor.DARK_GREEN + "Co-CEO" + ChatColor.GREEN;
 }
