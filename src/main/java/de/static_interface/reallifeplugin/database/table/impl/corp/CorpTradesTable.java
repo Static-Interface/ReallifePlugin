@@ -58,10 +58,10 @@ public class CorpTradesTable extends Table<CorpTradesRow> {
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
                         + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
                         + "FOREIGN KEY (user_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORP_USERS_TABLE
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
-                        + ");"
-                        + "CREATE INDEX IF NOT EXISTS corp_id_I ON " + getName() + "(corp_id);"
-                        + "CREATE INDEX IF NOT EXISTS user_id_I ON " + getName() + "(user_id);";
+                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
+                        + "INDEX corp_id_I (corp_id),"
+                        + "INDEX user_id_I (user_id)"
+                        + ");";
                 break;
 
             case MYSQL:

@@ -45,9 +45,9 @@ public class CorpUsersTable extends Table<CorpUserRow> {
                         + "rank VARCHAR(36),"
                         + "uuid VARCHAR(36) NOT NULL UNIQUE KEY,"
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
-                        + "(id) ON UPDATE CASCADE ON DELETE SET NULL"
-                        + ");"
-                        + "CREATE INDEX IF NOT EXISTS corp_id_I ON " + getName() + "(corp_id);";
+                        + "(id) ON UPDATE CASCADE ON DELETE SET NULL,"
+                        + "INDEX corp_id_I (corp_id)"
+                        + ");";
                 break;
 
             case MYSQL:

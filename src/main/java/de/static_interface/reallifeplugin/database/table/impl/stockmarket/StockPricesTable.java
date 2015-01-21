@@ -45,9 +45,9 @@ public class StockPricesTable extends Table<StocksPriceRow> {
                         + "dividend_percent DOUBLE NOT NULL,"
                         + "time BIGINT NOT NULL,"
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
-                        + ");"
-                        + "CREATE INDEX IF NOT EXISTS corp_id_I ON " + getName() + "(corp_id);";
+                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
+                        + "INDEX corp_id_I (corp_id)"
+                        + ");";
                 break;
 
             case MYSQL:

@@ -44,7 +44,8 @@ public class H2Database extends Database {
         config.setMaximumPoolSize(10);
         config.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
         config.addDataSourceProperty("user", "sa");
-        config.addDataSourceProperty("url", "jdbc:h2:file:" + new File(plugin.getDataFolder(), "database").getAbsolutePath() + ";MV_STORE=FALSE");
+        config.addDataSourceProperty("url", "jdbc:h2:file:" + new File(plugin.getDataFolder(), "database").getAbsolutePath()
+                                            + ";MV_STORE=FALSE;MODE=MySQL;IGNORECASE=TRUE");
         config.setConnectionTimeout(5000);
         dataSource = new HikariDataSource(config);
     }

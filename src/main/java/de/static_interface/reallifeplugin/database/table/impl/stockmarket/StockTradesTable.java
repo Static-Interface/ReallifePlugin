@@ -49,10 +49,10 @@ public class StockTradesTable extends Table<StockTradeRow> {
                         + "FOREIGN KEY (stock_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.STOCKS_TABLE
                         + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
                         + "FOREIGN KEY (user_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORP_USERS_TABLE
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
-                        + ");"
-                        + "CREATE INDEX IF NOT EXISTS stock_id_I ON " + getName() + "(stock_id);"
-                        + "CREATE INDEX IF NOT EXISTS user_id_I ON " + getName() + "(user_id);";
+                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
+                        + "INDEX stock_id_I (stock_id),"
+                        + "INDEX user_id_I (user_id)"
+                        + ");";
                 break;
 
             case MYSQL:
