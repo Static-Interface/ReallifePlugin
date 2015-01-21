@@ -16,10 +16,9 @@
 
 package de.static_interface.reallifeplugin.database.table.row.stockmarket;
 
-public class StocksPriceRow {
-
+public class StockUserRow {
     public Integer id;
-    public int new_price;
-    public long time;
-    public int stock_id;
+    public int amount;
+    public int stockId;
+    public int userId;
 }

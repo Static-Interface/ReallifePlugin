@@ -18,16 +18,17 @@ package de.static_interface.reallifeplugin.database.table.impl.stockmarket;
 
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.Table;
-import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockPriceRow;
+import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockUserRow;
+import org.apache.commons.lang.Validate;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class StockPricesTable extends Table<StockPriceRow> {
+public class StockUsersTable extends Table<StockUserRow> {
 
-    public StockPricesTable(Database db) {
-        super(Table.STOCK_PRICE_TABLE, db);
+    public StockUsersTable(Database db) {
+        super(Table.STOCK_USERS_TABLE, db);
     }
 
     @Override
@@ -39,14 +40,15 @@ public class StockPricesTable extends Table<StockPriceRow> {
                 sql =
                         "CREATE TABLE IF NOT EXISTS " + getName() + " ("
                         + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "cause TEXT,"
-                        + "new_price DOUBLE NOT NULL,"
-                        + "old_price DOUBLE NOT NULL,"
+                        + "amount INT NOT NULL,"
                         + "stock_id INT NOT NULL,"
-                        + "time BIGINT NOT NULL,"
+                        + "user_id INT NOT NULL,"
                         + "FOREIGN KEY (stock_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.STOCKS_TABLE
                         + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX stock_id_I (stock_id)"
+                        + "FOREIGN KEY (user_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORP_USERS_TABLE
+                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
+                        + "INDEX stock_id_I (stock_id),"
+                        + "INDEX user_id_I (user_id)"
                         + ");";
                 break;
 
@@ -55,14 +57,15 @@ public class StockPricesTable extends Table<StockPriceRow> {
                 sql =
                         "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
                         + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`cause` TEXT,"
-                        + "`new_price` DOUBLE NOT NULL,"
-                        + "`old_price` DOUBLE NOT NULL,"
+                        + "`amount` INT NOT NULL,"
                         + "`stock_id` INT NOT NULL,"
-                        + "`time` BIGINT NOT NULL,"
+                        + "`user_id` INT NOT NULL,"
                         + "FOREIGN KEY (`stock_id`) REFERENCES `" + db.getConfig().getTablePrefix() + Table.STOCKS_TABLE
                         + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX `stock_id_I` (`stock_id`)"
+                        + "FOREIGN KEY (`user_id`) REFERENCES `" + db.getConfig().getTablePrefix() + Table.CORP_USERS_TABLE
+                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,"
+                        + "INDEX `stock_id_I` (`stock_id`),"
+                        + "INDEX `user_id_I` (`user_id`)"
                         + ");";
                 break;
         }
@@ -72,52 +75,43 @@ public class StockPricesTable extends Table<StockPriceRow> {
         statement.close();
     }
 
-    //Todo
-
     @Override
-    public ResultSet serialize(StockPriceRow row) throws SQLException {
+    public ResultSet serialize(StockUserRow row) throws SQLException {
+        Validate.notNull(row);
         if (row.id != null) {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.cause, row.newPrice, row.oldPrice, row.stockId, row.time);
+        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?);";
+        executeUpdate(sql, row.amount, row.stockId, row.userId);
+
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 
     @Override
-    public StockPriceRow[] deserialize(ResultSet rs) throws SQLException {
+    public StockUserRow[] deserialize(ResultSet rs) throws SQLException {
         int rowcount = 0;
         if (rs.last()) {
             rowcount = rs.getRow();
             rs.beforeFirst();
         }
 
-        StockPriceRow[] rows = new StockPriceRow[rowcount];
+        StockUserRow[] rows = new StockUserRow[rowcount];
         int i = 0;
 
         while (rs.next()) {
-            StockPriceRow row = new StockPriceRow();
+            StockUserRow row = new StockUserRow();
             if (hasColumn(rs, "id")) {
                 row.id = rs.getInt("id");
             }
-            if (hasColumn(rs, "cause")) {
-                row.cause = rs.getString("cause");
-                if (rs.wasNull()) {
-                    row.cause = null;
-                }
-            }
-            if (hasColumn(rs, "new_price")) {
-                row.newPrice = rs.getDouble("new_price");
-            }
-            if (hasColumn(rs, "old_price")) {
-                row.oldPrice = rs.getDouble("old_price");
+            if (hasColumn(rs, "amount")) {
+                row.amount = rs.getInt("amount");
             }
             if (hasColumn(rs, "stock_id")) {
                 row.stockId = rs.getInt("stock_id");
             }
-            if (hasColumn(rs, "time")) {
-                row.time = rs.getLong("time");
+            if (hasColumn(rs, "user_id")) {
+                row.userId = rs.getInt("user_id");
             }
             rows[i] = row;
             i++;

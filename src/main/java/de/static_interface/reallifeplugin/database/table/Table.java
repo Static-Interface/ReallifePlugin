@@ -32,8 +32,9 @@ public abstract class Table<T> {
     public static final String CORP_TRADES_TABLE = "corp_trades";
     public static final String CORP_USERS_TABLE = "corp_users";
     public static final String STOCKS_TABLE = "stocks";
-    public static final String STOCKS_TRADES_TABLE = "stocks_trades";
-    public static final String STOCKS_PRICE_TABLE = "stocks_price";
+    public static final String STOCK_TRADES_TABLE = "stock_trades";
+    public static final String STOCK_PRICE_TABLE = "stock_price";
+    public static final String STOCK_USERS_TABLE = "stock_users";
     private final String name;
     protected Database db;
 

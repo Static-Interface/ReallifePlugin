@@ -14,13 +14,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database.table.row.stockmarket;
+package de.static_interface.reallifeplugin.stockmarket;
 
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
+import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 
 import java.sql.SQLException;
 
@@ -35,7 +36,7 @@ public class Stock {
         this.id = id;
 
         stocksTable = db.getStocksTable();
-        stocksTradeHistoryTable = db.getStocksTradeHistoryTable();
+        stocksTradeHistoryTable = db.getStockTradeHistoryTable();
     }
 
     public int getAmount() {

@@ -21,7 +21,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockPricesTable;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockUsersTable;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import org.bukkit.plugin.Plugin;
 
@@ -42,7 +44,9 @@ public abstract class Database {
     private CorpTradesTable corpTradesTable;
 
     private StocksTable stocksTable;
-    private StockTradesTable stocksTradeHistoryTable;
+    private StockTradesTable stockTradeHistoryTable;
+    private StockUsersTable stockUsersTable;
+    private StockPricesTable stockPriceTable;
 
     public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type) {
         this.plugin = plugin;
@@ -93,8 +97,14 @@ public abstract class Database {
             stocksTable = new StocksTable(this);
             stocksTable.create();
 
-            stocksTradeHistoryTable = new StockTradesTable(this);
-            stocksTradeHistoryTable.create();
+            stockPriceTable = new StockPricesTable(this);
+            stockPriceTable.create();
+
+            stockTradeHistoryTable = new StockTradesTable(this);
+            stockTradeHistoryTable.create();
+
+            stockUsersTable = new StockUsersTable(this);
+            stockUsersTable.create();
         } catch (SQLException e) {
             connection.close();
             throw e;
@@ -117,8 +127,16 @@ public abstract class Database {
         return stocksTable;
     }
 
-    public StockTradesTable getStocksTradeHistoryTable() {
-        return stocksTradeHistoryTable;
+    public StockPricesTable getStockPriceTable() {
+        return stockPriceTable;
+    }
+
+    public StockTradesTable getStockTradeHistoryTable() {
+        return stockTradeHistoryTable;
+    }
+
+    public StockUsersTable getStockUsersTable() {
+        return stockUsersTable;
     }
 
     public SQLTemplates getDialect() {

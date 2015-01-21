@@ -27,7 +27,7 @@ import java.sql.SQLException;
 public class StockTradesTable extends Table<StockTradeRow> {
 
     public StockTradesTable(Database db) {
-        super(Table.STOCKS_TRADES_TABLE, db);
+        super(Table.STOCK_TRADES_TABLE, db);
     }
 
     @Override
