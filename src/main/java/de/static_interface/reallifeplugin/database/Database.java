@@ -16,10 +16,13 @@
 
 package de.static_interface.reallifeplugin.database;
 
+import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariDataSource;
-import de.static_interface.reallifeplugin.database.table.CorpTradesTable;
-import de.static_interface.reallifeplugin.database.table.CorpUsersTable;
-import de.static_interface.reallifeplugin.database.table.CorpsTable;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
@@ -29,17 +32,23 @@ public abstract class Database {
 
     private final DatabaseConfiguration config;
     private final DatabaseType type;
-    protected HikariDataSource db;
+    private final SQLTemplates dialect;
+    protected HikariDataSource dataSource;
     protected Plugin plugin;
     protected Connection connection;
+
     private CorpsTable corpsTable;
     private CorpUsersTable corpUsersTable;
     private CorpTradesTable corpTradesTable;
+
+    private StocksTable stocksTable;
+    private StockTradesTable stocksTradeHistoryTable;
 
     public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type) {
         this.plugin = plugin;
         this.type = type;
         this.config = config;
+        this.dialect = generateDialect();
     }
 
     public abstract void setupConfig();
@@ -47,6 +56,8 @@ public abstract class Database {
     public abstract void connect() throws SQLException;
 
     public abstract void close() throws SQLException;
+
+    public abstract SQLTemplates generateDialect();
 
     public DatabaseConfiguration getConfig() {
         return config;
@@ -79,6 +90,11 @@ public abstract class Database {
             corpTradesTable = new CorpTradesTable(this);
             corpTradesTable.create();
 
+            stocksTable = new StocksTable(this);
+            stocksTable.create();
+
+            stocksTradeHistoryTable = new StockTradesTable(this);
+            stocksTradeHistoryTable.create();
         } catch (SQLException e) {
             connection.close();
             throw e;
@@ -95,5 +111,17 @@ public abstract class Database {
 
     public CorpTradesTable getCorpTradesTable() {
         return corpTradesTable;
+    }
+
+    public StocksTable getStocksTable() {
+        return stocksTable;
+    }
+
+    public StockTradesTable getStocksTradeHistoryTable() {
+        return stocksTradeHistoryTable;
+    }
+
+    public SQLTemplates getDialect() {
+        return dialect;
     }
 }

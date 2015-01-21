@@ -20,100 +20,37 @@ import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.CorpUsersTable;
-import de.static_interface.reallifeplugin.database.table.CorpsTable;
-import de.static_interface.reallifeplugin.database.table.row.CorpRow;
-import de.static_interface.reallifeplugin.database.table.row.CorpUserRow;
-import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpRow;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 public class Corporation {
 
     private final int id;
-    private final Database db;
 
     private CorpsTable corpsTable;
     private CorpUsersTable corpUsersTable;
 
     public Corporation(Database db, int id) {
         this.id = id;
-        this.db = db;
 
         corpsTable = db.getCorpsTable();
         corpUsersTable = db.getCorpUsersTable();
-    }
-
-    public List<UUID> getCoCEOs() {
-        List<UUID> tmp = new ArrayList<>();
-        ResultSet resultSet;
-        try {
-            resultSet = db.getCorpUsersTable().executeQuery("SELECT * FROM `{TABLE}` WHERE `corp_id`=? AND `isCoCeo`=1",
-                                                            id);
-            while (resultSet.next()) {
-                tmp.add(UUID.fromString(resultSet.getString("uuid")));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return tmp;
-    }
-
-    public void setBase(World world, String regionId) {
-        try {
-            corpsTable.executeQuery("UPDATE `{TABLE}` SET `base_id`=?, `base_world`=? WHERE `id`=?", regionId, world.getName(), id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String getName() {
-        return getBase().corpName;
-    }
-
-    public void addMember(UUID uuid) {
-        removeMember(uuid);
-        if (getBaseRegion() != null) {
-            DefaultDomain rgMembers = getBaseRegion().getMembers();
-            rgMembers.addPlayer(BukkitUtil.getNameByUniqueId(uuid));
-            getBaseRegion().setMembers(rgMembers);
-        }
-    }
-
-    public void removeMember(UUID uuid) {
-        resetUser(uuid);
-        if (getBaseRegion() != null && getBaseRegion().getMembers() != null) {
-            DefaultDomain rgMembers = getBaseRegion().getMembers();
-            rgMembers.removePlayer(BukkitUtil.getNameByUniqueId(uuid));
-            getBaseRegion().setMembers(rgMembers);
-        }
-    }
-
-    public void resetUser(UUID uuid) {
-        removeCoCeo(uuid);
-        setRank(uuid, CorporationRanks.RANK_DEFAULT);
-    }
-
-    public double getBalance() {
-        return getBase().balance;
-    }
-
-    private CorpRow getBase() {
-        try {
-            return db.getCorpsTable().get("SELECT * FROM `{TABLE}` WHERE `id`=?", id)[0];
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public boolean addBalance(double amount) {
@@ -121,14 +58,18 @@ public class Corporation {
     }
 
     public boolean addBalance(double amount, boolean checkAmount) {
-        if (checkAmount && getBalance() < amount) {
+        if (amount == 0) {
+            return true;
+        }
+
+        if (checkAmount && amount < 0 && getBalance() < amount) {
             return false;
         }
 
         double newAmount = getBalance() + amount;
 
         try {
-            corpsTable.executeQuery("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, id);
+            corpsTable.executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, id);
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -137,30 +78,85 @@ public class Corporation {
         return true;
     }
 
-    public ProtectedRegion getBaseRegion() {
-        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().base_world)).getRegion(getBase().base_id);
+    public void addCoCeo(IngameUser user) {
+        try {
+            if (!isMember(user)) {
+                resetUser(user, false);
+                addMember(user);
+            }
+            corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `isCoCeo`=1 WHERE `uuid`=?", user.getUniqueId().toString());
+            setRank(user, CorporationRanks.RANK_CO_CEO);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public String getFormattedName() {
-        return ChatColor.DARK_GREEN + getName().replace("_", " ") + ChatColor.RESET;
+    public void addMember(IngameUser user) {
+        resetUser(user, true);
+        CorporationUtil.insertUser(user, CorporationRanks.RANK_DEFAULT);
+        try {
+            corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `corp_id`=? WHERE `uuid`=?", id, user.getUniqueId().toString());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        setRank(user, CorporationRanks.RANK_DEFAULT);
+
+        if (getBaseRegion() != null) {
+            DefaultDomain rgMembers = getBaseRegion().getMembers();
+            rgMembers.addPlayer(user.getUniqueId());
+            getBaseRegion().setMembers(rgMembers);
+        }
     }
 
-    public Set<UUID> getMembers() {
-        Set<UUID> members = getAllMembers();
-        for (UUID member : members) {
-            if (isCeo(member) || isCoCeo(member)) {
-                members.remove(member);
+    public void removeMember(IngameUser user) {
+        resetUser(user, false);
+        setRank(user, CorporationRanks.RANK_DEFAULT);
+
+        if (getBaseRegion() != null && getBaseRegion().getMembers() != null) {
+            DefaultDomain rgMembers = getBaseRegion().getMembers();
+            rgMembers.removePlayer(user.getUniqueId());
+            getBaseRegion().setMembers(rgMembers);
+        }
+    }
+
+    public void removeCoCeo(IngameUser user) {
+        try {
+            if (!isMember(user)) {
+                throw new IllegalArgumentException(user.toString() + " is not a member of the corporation: " + getName() + "!");
+            }
+            corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `isCoCeo`=0 WHERE `uuid`=?", user.getUniqueId().toString());
+            setRank(user, CorporationRanks.RANK_DEFAULT);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void resetUser(IngameUser user, boolean ignoreFailure) {
+        if (isCoCeo(user)) {
+            removeCoCeo(user);
+        }
+        setRank(user, CorporationRanks.RANK_DEFAULT);
+
+        try {
+            corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `isCoCeo`=0 , `corp_id`=NULL WHERE `uuid`=?", user.getUniqueId().toString());
+        } catch (Exception e) {
+            if (!ignoreFailure) {
+                throw new RuntimeException(e);
             }
         }
-        return members;
     }
 
-    public Set<UUID> getAllMembers() {
-        Set<UUID> members = new HashSet<>();
+    public Set<IngameUser> getMembers(boolean excludeCeo) {
+        Set<IngameUser> members = new HashSet<>();
         try {
-            CorpUserRow[] result = db.getCorpUsersTable().get("SELECT `uuid` from `{TABLE}` WHERE `corp_id`=?", id);
+            CorpUserRow[] result = corpUsersTable.get("SELECT `uuid` from `{TABLE}` WHERE `corp_id`=?", id);
             for (CorpUserRow row : result) {
-                members.add(row.uuid);
+                IngameUser member = SinkLibrary.getInstance().getIngameUser(row.uuid);
+                if (excludeCeo && (isCeo(member) || isCoCeo(member))) {
+                    continue;
+                }
+                members.add(member);
             }
             return members;
         } catch (SQLException e) {
@@ -168,79 +164,97 @@ public class Corporation {
         }
     }
 
-    public UUID getCEO() {
-        return getBase().ceo;
+    public double getBalance() {
+        return getBase().balance;
     }
 
-    public void setCEO(UUID uuid) {
+    private CorpRow getBase() {
         try {
-            resetUser(uuid);
-            addMember(uuid);
-            corpsTable.executeQuery("UPDATE `{TABLE}` SET `ceo_uuid`=? WHERE `id`=?", uuid.toString(), id);
-            setRank(uuid, CorporationRanks.RANK_CEO);
+            return corpsTable.get("SELECT * FROM `{TABLE}` WHERE `id`=?", id)[0];
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void addCoCeo(UUID uuid) {
+    public ProtectedRegion getBaseRegion() {
+        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().baseWorld)).getRegion(getBase().baseId);
+    }
+
+    public IngameUser getCEO() {
+        return SinkLibrary.getInstance().getIngameUser(getBase().ceoUniqueId);
+    }
+
+    public void setCEO(IngameUser user) {
         try {
-            if (!isMember(uuid)) {
-                resetUser(uuid);
+            resetUser(user, true);
+            addMember(user);
+            corpsTable.executeUpdate("UPDATE `{TABLE}` SET `ceo_uuid`=? WHERE `id`=?", user.getUniqueId().toString(), id);
+            setRank(user, CorporationRanks.RANK_CEO);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isCoCeo(IngameUser user) {
+        return getCoCEOs().contains(user);
+    }
+
+    public List<IngameUser> getCoCEOs() {
+        List<IngameUser> tmp = new ArrayList<>();
+        CorpUserRow[] result;
+        try {
+            result = corpUsersTable.get("SELECT * FROM `{TABLE}` WHERE `corp_id`=? AND `isCoCeo`=1",
+                                        id);
+
+            for (CorpUserRow row : result) {
+                tmp.add(SinkLibrary.getInstance().getIngameUser(row.uuid));
             }
-            addMember(uuid);
-            corpUsersTable.executeQuery("UPDATE `{TABLE}` SET `isCoCeo`=1 WHERE `uuid`=?", uuid.toString());
-            setRank(uuid, CorporationRanks.RANK_CO_CEO);
+
+            return tmp;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean isMember(UUID uuid) {
-        return getMembers().contains(uuid);
+    public String getFormattedName() {
+        return ChatColor.DARK_GREEN + getName().replace("_", " ") + ChatColor.RESET;
     }
 
-    public void removeCoCeo(UUID uuid) {
+    public String getName() {
+        return getBase().corpName;
+    }
+
+    @Nullable
+    public String getTag() {
+        return getBase().tag;
+    }
+
+    public void setTag(String tag) {
+        if (tag.length() < 2 || tag.length() > 4) {
+            throw new IllegalArgumentException("Min Tag Length: 2 , Max Tag length: 4");
+        }
+
         try {
-            corpUsersTable.executeQuery("UPDATE `{TABLE}` SET `isCoCeo`=0 WHERE `uuid`=?", uuid.toString());
+            corpsTable.executeUpdate("UPDATE `{TABLE}` SET `tag`=? WHERE `id`=?", tag, id);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-        setRank(uuid, CorporationRanks.RANK_DEFAULT);
     }
 
-    public boolean isCoCeo(UUID uuid) {
-        return getCoCEOs().contains(uuid);
-    }
-
-    public void setRank(UUID uuid, String rank) {
-        rank = ChatColor.translateAlternateColorCodes('&', rank);
-
-        if (!rank.startsWith(ChatColor.COLOR_CHAR + "")) {
-            rank = ChatColor.GOLD + rank;
-        }
-
+    public String getRank(IngameUser user) {
         try {
-            corpUsersTable.executeQuery("UPDATE `{TABLE}` SET `rank`=? WHERE `uuid`=?", rank, uuid.toString());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String getRank(UUID uuid) {
-        try {
-            CorpUserRow[] rows = db.getCorpUsersTable().get("SELECT `rank` FROM `{TABLE}` WHERE `uuid`=?", uuid.toString());
+            CorpUserRow[] rows = corpUsersTable.get("SELECT `rank` FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString());
             String rank = rows[0].rank;
 
             if (StringUtil.isEmptyOrNull(rank)) {
-                if (getCEO() == uuid) {
-                    setRank(uuid, CorporationRanks.RANK_CEO);
-                } else if (isCoCeo(uuid)) {
-                    setRank(uuid, CorporationRanks.RANK_CO_CEO);
+                if (isCeo(user)) {
+                    setRank(user, CorporationRanks.RANK_CEO);
+                } else if (isCoCeo(user)) {
+                    setRank(user, CorporationRanks.RANK_CO_CEO);
                 } else {
-                    setRank(uuid, CorporationRanks.RANK_DEFAULT);
+                    setRank(user, CorporationRanks.RANK_DEFAULT);
                 }
-                return getRank(uuid);
+                return getRank(user);
             }
 
             return rank;
@@ -250,8 +264,38 @@ public class Corporation {
         }
     }
 
-    public boolean isCeo(UUID uniqueId) {
-        return getCEO().equals(uniqueId);
+    public boolean isMember(IngameUser user) {
+        try {
+            return corpUsersTable.get("SELECT * from `{TABLE}` WHERE `uuid`=? AND `corp_id`=?", user.getUniqueId().toString(), id).length > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setBase(World world, String regionId) {
+        try {
+            corpsTable.executeUpdate("UPDATE `{TABLE}` SET `base_id`=?, `base_world`=? WHERE `id`=?", regionId, world.getName(), id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setRank(IngameUser user, String rank) {
+        rank = ChatColor.translateAlternateColorCodes('&', rank);
+
+        if (!rank.startsWith(ChatColor.COLOR_CHAR + "")) {
+            rank = ChatColor.GOLD + rank;
+        }
+
+        try {
+            corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `rank`=? WHERE `uuid`=?", rank, user.getUniqueId().toString());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isCeo(IngameUser user) {
+        return getCEO().getUniqueId().equals(user.getUniqueId());
     }
 
     public final int getId() {

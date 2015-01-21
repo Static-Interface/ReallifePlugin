@@ -14,16 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database.table.row;
+package de.static_interface.reallifeplugin.database.table.row.stockmarket;
 
-import java.util.UUID;
-
-public class CorpUserRow {
+public class StocksPriceRow {
 
     public Integer id;
-    public Integer corpId;
-    public boolean isCoCeo;
-    public long joinTime;
-    public String rank;
-    public UUID uuid;
+    public int new_price;
+    public long time;
+    public int stock_id;
 }

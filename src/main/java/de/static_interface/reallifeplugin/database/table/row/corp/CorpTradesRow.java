@@ -14,13 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.database.table.row.corp;
 
-import de.static_interface.sinklibrary.api.annotation.Unstable;
+import org.bukkit.Location;
+import org.bukkit.Material;
 
-public enum DatabaseType {
-    MYSQL,
-    INVALID,
-    NONE,
-    @Unstable H2
+public class CorpTradesRow {
+    public Integer id;
+    public int signAmount;
+    public int corpId;
+    public Location location;
+    public Material material;
+    public int newAmount;
+    public double price;
+    public int soldAmount;
+    public long time;
+    public int userId;
+    public int type;
 }

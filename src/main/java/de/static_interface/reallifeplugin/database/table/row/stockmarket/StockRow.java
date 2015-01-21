@@ -14,18 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database.table.row;
+package de.static_interface.reallifeplugin.database.table.row.stockmarket;
 
-import java.util.UUID;
+import javax.annotation.Nullable;
 
-public class CorpRow {
+public class StockRow {
 
+    @Nullable
     public Integer id;
-    public double balance;
-    public String base_id;
-    public String base_world;
-    public UUID ceo;
-    public String corpName;
-    public long creationTime;
-    public boolean isdeleted;
+    public int amount;
+    public int corpId;
+    public double dividendPercent;
+    public double base;
+    public long time;
 }

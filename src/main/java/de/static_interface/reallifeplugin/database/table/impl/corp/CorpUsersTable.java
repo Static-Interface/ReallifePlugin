@@ -14,10 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database.table;
+package de.static_interface.reallifeplugin.database.table.impl.corp;
 
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.row.CorpUserRow;
+import de.static_interface.reallifeplugin.database.table.Table;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,22 +28,43 @@ import java.util.UUID;
 public class CorpUsersTable extends Table<CorpUserRow> {
 
     public CorpUsersTable(Database db) {
-        super("CorpUsers", db);
+        super(Table.CORP_USERS_TABLE, db);
     }
 
     @Override
     public void create() throws SQLException {
-        String sql =
-                "CREATE TABLE IF NOT EXISTS `" + db.getConfig().getTablePrefix() + getName() + "` ("
-                + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                + "`corp_id` INT,"
-                + "`isCoCeo` TINYINT(0) NOT NULL,"
-                + "`join_time` BIGINT NOT NULL,"
-                + "`rank` VARCHAR(36) NOT NULL,"
-                + "`uuid` VARCHAR(36) NOT NULL,"
-                + "INDEX `corp_id_I` (`corp_id`),"
-                + "INDEX `isCoCeo_I` (`isCoCeo`)"
-                + ");";
+        String sql;
+
+        switch (db.getType()) {
+            case H2:
+                sql =
+                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
+                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                        + "corp_id INT,"
+                        + "isCoCeo TINYINT(0) NOT NULL,"
+                        + "rank VARCHAR(36),"
+                        + "uuid VARCHAR(36) NOT NULL,"
+                        + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
+                        + "(id) ON UPDATE CASCADE ON DELETE SET NULL"
+                        + ");"
+                        + "CREATE INDEX IF NOT EXISTS corp_id_I ON " + getName() + "(corp_id);";
+                break;
+
+            case MYSQL:
+            default:
+                sql =
+                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
+                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                        + "`corp_id` INT,"
+                        + "`isCoCeo` TINYINT(0) NOT NULL,"
+                        + "`rank` VARCHAR(36),"
+                        + "`uuid` VARCHAR(36) NOT NULL,"
+                        + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
+                        + "`(`id`) ON UPDATE CASCADE ON DELETE SET NULL,"
+                        + "INDEX `corp_id_I` (`corp_id`)"
+                        + ");";
+                break;
+        }
         PreparedStatement statement = db.getConnection().prepareStatement(sql);
         statement.executeUpdate();
         statement.close();
@@ -54,8 +76,10 @@ public class CorpUsersTable extends Table<CorpUserRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?);";
-        return executeQuery(sql, row.corpId, row.isCoCeo, row.joinTime, row.rank, row.uuid.toString());
+        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?);";
+        executeUpdate(sql, row.corpId, row.isCoCeo, row.rank, row.uuid.toString());
+
+        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 
     @Override
@@ -82,11 +106,11 @@ public class CorpUsersTable extends Table<CorpUserRow> {
             if (hasColumn(rs, "isCoCeo")) {
                 row.isCoCeo = rs.getBoolean("isCoCeo");
             }
-            if (hasColumn(rs, "join_time")) {
-                row.joinTime = rs.getLong("join_time");
-            }
             if (hasColumn(rs, "rank")) {
                 row.rank = rs.getString("rank");
+                if (rs.wasNull()) {
+                    row.rank = null;
+                }
             }
             if (hasColumn(rs, "uuid")) {
                 row.uuid = UUID.fromString(rs.getString("uuid"));

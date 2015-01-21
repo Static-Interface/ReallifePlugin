@@ -16,15 +16,21 @@
 
 package de.static_interface.reallifeplugin;
 
-import de.static_interface.reallifeplugin.model.*;
+import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.sinklibrary.api.annotation.Unstable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
+@Unstable
 public class PayDayQueue {
-    //Todo: Dump data with json when plugin is beeing unloaded, load with onEnable
+    //Todo: Dump data with json(?) when plugin is beeing unloaded, load with onEnable
 
     private static HashMap<UUID, List<Entry>> queue = new HashMap<>();
 
+    @Unstable
     public static void addToQueue(UUID uuid, Entry entry) {
         List<Entry> list;
         if (!queue.containsKey(uuid)) {

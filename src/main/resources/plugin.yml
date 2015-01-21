@@ -4,7 +4,7 @@ description: A bukkit reallife plugin
 author: Trojaner
 website: http://static-interface.de
 main: de.static_interface.reallifeplugin.ReallifeMain
-soft-depend: [SinkLibrary, WorldGuard]
+depend: [SinkLibrary, WorldGuard]
 
 commands:
   reallifeplugin:
@@ -25,6 +25,10 @@ commands:
     description: Ad Command
     permission: reallifeplugin.ad
     usage: "/<command> text"
+  stockmarket:
+    description: Stockmarkets
+    aliases: sm
+    permission: reallifeplugin.stockmarket.use
 
 permissions:
   reallifeplugin.command:
@@ -36,4 +40,6 @@ permissions:
   reallifeplugin.corporation:
      default: true
   reallifeplugin.ad:
+     default: true
+  reallifeplugin.stockmarket.use:
      default: true

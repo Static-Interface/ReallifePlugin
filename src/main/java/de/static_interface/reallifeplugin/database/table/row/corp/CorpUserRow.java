@@ -14,13 +14,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.database.table.row.corp;
 
-import de.static_interface.sinklibrary.api.annotation.Unstable;
+import java.util.UUID;
 
-public enum DatabaseType {
-    MYSQL,
-    INVALID,
-    NONE,
-    @Unstable H2
+import javax.annotation.Nullable;
+
+public class CorpUserRow {
+    public Integer id;
+    @Nullable
+    public Integer corpId;
+    public boolean isCoCeo;
+    @Nullable
+    public String rank;
+    public UUID uuid;
 }

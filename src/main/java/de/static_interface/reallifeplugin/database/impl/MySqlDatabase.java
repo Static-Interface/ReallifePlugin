@@ -16,6 +16,8 @@
 
 package de.static_interface.reallifeplugin.database.impl;
 
+import com.mysema.query.sql.MySQLTemplates;
+import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.static_interface.reallifeplugin.database.Database;
@@ -43,15 +45,15 @@ public class MySqlDatabase extends Database {
         hConfig.addDataSourceProperty("password", getConfig().getPassword());
         hConfig.addDataSourceProperty("autoDeserialize", true);
         hConfig.setConnectionTimeout(5000);
-        db = new HikariDataSource(hConfig);
+        dataSource = new HikariDataSource(hConfig);
     }
 
     @Override
     public void connect() throws SQLException {
         try {
-            connection = db.getConnection();
+            connection = dataSource.getConnection();
         } catch (SQLException e) {
-            db.close();
+            dataSource.close();
             throw e;
         }
     }
@@ -62,8 +64,13 @@ public class MySqlDatabase extends Database {
             connection.close();
         }
 
-        if (db != null) {
-            db.close();
+        if (dataSource != null) {
+            dataSource.close();
         }
+    }
+
+    @Override
+    public SQLTemplates generateDialect() {
+        return new MySQLTemplates();
     }
 }

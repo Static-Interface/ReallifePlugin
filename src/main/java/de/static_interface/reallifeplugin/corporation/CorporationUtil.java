@@ -18,17 +18,22 @@ package de.static_interface.reallifeplugin.corporation;
 
 import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
+import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.row.CorpRow;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpRow;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.user.IngameUser;
-import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,12 +41,18 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,11 +62,11 @@ public class CorporationUtil {
 
     public static final BlockFace[]
             SIGN_FACES = {BlockFace.SELF, BlockFace.DOWN, BlockFace.UP, BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
-    private static List<Corporation> corporations;
 
-    public static Corporation getUserCorporation(UUID uuid) {
-        for (Corporation corporation : corporations) {
-            if (corporation.getAllMembers().contains(uuid)) {
+    @Nullable
+    public static Corporation getUserCorporation(IngameUser user) {
+        for (Corporation corporation : getCorporations()) {
+            if (corporation.getMembers(false).contains(user)) {
                 return corporation;
             }
         }
@@ -65,6 +76,7 @@ public class CorporationUtil {
     @Nullable
     public static Integer getUserId(IngameUser user) {
         Database db = ReallifeMain.getInstance().getDB();
+
         try {
             return db.getCorpUsersTable().get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString())[0].id;
         } catch (SQLException e) {
@@ -73,25 +85,61 @@ public class CorporationUtil {
         }
     }
 
-    public static void registerCorporationsFromDatabase() {
+    public static CorpUserRow getCorpUser(int userId) {
         Database db = ReallifeMain.getInstance().getDB();
-        CorpRow[] rows;
         try {
-            rows = db.getCorpsTable().get("SELECT * FROM `{TABLE}` WHERE `isdeleted`=0");
+            return db.getCorpUsersTable().get("SELECT * FROM `{TABLE}` WHERE `id`=?", userId)[0];
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        corporations = new ArrayList<>();
-        for (CorpRow row : rows) {
-            Debug.log("Registering corporation: " + row.corpName);
-            Corporation corp = new Corporation(db, row.id);
-            register(corp);
+    }
+
+    @Nullable
+    public static CorpUserRow getCorpUser(IngameUser user) {
+        Database db = ReallifeMain.getInstance().getDB();
+        try {
+            CorpUserRow[] rows = db.getCorpUsersTable().get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString());
+            if (rows.length < 1) {
+                return null;
+            }
+            return rows[0];
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static String getFormattedName(UUID uuid) {
-        IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
+    public static boolean hasEntry(IngameUser user) {
+        try {
+            return ReallifeMain.getInstance().getDB().getCorpUsersTable()
+                           .get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString()).length > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public static CorpUserRow insertUser(IngameUser user, @Nullable String rank) {
+        if (hasEntry(user)) {
+            return getCorpUser(user);
+        }
+        Database db = ReallifeMain.getInstance().getDB();
+        if (rank == null) {
+            rank = CorporationRanks.RANK_DEFAULT;
+        }
+        try {
+            CorpUserRow row = new CorpUserRow();
+            row.id = null;
+            row.corpId = null;
+            row.isCoCeo = false;
+            row.rank = rank;
+            row.uuid = user.getUniqueId();
+
+            return db.getCorpUsersTable().insert(row);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getFormattedName(IngameUser user) {
         String name =
                 ChatColor.stripColor(user.getDisplayName() == null ? user.getName() : user.getDisplayName());
 
@@ -99,11 +147,11 @@ public class CorporationUtil {
             return null;
         }
 
-        Corporation corp = getUserCorporation(uuid);
+        Corporation corp = getUserCorporation(user);
         if (corp == null) {
             return ChatColor.GOLD + name;
         }
-        String rank = corp.getRank(uuid);
+        String rank = corp.getRank(user);
         if (ChatColor.stripColor(rank).isEmpty()) {
             return rank + name;
         }
@@ -112,7 +160,7 @@ public class CorporationUtil {
 
     @Nullable
     public static Corporation getCorporation(String name) {
-        for (Corporation corporation : corporations) {
+        for (Corporation corporation : getCorporations()) {
             if (corporation.getName().equalsIgnoreCase(name)) {
                 return corporation;
             }
@@ -123,10 +171,20 @@ public class CorporationUtil {
 
     @Nullable
     public static Corporation getCorporation(Location location) {
-        for (Corporation corporation : corporations) {
+        for (Corporation corporation : getCorporations()) {
             ProtectedRegion region = corporation.getBaseRegion();
             Vector vec = BukkitUtil.toVector(location);
             if (region.contains(vec)) {
+                return corporation;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static Corporation getCorporation(int id) {
+        for (Corporation corporation : getCorporations()) {
+            if (corporation.getId() == id) {
                 return corporation;
             }
         }
@@ -154,11 +212,11 @@ public class CorporationUtil {
     }
 
     public static boolean hasCeoPermissions(IngameUser user, Corporation corporation) {
-        return corporation != null && (corporation.getCEO().equals(user.getUniqueId())
-                                       || corporation.getCoCEOs().contains(user.getUniqueId()));
+        return corporation != null && (corporation.getCEO().equals(user))
+               || corporation.getCoCEOs().contains(user);
     }
 
-    public static boolean createCorporation(@Nullable SinkUser user, String name, UUID ceo, String base, World world) {
+    public static boolean createCorporation(@Nullable SinkUser user, String name, String username, String base, World world) {
         if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help")
             || name.equals("deposit") || name.equals("list") || name.equals("leave")) {
             if (user != null) {
@@ -174,35 +232,123 @@ public class CorporationUtil {
             return false;
         }
 
-        CorpRow row = new CorpRow();
-        row.base_id = base;
-        row.base_world = world.getName();
-        row.ceo = ceo;
-        row.corpName = name;
-        row.creationTime = System.currentTimeMillis();
-        row.isdeleted = false;
+        if (username == null) {
+            return false;
+        }
 
-        Database db = ReallifeMain.getInstance().getDB();
+        IngameUser ceo = SinkLibrary.getInstance().getIngameUser(username, true);
+
+        CorpRow row = new CorpRow();
+        row.baseId = base;
+        row.baseWorld = world.getName();
+        row.ceoUniqueId = ceo.getUniqueId();
+        row.corpName = name;
+        row.time = System.currentTimeMillis();
+        row.isDeleted = false;
+
         try {
-            row = db.getCorpsTable().insert(row);
-        } catch (SQLException e) {
+            Database db = ReallifeMain.getInstance().getDB();
+            insertUser(ceo, CorporationRanks.RANK_CEO);
+            db.getCorpsTable().insert(row);
+        } catch (Exception e) {
             if (user != null) {
                 user.sendMessage("Error: " + e.getMessage());
             }
             throw new RuntimeException(e);
         }
 
-        Corporation corporation = new Corporation(db, row.id);
-        register(corporation);
+        getCorporation(name).setCEO(ceo);
         return true;
     }
 
-    private static void register(Corporation corporation) {
-        corporations.add(corporation);
-    }
+    public static boolean migrate(SinkUser user) {
+        Configuration
+                config =
+                new Configuration(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Corporations.yml"), true) {
+                    @Override
+                    public void addDefaults() {
+                    }
+                };
 
-    private static void unregister(Corporation corporation) {
-        corporations.remove(corporation);
+        if (!config.exists()) {
+            return false;
+        }
+        YamlConfiguration yconfig = config.getYamlConfiguration();
+        ConfigurationSection section = yconfig.getConfigurationSection("Corporations");
+        if (section == null) {
+            return false;
+        }
+        for (String corpName : section.getKeys(false)) {
+            try {
+                if (getCorporation(corpName) != null) {
+                    continue;
+                }
+
+                user.sendMessage(ChatColor.DARK_GREEN + "Migrating: " + corpName);
+                double balance = VaultBridge.getBalance("Corp_" + corpName.replace("_", ""));
+
+                List<UUID> addedUsers = new ArrayList<>();
+                UUID ceo = Bukkit.getOfflinePlayer(
+                        UUID.fromString((String) config.get("Corporations." + corpName + ".CEO"))).getUniqueId();
+                addedUsers.add(ceo);
+
+                String[] baseraw = ((String) config.get("Corporations." + corpName + ".Base")).split(":");
+
+                World world = Bukkit.getWorld(baseraw[0]);
+                String regionId = baseraw[1];
+
+                ProtectedRegion region = ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);
+                region.setMembers(new DefaultDomain());
+
+                createCorporation(null, corpName, Bukkit.getOfflinePlayer(ceo).getName(), regionId, world);
+                Corporation corp = getCorporation(corpName);
+
+                Database db = ReallifeMain.getInstance().getDB();
+
+                db.getCorpsTable().executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", balance, corp.getId());
+
+                for (String s : config.getYamlConfiguration().getStringList("Corporations." + corpName + ".CoCEOs")) {
+                    IngameUser coceo = SinkLibrary.getInstance().getIngameUser(UUID.fromString(s));
+                    if (addedUsers.contains(coceo.getUniqueId())) {
+                        continue;
+                    }
+                    corp.addCoCeo(coceo);
+                    addedUsers.add(coceo.getUniqueId());
+                }
+
+                Gson gson = new Gson();
+
+                String json = (String) config.get("Corporations." + corpName + ".Members");
+                Type typetoken = new TypeToken<HashMap<String, String>>() {
+                }.getType();
+                HashMap<String, String> map = gson.fromJson(json, typetoken);
+
+                for (String id : map.keySet()) {
+                    IngameUser member;
+                    try {
+                        member = SinkLibrary.getInstance().getIngameUser(UUID.fromString(id));
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                    if (member == null || !member.hasPlayedBefore()) {
+                        continue;
+                    }
+
+                    if (addedUsers.contains(member.getUniqueId())) {
+                        continue;
+                    }
+                    corp.addMember(member);
+                    corp.setRank(member, map.get(id));
+                    addedUsers.add(member.getUniqueId());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                user.sendMessage(ChatColor.DARK_RED + "Migrating failed: " + corpName);
+            }
+        }
+
+        return true;
     }
 
     public static boolean deleteCorporation(SinkUser user, Corporation corporation) {
@@ -213,8 +359,7 @@ public class CorporationUtil {
 
         Database db = ReallifeMain.getInstance().getDB();
         try {
-            db.getCorpsTable().get("UPDATE `{TABLE}` SET `isdeleted`=1 WHERE `id`=?", corporation.getId());
-            unregister(corporation);
+            db.getCorpsTable().executeUpdate("UPDATE `{TABLE}` SET `isdeleted`=1 WHERE `id`=?", corporation.getId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -224,8 +369,8 @@ public class CorporationUtil {
 
     public static void sendMessage(Corporation corp, String message) {
         message = ChatColor.GRAY + "[" + corp.getFormattedName() + ChatColor.GRAY + "] " + message;
-        for (UUID uuid : corp.getAllMembers()) {
-            Player p = Bukkit.getPlayer(uuid);
+        for (IngameUser user : corp.getMembers(false)) {
+            Player p = Bukkit.getPlayer(user.getUniqueId());
             if (p == null) {
                 continue;
             }
@@ -235,7 +380,24 @@ public class CorporationUtil {
         SinkLibrary.getInstance().getConsoleUser().sendMessage(message);
     }
 
-    public static List<Corporation> getCorporations() {
+    public static Collection<Corporation> getCorporations() {
+        if (!ReallifeMain.getInstance().getSettings().isCorporationsEnabled() || ReallifeMain.getInstance().getDB() == null) {
+            return new ArrayList<>();
+        }
+
+        Database db = ReallifeMain.getInstance().getDB();
+        CorpRow[] rows;
+        try {
+            rows = db.getCorpsTable().get("SELECT * FROM `{TABLE}` WHERE `isdeleted`=0");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        List<Corporation> corporations = new ArrayList<>();
+        for (CorpRow row : rows) {
+            Corporation corp = new Corporation(db, row.id);
+            corporations.add(corp);
+        }
+
         return corporations;
     }
 }

@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.database.table;
 
 import de.static_interface.reallifeplugin.database.Database;
+import org.apache.commons.lang.Validate;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,8 +28,15 @@ import javax.annotation.Nullable;
 
 public abstract class Table<T> {
 
+    public static final String CORPS_TABLE = "corps";
+    public static final String CORP_TRADES_TABLE = "corp_trades";
+    public static final String CORP_USERS_TABLE = "corp_users";
+    public static final String STOCKS_TABLE = "stocks";
+    public static final String STOCKS_TRADES_TABLE = "stocks_trades";
+    public static final String STOCKS_PRICE_TABLE = "stocks_price";
     private final String name;
     protected Database db;
+
 
     public Table(String name, Database db) {
         this.name = name;
@@ -36,17 +44,18 @@ public abstract class Table<T> {
     }
 
     public String getName() {
-        return name;
+        return db.getConfig().getTablePrefix() + name;
     }
 
     public abstract void create() throws SQLException;
 
     public abstract ResultSet serialize(T row) throws SQLException;
 
-    public abstract T[] deserialize(ResultSet resultSet) throws SQLException;
+    public abstract T[] deserialize(ResultSet rs) throws SQLException;
 
     public T[] get(String query, Object... paramObjects) throws SQLException {
-        PreparedStatement statement = db.getConnection().prepareStatement(query);
+        query = query.replaceAll("\\Q{TABLE}\\E", getName());
+        PreparedStatement statement = db.getConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         if (paramObjects != null && paramObjects.length > 0) {
             int i = 1;
             for (Object s : paramObjects) {
@@ -59,10 +68,25 @@ public abstract class Table<T> {
     }
 
     public T insert(T row) throws SQLException {
+        Validate.notNull(row);
         return deserialize(serialize(row))[0];
     }
 
     public ResultSet executeQuery(String sql, @Nullable Object... paramObjects) throws SQLException {
+        sql = sql.replaceAll("\\Q{TABLE}\\E", getName());
+        PreparedStatement statment = db.getConnection().prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                                                         ResultSet.CONCUR_UPDATABLE);
+        if (paramObjects != null) {
+            int i = 1;
+            for (Object s : paramObjects) {
+                statment.setObject(i, s);
+                i++;
+            }
+        }
+        return statment.executeQuery();
+    }
+
+    public void executeUpdate(String sql, @Nullable Object... paramObjects) throws SQLException {
         sql = sql.replaceAll("\\Q{TABLE}\\E", getName());
         PreparedStatement statment = db.getConnection().prepareStatement(sql);
         if (paramObjects != null) {
@@ -72,7 +96,7 @@ public abstract class Table<T> {
                 i++;
             }
         }
-        return statment.executeQuery();
+        statment.executeUpdate();
     }
 
     public boolean hasColumn(ResultSet rs, String columnName) throws SQLException {

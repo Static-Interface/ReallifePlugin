@@ -16,6 +16,8 @@
 
 package de.static_interface.reallifeplugin.database.impl;
 
+import com.mysema.query.sql.H2Templates;
+import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.static_interface.reallifeplugin.database.Database;
@@ -42,17 +44,17 @@ public class H2Database extends Database {
         config.setMaximumPoolSize(10);
         config.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
         config.addDataSourceProperty("user", "sa");
-        config.addDataSourceProperty("url", "jdbc:h2:file:" + new File(plugin.getDataFolder(), "database.db").getAbsolutePath() + ";MV_STORE=FALSE");
+        config.addDataSourceProperty("url", "jdbc:h2:file:" + new File(plugin.getDataFolder(), "database").getAbsolutePath() + ";MV_STORE=FALSE");
         config.setConnectionTimeout(5000);
-        db = new HikariDataSource(config);
+        dataSource = new HikariDataSource(config);
     }
 
     @Override
     public void connect() throws SQLException {
         try {
-            connection = db.getConnection();
+            connection = dataSource.getConnection();
         } catch (SQLException e) {
-            db.close();
+            dataSource.close();
             throw e;
         }
     }
@@ -63,8 +65,13 @@ public class H2Database extends Database {
             connection.close();
         }
 
-        if (db != null) {
-            db.close();
+        if (dataSource != null) {
+            dataSource.close();
         }
+    }
+
+    @Override
+    public SQLTemplates generateDialect() {
+        return new H2Templates();
     }
 }

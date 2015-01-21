@@ -17,33 +17,32 @@
 package de.static_interface.reallifeplugin.database;
 
 import de.static_interface.sinklibrary.api.configuration.Configuration;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 
 public class DatabaseConfiguration extends Configuration {
 
-    private final Plugin plugin;
-
-    public DatabaseConfiguration(Plugin plugin) {
-        super(new File(plugin.getDataFolder(), "Database.yml"), true);
-        this.plugin = plugin;
+    public DatabaseConfiguration(File baseFolder) {
+        super(new File(baseFolder, "Database.yml"), true);
     }
 
     @Override
     public void addDefaults() {
-        addDefault("Type", "MySQL", "Only MySQL is supported ATM");
+        addDefault("Type", "H2");
         addDefault("Address", "localhost");
         addDefault("Port", 3306);
         addDefault("Username", "root");
         addDefault("Password", "");
         addDefault("TablePrefix", "RP_");
-        addDefault("DatabaseName", plugin.getName().replace(" ", ""));
+        addDefault("DatabaseName", "ReallifePlugin");
     }
 
-    public DatabaseType getType() {
-        return DatabaseType.MYSQL;
-        //return DatabaseType.valueOf((String)get("Type"));
+    public DatabaseType getDatabaseType() {
+        try {
+            return DatabaseType.valueOf(((String) get("Type")).toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return DatabaseType.INVALID;
+        }
     }
 
     public String getAddress() {

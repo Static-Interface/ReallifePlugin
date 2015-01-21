@@ -21,9 +21,11 @@ import de.static_interface.reallifeplugin.commands.AdCommand;
 import de.static_interface.reallifeplugin.commands.CorporationCommand;
 import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
-import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.commands.StockMarketCommand;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
+import de.static_interface.reallifeplugin.database.DatabaseType;
+import de.static_interface.reallifeplugin.database.impl.H2Database;
 import de.static_interface.reallifeplugin.database.impl.MySqlDatabase;
 import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
 import de.static_interface.reallifeplugin.listener.CorporationListener;
@@ -48,7 +50,6 @@ public class ReallifeMain extends JavaPlugin {
     private Settings settings = null;
     private PayDayRunnable payDayRunnable = null;
     private BukkitTask payDayTask;
-    private boolean lwcAvailable;
     private Database db;
     public static ReallifeMain getInstance() {
         return instance;
@@ -80,11 +81,26 @@ public class ReallifeMain extends JavaPlugin {
 
         payDayRunnable = new PayDayRunnable();
         payDayTask = Bukkit.getScheduler().runTaskTimer(this, payDayRunnable, delay, delay);
-        lwcAvailable = Bukkit.getPluginManager().getPlugin("LWC") != null;
-        if (getSettings().isCorporationsEnabled()) {
-            DatabaseConfiguration config = new DatabaseConfiguration(this);
-            //Todo: add support for other sql databases
-            db = new MySqlDatabase(config, this);
+
+        DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder());
+        DatabaseType type = config.getDatabaseType();
+        switch (type) {
+            case H2:
+                db = new H2Database(config, this);
+                break;
+            case MYSQL:
+                db = new MySqlDatabase(config, this);
+                break;
+
+            case INVALID:
+                getLogger().log(Level.WARNING, "Invalid Database type: " + config.get("Type"));
+            case NONE:
+                db = null;
+                getSettings().setCorporationsEnabled(false);
+                break;
+        }
+
+        if (db != null) {
             try {
                 db.setupConfig();
                 db.connect();
@@ -101,10 +117,6 @@ public class ReallifeMain extends JavaPlugin {
         registerListeners();
 
         wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
-
-        if (getSettings().isCorporationsEnabled()) {
-            CorporationUtil.registerCorporationsFromDatabase();
-        }
     }
 
     @Nullable
@@ -116,6 +128,14 @@ public class ReallifeMain extends JavaPlugin {
     public void onDisable() {
         if (payDayTask != null) {
             payDayTask.cancel();
+        }
+
+        if (db != null) {
+            try {
+                db.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         instance = null;
     }
@@ -151,6 +171,7 @@ public class ReallifeMain extends JavaPlugin {
             SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
         }
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
+        SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
     }
 
     private void registerListeners() {
@@ -167,6 +188,6 @@ public class ReallifeMain extends JavaPlugin {
     }
 
     public boolean isLwcAvailable() {
-        return lwcAvailable;
+        return Bukkit.getPluginManager().getPlugin("LWC") != null;
     }
 }

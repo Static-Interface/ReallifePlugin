@@ -14,22 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database.table.row;
+package de.static_interface.reallifeplugin.database.table.row.stockmarket;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
-
-public class CorpTradesRow {
+public class StockTradeRow {
 
     public Integer id;
     public int amount;
-    public int corp_id;
-    public Location location;
-    public Material material;
-    public int new_amount;
+    public int newAmount;
     public double price;
-    public int soldAmount;
+    public int stockId;
     public long time;
+    public int type;
     public int userId;
-    public String type;
 }
