@@ -41,7 +41,9 @@ public class StocksTable extends Table<StockRow> {
                         + "amount INT NOT NULL,"
                         + "base_price DOUBLE NOT NULL,"
                         + "corp_id INT NOT NULL UNIQUE KEY,"
-                        + "dividend_percent DOUBLE NOT NULL,"
+                        + "dividend DOUBLE NOT NULL,"
+                        + "price DOUBLE NOT NULL,"
+                        + "share_holding DOUBLE NOT NULL,"
                         + "time BIGINT NOT NULL,"
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
                         + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
@@ -56,7 +58,9 @@ public class StocksTable extends Table<StockRow> {
                         + "`amount` INT NOT NULL,"
                         + "`base_price` DOUBLE NOT NULL,"
                         + "`corp_id` INT NOT NULL UNIQUE KEY,"
-                        + "`dividend_percent` DOUBLE NOT NULL,"
+                        + "`dividend` DOUBLE NOT NULL,"
+                        + "`price` DOUBLE NOT NULL,"
+                        + "`share_holding` DOUBLE NOT NULL,"
                         + "`time` BIGINT NOT NULL,"
                         + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
                         + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE"
@@ -76,7 +80,7 @@ public class StocksTable extends Table<StockRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.base, row.corpId, row.dividendPercent, row.time);
+        executeUpdate(sql, row.amount, row.basePrice, row.corpId, row.dividend, row.price, row.shareHolding, row.time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 
@@ -100,13 +104,16 @@ public class StocksTable extends Table<StockRow> {
                 row.amount = rs.getInt("amount");
             }
             if (hasColumn(rs, "base_price")) {
-                row.base = rs.getDouble("base_price");
+                row.basePrice = rs.getDouble("base_price");
             }
             if (hasColumn(rs, "corp_id")) {
                 row.corpId = rs.getInt("corp_id");
             }
-            if (hasColumn(rs, "dividend_percent")) {
-                row.dividendPercent = rs.getDouble("dividend_percent");
+            if (hasColumn(rs, "dividend")) {
+                row.dividend = rs.getDouble("dividend");
+            }
+            if (hasColumn(rs, "share_holding")) {
+                row.shareHolding = rs.getDouble("share_holding");
             }
             if (hasColumn(rs, "time")) {
                 row.time = rs.getLong("time");

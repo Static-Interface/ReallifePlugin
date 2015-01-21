@@ -47,7 +47,7 @@ public class CorpTradesTable extends Table<CorpTradesRow> {
                         + "new_amount INT NOT NULL,"
                         + "price DOUBLE NOT NULL,"
                         + "sign_amount INT NOT NULL,"
-                        + "sold_amount INT NOT NULL,"
+                        + "changed_amount INT NOT NULL,"
                         + "time BIGINT NOT NULL,"
                         + "type INT NOT NULL,"
                         + "user_id INT NOT NULL,"
@@ -74,7 +74,7 @@ public class CorpTradesTable extends Table<CorpTradesRow> {
                         + "`new_amount` INT NOT NULL,"
                         + "`price` DOUBLE NOT NULL,"
                         + "`sign_amount` INT NOT NULL,"
-                        + "`sold_amount` INT NOT NULL,"
+                        + "`changed_amount` INT NOT NULL,"
                         + "`time` BIGINT NOT NULL,"
                         + "`type` INT NOT NULL,"
                         + "`user_id` INT NOT NULL,"
@@ -105,7 +105,7 @@ public class CorpTradesTable extends Table<CorpTradesRow> {
         Location loc = row.location;
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         executeUpdate(sql, row.corpId, row.material.toString(),
-                      row.newAmount, row.price, row.signAmount, row.soldAmount, row.time, row.type,
+                      row.newAmount, row.price, row.signAmount, row.changedAmount, row.time, row.type,
                       row.userId, loc.getWorld().getName(), (int) loc.getX(), (int) loc.getY(), (int) loc.getZ());
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
@@ -148,8 +148,8 @@ public class CorpTradesTable extends Table<CorpTradesRow> {
             if (hasColumn(rs, "sign_amount")) {
                 row.signAmount = rs.getInt("sign_amount");
             }
-            if (hasColumn(rs, "sold_amount")) {
-                row.soldAmount = rs.getInt("sold_amount");
+            if (hasColumn(rs, "changed_amount")) {
+                row.changedAmount = rs.getInt("changed_amount");
             }
             if (hasColumn(rs, "time")) {
                 row.time = rs.getLong("time");

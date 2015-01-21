@@ -14,21 +14,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database.table.row.corp;
+package de.static_interface.reallifeplugin.event;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-public class CorpTradesRow {
-    public Integer id;
-    public int signAmount;
-    public int corpId;
-    public Location location;
-    public Material material;
-    public int newAmount;
-    public double price;
-    public int changedAmount;
-    public long time;
-    public int userId;
-    public int type;
+public class StocksUpdateEvent extends Event implements Cancellable {
+
+    private static final HandlerList handlers = new HandlerList();
+    boolean cancelled;
+
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean value) {
+        cancelled = value;
+    }
 }

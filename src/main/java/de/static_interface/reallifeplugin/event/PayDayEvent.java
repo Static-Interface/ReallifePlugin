@@ -14,13 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.events;
+package de.static_interface.reallifeplugin.event;
 
-import de.static_interface.reallifeplugin.model.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
+import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.reallifeplugin.model.Group;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This event is fired when a payday starts

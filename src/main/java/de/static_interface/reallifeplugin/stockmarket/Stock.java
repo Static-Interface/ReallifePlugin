@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.stockmarket;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 
@@ -30,13 +29,11 @@ public class Stock {
     private final int id;
 
     private StocksTable stocksTable;
-    private StockTradesTable stocksTradeHistoryTable;
 
     public Stock(Database db, int id) {
         this.id = id;
 
         stocksTable = db.getStocksTable();
-        stocksTradeHistoryTable = db.getStockTradeHistoryTable();
     }
 
     public int getAmount() {
@@ -57,5 +54,13 @@ public class Stock {
 
     public final int getId() {
         return id;
+    }
+
+    public double getPrice() {
+        return getBase().price;
+    }
+
+    public String getTag() {
+        return getCorporation().getTag();
     }
 }

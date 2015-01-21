@@ -80,7 +80,7 @@ public class StockPricesTable extends Table<StockPriceRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?);";
         executeUpdate(sql, row.cause, row.newPrice, row.oldPrice, row.stockId, row.time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }

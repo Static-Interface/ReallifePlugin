@@ -16,18 +16,24 @@
 
 package de.static_interface.reallifeplugin.listener;
 
-import de.static_interface.reallifeplugin.commands.*;
-import de.static_interface.reallifeplugin.entries.*;
-import de.static_interface.reallifeplugin.events.*;
-import de.static_interface.sinklibrary.*;
-import de.static_interface.sinklibrary.user.*;
-import org.bukkit.*;
-import org.bukkit.event.*;
-import org.bukkit.event.entity.*;
-import org.bukkit.event.player.*;
-import org.bukkit.inventory.*;
+import de.static_interface.reallifeplugin.commands.InsuranceCommand;
+import de.static_interface.reallifeplugin.entry.InsuranceEntry;
+import de.static_interface.reallifeplugin.event.PayDayEvent;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.user.IngameUser;
+import org.bukkit.ChatColor;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 public class InsuranceListener implements Listener {
 

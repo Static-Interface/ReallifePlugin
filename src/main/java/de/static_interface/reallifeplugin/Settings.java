@@ -31,7 +31,6 @@ public class Settings extends Configuration {
     public static final String TAXES_MODIFIER = "taxesmodifier";
     public static final String SHOWN_NAME = "shownname";
     public static final String EXCLUDED = "excluded";
-    private boolean corporationsEnabled;
 
     public Settings(Plugin plugin) {
         super(new File(plugin.getDataFolder(), "Settings.yml"), true);
@@ -43,11 +42,14 @@ public class Settings extends Configuration {
         addDefault("General.PaydayTime", 60, "Time in minutes");
         addDefault("General.TaxAccount", "TaxAccount");
         addDefault("General.MinOnlineTime", 30);
+
         addDefault("General.AntiEscapeEnabled", true);
         addDefault("General.CorporationsEnabled", true);
+        //Todo: General.StockMarketEnabled
 
         addDefault("Insurance.Enabled", false);
         addDefault("Insurance.Account", "Insurances");
+        //Todo: add whitelist/blacklist regions for insurances
 
         addDefault("Default.PayDay", 0);
         addDefault("Default.TaxesModifier", 1);
@@ -56,19 +58,23 @@ public class Settings extends Configuration {
 
         addDefault("Ad.Price", 500.0);
 
-        addDefault("Groups.Guest.Payday", 0);
-        addDefault("Groups.Guest.TaxesModifier", 1);
-        addDefault("Groups.Guest.Excluded", true);
-        addDefault("Groups.Guest.ShownName", "%name%");
-
-        addDefault("Groups.Member.Payday", 500);
-        addDefault("Groups.Member.TaxesModifier", 1);
-        addDefault("Groups.Member.Excluded", false);
-        addDefault("Groups.Member.ShownName", "Arbeitsloser");
-
         addDefault("Ad.Timeout", 30);
         addDefault("AntiPvPEscape.BanTime", 5);
     }
+
+    @Override
+    public void onCreate() {
+        set("Groups.Guest.Payday", 0);
+        set("Groups.Guest.TaxesModifier", 1);
+        set("Groups.Guest.Excluded", true);
+        set("Groups.Guest.ShownName", "%name%");
+
+        set("Groups.Member.Payday", 500);
+        set("Groups.Member.TaxesModifier", 1);
+        set("Groups.Member.Excluded", false);
+        set("Groups.Member.ShownName", "Arbeitsloser");
+    }
+
 
     public List<Group> readGroups() {
         List<Group> groups = new ArrayList<>();
@@ -139,7 +145,7 @@ public class Settings extends Configuration {
         return (int) get("General.PaydayTime");
     }
 
-    public String getEconomyAccount() {
+    public String getTaxAccount() {
         return (String) get("General.TaxAccount");
     }
 

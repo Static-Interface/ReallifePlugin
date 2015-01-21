@@ -20,7 +20,14 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockPricesTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
+import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockPriceRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
+import de.static_interface.reallifeplugin.event.StocksUpdateEvent;
+import org.bukkit.Bukkit;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,9 +39,9 @@ import javax.annotation.Nullable;
 public class StockMarketUtil {
 
     @Nullable
-    public static StockRow getStock(int id) {
-        for (StockRow stock : getStocks()) {
-            if (stock.id == id) {
+    public static Stock getStock(int id) {
+        for (Stock stock : getStocks()) {
+            if (stock.getId() == id) {
                 return stock;
             }
         }
@@ -42,22 +49,122 @@ public class StockMarketUtil {
         return null;
     }
 
-    public static Collection<StockRow> getStocks() {
+    public static Collection<Stock> getStocks() {
         Database db = ReallifeMain.getInstance().getDB();
         StockRow[] rows;
         try {
-            rows = db.getStocksTable().get("SELECT * FROM `{TABLE}`", "");
+            rows = db.getStocksTable().get("SELECT id FROM `{TABLE}`");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        List<StockRow> parsedRows = new ArrayList<>();
+
+        List<Stock> parsedRows = new ArrayList<>();
         for (StockRow row : rows) {
             Corporation corp = CorporationUtil.getCorporation(row.corpId);
             if (corp == null) {
                 continue;
             }
-            parsedRows.add(row);
+            Stock stock = new Stock(ReallifeMain.getInstance().getDB(), row.id);
+            parsedRows.add(stock);
         }
         return parsedRows;
+    }
+
+    public static void onStocksUpdate() {
+        StocksUpdateEvent event = new StocksUpdateEvent();
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        Database db = ReallifeMain.getInstance().getDB();
+        for (Stock stock : getStocks()) {
+            double percent;
+            try {
+                percent = calculateStockQuotation(stock);
+            } catch (SQLException e) {
+                ReallifeMain.getInstance().getLogger()
+                        .warning("onStocksUpdate(): Skipping " + stock.getTag() + ": calculateStockQuotation() failed: ");
+                e.printStackTrace();
+                continue;
+            }
+
+            boolean down = percent < 0;
+
+            percent = Math.abs(percent);
+
+            double oldPrice = stock.getPrice();
+            double newPrice = oldPrice;
+
+            if (down) {
+                newPrice = newPrice + (newPrice * percent);
+            } else {
+                newPrice = newPrice - (newPrice * percent);
+            }
+
+            try {
+                StocksTable table = db.getStocksTable();
+                table.executeUpdate("UPDATE `{TABLE}` SET `price`=? WHERE `id`=?", newPrice, stock.getId());
+            } catch (Exception e) {
+                ReallifeMain.getInstance().getLogger().warning("onStocksUpdate(): Skipping " + stock.getTag() + ": Couldn't update price: ");
+                e.printStackTrace();
+                continue;
+            }
+
+            try {
+
+                StockPriceRow row = new StockPriceRow();
+                row.cause = "onStocksUpdate";
+                row.newPrice = newPrice;
+                row.oldPrice = oldPrice;
+                row.stockId = stock.getId();
+                row.time = System.currentTimeMillis();
+
+                StockPricesTable table = db.getStockPriceTable();
+                table.insert(row);
+            } catch (Exception e) {
+                ReallifeMain.getInstance().getLogger().warning(stock.getTag() + ": Couldn't insert price");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static double calculateStockQuotation(Stock stock) throws SQLException {
+        Database db = ReallifeMain.getInstance().getDB();
+        CorpTradesTable corpTrades = db.getCorpTradesTable();
+        long timeSpan = 1000 * 60 * 60 * 24 * 3; // 3 days, Todo: make this configurable
+        long time = System.currentTimeMillis() - timeSpan;
+        long timeBefore = time - timeSpan;
+        CorpTradesRow[]
+                rows =
+                corpTrades.get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ? AND `time` > ? AND `type` = 0", stock.getCorporation().getId(), time);
+
+        // calculate amount
+        long changedAmount = 0;
+        for (CorpTradesRow row : rows) {
+            changedAmount += Math.abs(row.changedAmount);
+        }
+
+        rows =
+                corpTrades.get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ? AND `time` > ? AND `time` < ?  AND `type` = 0",
+                               stock.getCorporation().getId(), timeBefore, time);
+
+        // calculate amount from last time
+        long changedAmountBefore = 0;
+        for (CorpTradesRow row : rows) {
+            changedAmountBefore += Math.abs(row.changedAmount);
+        }
+
+        // compare them
+        if (changedAmount > changedAmountBefore) {
+            return (changedAmount / changedAmountBefore) * 100;
+        }
+
+        if (changedAmountBefore > changedAmount) {
+            return -(changedAmountBefore / changedAmount) * 100;
+        }
+
+        return 0;
     }
 }

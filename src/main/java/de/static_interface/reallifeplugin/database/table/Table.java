@@ -16,6 +16,7 @@
 
 package de.static_interface.reallifeplugin.database.table;
 
+import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import org.apache.commons.lang.Validate;
 
@@ -75,29 +76,51 @@ public abstract class Table<T> {
 
     public ResultSet executeQuery(String sql, @Nullable Object... paramObjects) throws SQLException {
         sql = sql.replaceAll("\\Q{TABLE}\\E", getName());
-        PreparedStatement statment = db.getConnection().prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                                         ResultSet.CONCUR_UPDATABLE);
-        if (paramObjects != null) {
-            int i = 1;
-            for (Object s : paramObjects) {
-                statment.setObject(i, s);
-                i++;
+        try {
+            PreparedStatement statment = db.getConnection().prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                                                             ResultSet.CONCUR_UPDATABLE);
+            if (paramObjects != null) {
+                int i = 1;
+                for (Object s : paramObjects) {
+                    statment.setObject(i, s);
+                    i++;
+                }
             }
+            return statment.executeQuery();
+        } catch (SQLException e) {
+            ReallifeMain.getInstance().getLogger().severe("Couldn't execute SQL query: " + sqlToString(sql, paramObjects));
+            throw e;
         }
-        return statment.executeQuery();
     }
 
     public void executeUpdate(String sql, @Nullable Object... paramObjects) throws SQLException {
         sql = sql.replaceAll("\\Q{TABLE}\\E", getName());
-        PreparedStatement statment = db.getConnection().prepareStatement(sql);
-        if (paramObjects != null) {
-            int i = 1;
-            for (Object s : paramObjects) {
-                statment.setObject(i, s);
-                i++;
+        try {
+            PreparedStatement statment = db.getConnection().prepareStatement(sql);
+            if (paramObjects != null) {
+                int i = 1;
+                for (Object s : paramObjects) {
+                    statment.setObject(i, s);
+                    i++;
+                }
             }
+            statment.executeUpdate();
+        } catch (SQLException e) {
+            ReallifeMain.getInstance().getLogger().severe("Couldn't execute SQL update: " + sqlToString(sql, paramObjects));
+            throw e;
         }
-        statment.executeUpdate();
+    }
+
+    private String sqlToString(String sql, Object... paramObjects) {
+        if (paramObjects == null || paramObjects.length < 1) {
+            return sql;
+        }
+
+        for (Object paramObject : paramObjects) {
+            sql = sql.replaceFirst("\\Q?\\E", paramObject.toString());
+        }
+
+        return sql;
     }
 
     public boolean hasColumn(ResultSet rs, String columnName) throws SQLException {

@@ -47,7 +47,7 @@ public class CorpsTable extends Table<CorpRow> {
                         + "ceo_uuid VARCHAR(36) NOT NULL UNIQUE KEY,"
                         + "corp_name VARCHAR(255) NOT NULL UNIQUE KEY,"
                         + "isdeleted TINYINT(0) NOT NULL,"
-                        + "tag VARCHAR(4) UNIQUE KEY,"
+                        + "tag VARCHAR(5) UNIQUE KEY,"
                         + "time BIGINT NOT NULL"
                         + ");";
                 break;
@@ -63,7 +63,7 @@ public class CorpsTable extends Table<CorpRow> {
                         + "`ceo_uuid` VARCHAR(36) NOT NULL UNIQUE KEY,"
                         + "`corp_name` VARCHAR(255) NOT NULL UNIQUE KEY, "
                         + "`isdeleted` TINYINT(0) NOT NULL,"
-                        + "`tag` VARCHAR(4) UNIQUE KEY,"
+                        + "`tag` VARCHAR(5) UNIQUE KEY,"
                         + "`time` BIGINT NOT NULL"
                         + ");";
                 break;
@@ -81,8 +81,8 @@ public class CorpsTable extends Table<CorpRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        if (row.tag != null && row.tag.length() > 4) {
-            throw new IllegalArgumentException("Tags may only have max. 4 characters!");
+        if (row.tag != null && row.tag.length() > 5) {
+            throw new IllegalArgumentException("Tags may only have max. 5 characters!");
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?);";

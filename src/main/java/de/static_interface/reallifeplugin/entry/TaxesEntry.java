@@ -14,14 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.entries;
+package de.static_interface.reallifeplugin.entry;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.*;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.*;
-import de.static_interface.reallifeplugin.model.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.entity.*;
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultBridge;
+import org.bukkit.entity.Player;
 
 public class TaxesEntry extends Entry {
 
@@ -89,6 +92,6 @@ public class TaxesEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return ReallifeMain.getInstance().getSettings().getEconomyAccount();
+        return ReallifeMain.getInstance().getSettings().getTaxAccount();
     }
 }

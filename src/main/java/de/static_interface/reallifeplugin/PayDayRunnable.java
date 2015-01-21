@@ -16,15 +16,24 @@
 
 package de.static_interface.reallifeplugin;
 
-import de.static_interface.reallifeplugin.entries.*;
-import de.static_interface.reallifeplugin.events.*;
-import de.static_interface.reallifeplugin.model.*;
-import de.static_interface.sinklibrary.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.*;
-import org.bukkit.entity.*;
+import de.static_interface.reallifeplugin.entry.PayDayEntry;
+import de.static_interface.reallifeplugin.entry.TaxesEntry;
+import de.static_interface.reallifeplugin.event.PayDayEvent;
+import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.reallifeplugin.model.EntryResult;
+import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultBridge;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class PayDayRunnable implements Runnable {
 
@@ -73,7 +82,7 @@ public class PayDayRunnable implements Runnable {
 
         String curreny = VaultBridge.getCurrenyName();
 
-        out.add(ChatColor.AQUA + StringUtil.format("|- Summe: " + resultPrefix + "{0} " + curreny, MathUtil.round(result)));
+        out.add(ChatColor.AQUA + StringUtil.format("|- Gesamt: " + resultPrefix + "{0} " + curreny, MathUtil.round(result)));
         out.add(ChatColor.AQUA + StringUtil.format("|- Geld: " + moneyPrefix + "{0} " + curreny, money));
 
         String seperator = ChatColor.BLUE + "------------------------------------------------";

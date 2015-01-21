@@ -53,7 +53,7 @@ public class StockMarketCommand extends SinkCommand {
 
         switch (subcommand.toLowerCase()) {
             case "add":
-                if (args.length < 4) {
+                if (args.length < 5) {
                     return false;
                 }
 
@@ -67,10 +67,10 @@ public class StockMarketCommand extends SinkCommand {
                 if (corp.getTag() == null && args.length < 5) {
                     user.sendMessage(ChatColor.RED + "Tag not set!"); // Todo
                     return true;
-                } else if (args.length >= 5) {
-                    String tag = args[4];
-                    if (tag.length() < 2 || tag.length() > 4) {
-                        user.sendMessage(ChatColor.DARK_RED + "Min Tag Length: 2, Max Tag length: 4"); //Todo
+                } else if (args.length >= 6) {
+                    String tag = args[5];
+                    if (tag.length() < 2 || tag.length() > 5) {
+                        user.sendMessage(ChatColor.DARK_RED + "Min Tag Length: 2, Max Tag length: 5"); //Todo
                         return true;
                     }
 
@@ -79,15 +79,17 @@ public class StockMarketCommand extends SinkCommand {
 
                 int amount = Integer.parseInt(args[1]);
                 double price = Double.parseDouble(args[2]);
-                double dividendPercent = Double.parseDouble(args[3]);
-
+                double divided = Double.parseDouble(args[3]);
+                double share = Double.parseDouble(args[4]);
                 Database db = ReallifeMain.getInstance().getDB();
 
                 StockRow row = new StockRow();
                 row.amount = amount;
+                row.basePrice = price;
                 row.corpId = corp.getId();
-                row.dividendPercent = dividendPercent;
-                row.base = price;
+                row.dividend = divided;
+                row.price = price;
+                row.shareHolding = share;
                 row.time = System.currentTimeMillis();
 
                 try {
@@ -98,7 +100,6 @@ public class StockMarketCommand extends SinkCommand {
                 }
 
                 user.sendMessage(m("General.Success"));
-                //Todo: broadcast?
                 break;
             default:
                 return false;

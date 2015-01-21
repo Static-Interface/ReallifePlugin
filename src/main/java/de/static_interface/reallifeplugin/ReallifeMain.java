@@ -31,6 +31,7 @@ import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
 import de.static_interface.reallifeplugin.listener.CorporationListener;
 import de.static_interface.reallifeplugin.listener.InsuranceListener;
 import de.static_interface.reallifeplugin.listener.OnlineTimeListener;
+import de.static_interface.reallifeplugin.stockmarket.StockMarketUtil;
 import de.static_interface.sinklibrary.Constants;
 import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.Bukkit;
@@ -51,6 +52,8 @@ public class ReallifeMain extends JavaPlugin {
     private PayDayRunnable payDayRunnable = null;
     private BukkitTask payDayTask;
     private Database db;
+    private BukkitTask stocksTask;
+
     public static ReallifeMain getInstance() {
         return instance;
     }
@@ -113,6 +116,15 @@ public class ReallifeMain extends JavaPlugin {
             }
         }
 
+        if (db != null) {
+            stocksTask = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
+                @Override
+                public void run() {
+                    StockMarketUtil.onStocksUpdate();
+                }
+            }, 0, 20 * 60 * 60);
+        }
+
         registerCommands();
         registerListeners();
 
@@ -128,6 +140,10 @@ public class ReallifeMain extends JavaPlugin {
     public void onDisable() {
         if (payDayTask != null) {
             payDayTask.cancel();
+        }
+
+        if (stocksTask != null) {
+            stocksTask.cancel();
         }
 
         if (db != null) {

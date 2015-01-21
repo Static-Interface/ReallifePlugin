@@ -23,8 +23,10 @@ public class StockRow {
     @Nullable
     public Integer id;
     public int amount;
+    public double basePrice;
     public int corpId;
-    public double dividendPercent;
-    public double base;
+    public double dividend;
+    public double price;
+    public double shareHolding;
     public long time;
 }

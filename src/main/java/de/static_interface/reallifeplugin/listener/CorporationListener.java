@@ -268,8 +268,8 @@ public class CorporationListener implements Listener {
                 row.location = sign.getLocation();
                 row.material = stack.getType();
                 row.newAmount = newAmount;
-                row.price = price;
-                row.soldAmount = stackamount;
+                row.price = -price;
+                row.changedAmount = stackamount;
                 row.time = System.currentTimeMillis();
                 row.type = 0;
                 row.userId = CorporationUtil.getUserId(user);
@@ -389,7 +389,7 @@ public class CorporationListener implements Listener {
                 row.material = stack.getType();
                 row.newAmount = newAmount;
                 row.price = price;
-                row.soldAmount = stackamount;
+                row.changedAmount = -stackamount;
                 row.signAmount = amount;
                 row.time = System.currentTimeMillis();
                 row.type = 1;

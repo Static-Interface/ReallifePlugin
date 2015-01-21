@@ -53,6 +53,10 @@ public class Corporation {
         corpUsersTable = db.getCorpUsersTable();
     }
 
+    public final int getId() {
+        return id;
+    }
+
     public boolean addBalance(double amount) {
         return addBalance(amount, true);
     }
@@ -230,8 +234,8 @@ public class Corporation {
     }
 
     public void setTag(String tag) {
-        if (tag.length() < 2 || tag.length() > 4) {
-            throw new IllegalArgumentException("Min Tag Length: 2 , Max Tag length: 4");
+        if (tag.length() < 2 || tag.length() > 5) {
+            throw new IllegalArgumentException("Min Tag Length: 2 , Max Tag length: 5");
         }
 
         try {
@@ -296,9 +300,5 @@ public class Corporation {
 
     public boolean isCeo(IngameUser user) {
         return getCEO().getUniqueId().equals(user.getUniqueId());
-    }
-
-    public final int getId() {
-        return id;
     }
 }

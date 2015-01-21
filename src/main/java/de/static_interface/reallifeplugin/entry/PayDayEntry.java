@@ -14,22 +14,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.entries;
+package de.static_interface.reallifeplugin.entry;
 
-import de.static_interface.reallifeplugin.*;
-import de.static_interface.reallifeplugin.model.*;
-import org.bukkit.entity.*;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
-public class InsuranceEntry extends Entry {
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import org.bukkit.entity.Player;
+
+public class PayDayEntry extends Entry {
 
     Player player;
     Group group;
 
-    public InsuranceEntry(Player player, Group group) {
+    public PayDayEntry(Player player, Group group) {
         this.player = player;
         this.group = group;
     }
-
 
     @Override
     public String getSourceAccount() {
@@ -38,12 +42,12 @@ public class InsuranceEntry extends Entry {
 
     @Override
     public String getReason() {
-        return "Versicherung";
+        return StringUtil.format(m("Payday.Payday"), group.shownName);
     }
 
     @Override
     public double getAmount() {
-        return -750;
+        return MathUtil.round(group.payday);
     }
 
     @Override
@@ -53,6 +57,6 @@ public class InsuranceEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return ReallifeMain.getInstance().getSettings().getInsuranceAccount();
+        return ReallifeMain.getInstance().getSettings().getTaxAccount();
     }
 }
