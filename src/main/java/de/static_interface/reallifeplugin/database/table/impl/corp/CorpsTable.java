@@ -44,15 +44,12 @@ public class CorpsTable extends Table<CorpRow> {
                         + "balance DOUBLE NOT NULL,"
                         + "base_id VARCHAR(255) NOT NULL,"
                         + "base_world VARCHAR(255) NOT NULL,"
-                        + "ceo_uuid VARCHAR(36) NOT NULL,"
-                        + "corp_name VARCHAR(255) NOT NULL,"
+                        + "ceo_uuid VARCHAR(36) NOT NULL UNIQUE KEY,"
+                        + "corp_name VARCHAR(255) NOT NULL UNIQUE KEY,"
                         + "isdeleted TINYINT(0) NOT NULL,"
-                        + "tag VARCHAR(4),"
+                        + "tag VARCHAR(4) UNIQUE KEY,"
                         + "time BIGINT NOT NULL"
-                        + ");"
-                        + "CREATE INDEX IF NOT EXISTS ceo_uuid_I ON " + getName() + "(ceo_uuid);"
-                        + "CREATE INDEX IF NOT EXISTS corp_name_I ON " + getName() + "(corp_name);"
-                        + "CREATE INDEX IF NOT EXISTS tag_I ON " + getName() + "(tag);";
+                        + ");";
                 break;
 
             case MYSQL:
@@ -63,14 +60,11 @@ public class CorpsTable extends Table<CorpRow> {
                         + "`balance` DOUBLE NOT NULL,"
                         + "`base_id` VARCHAR(255) NOT NULL,"
                         + "`base_world` VARCHAR(255) NOT NULL,"
-                        + "`ceo_uuid` VARCHAR(36) NOT NULL,"
-                        + "`corp_name` VARCHAR(255) NOT NULL,"
+                        + "`ceo_uuid` VARCHAR(36) NOT NULL UNIQUE KEY,"
+                        + "`corp_name` VARCHAR(255) NOT NULL UNIQUE KEY, "
                         + "`isdeleted` TINYINT(0) NOT NULL,"
-                        + "`tag` VARCHAR(4),"
-                        + "`time` BIGINT NOT NULL,"
-                        + "INDEX `ceo_uuid_I` (`ceo_uuid`),"
-                        + "INDEX `corp_name_I` (`corp_name`),"
-                        + "INDEX `tag_I` (`tag`)"
+                        + "`tag` VARCHAR(4) UNIQUE KEY,"
+                        + "`time` BIGINT NOT NULL"
                         + ");";
                 break;
         }

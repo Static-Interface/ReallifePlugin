@@ -40,13 +40,12 @@ public class StocksTable extends Table<StockRow> {
                         + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                         + "amount INT NOT NULL,"
                         + "base_price DOUBLE NOT NULL,"
-                        + "corp_id INT NOT NULL,"
+                        + "corp_id INT NOT NULL UNIQUE KEY,"
                         + "dividend_percent DOUBLE NOT NULL,"
                         + "time BIGINT NOT NULL,"
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
                         + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
-                        + ");"
-                        + "CREATE INDEX IF NOT EXISTS corp_id_I ON " + getName() + "(corp_id);";
+                        + ");";
                 break;
 
             case MYSQL:
@@ -56,12 +55,11 @@ public class StocksTable extends Table<StockRow> {
                         + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                         + "`amount` INT NOT NULL,"
                         + "`base_price` DOUBLE NOT NULL,"
-                        + "`corp_id` INT NOT NULL,"
+                        + "`corp_id` INT NOT NULL UNIQUE KEY,"
                         + "`dividend_percent` DOUBLE NOT NULL,"
                         + "`time` BIGINT NOT NULL,"
                         + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
-                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX `corp_id_I` (`corp_id`)"
+                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE"
                         + ");";
                 break;
         }

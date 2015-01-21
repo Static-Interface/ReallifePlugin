@@ -43,7 +43,7 @@ public class CorpUsersTable extends Table<CorpUserRow> {
                         + "corp_id INT,"
                         + "isCoCeo TINYINT(0) NOT NULL,"
                         + "rank VARCHAR(36),"
-                        + "uuid VARCHAR(36) NOT NULL,"
+                        + "uuid VARCHAR(36) NOT NULL UNIQUE KEY,"
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
                         + "(id) ON UPDATE CASCADE ON DELETE SET NULL"
                         + ");"
@@ -58,7 +58,7 @@ public class CorpUsersTable extends Table<CorpUserRow> {
                         + "`corp_id` INT,"
                         + "`isCoCeo` TINYINT(0) NOT NULL,"
                         + "`rank` VARCHAR(36),"
-                        + "`uuid` VARCHAR(36) NOT NULL,"
+                        + "`uuid` VARCHAR(36) NOT NULL UNIQUE KEY,"
                         + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + Table.CORPS_TABLE
                         + "`(`id`) ON UPDATE CASCADE ON DELETE SET NULL,"
                         + "INDEX `corp_id_I` (`corp_id`)"
