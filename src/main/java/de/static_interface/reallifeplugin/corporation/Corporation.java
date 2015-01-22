@@ -234,6 +234,7 @@ public class Corporation {
     }
 
     public void setTag(String tag) {
+        tag = tag.toUpperCase();
         if (tag.length() < 2 || tag.length() > 5) {
             throw new IllegalArgumentException("Min Tag Length: 2 , Max Tag length: 5");
         }

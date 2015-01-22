@@ -116,7 +116,7 @@ public class ReallifeMain extends JavaPlugin {
             }
         }
 
-        if (db != null) {
+        if (db != null && getSettings().isStockMarketEnabled()) {
             stocksTask = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
                 @Override
                 public void run() {
@@ -187,7 +187,9 @@ public class ReallifeMain extends JavaPlugin {
             SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
         }
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
-        SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
+        if (getSettings().isStockMarketEnabled()) {
+            SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
+        }
     }
 
     private void registerListeners() {

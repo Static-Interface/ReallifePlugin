@@ -22,10 +22,17 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockUsersTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
+import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockUserRow;
+import de.static_interface.reallifeplugin.stockmarket.Stock;
+import de.static_interface.reallifeplugin.stockmarket.StockMarketUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.command.SinkCommand;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.VaultBridge;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -52,14 +59,15 @@ public class StockMarketCommand extends SinkCommand {
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
 
         switch (subcommand.toLowerCase()) {
-            case "add":
+            case "gopublic": {
                 if (args.length < 5) {
-                    return false;
+                    user.sendMessage("/sm gopublic <stock amount> <price> <dividend> <share> [Tag]");
+                    break;
                 }
 
                 Corporation corp = CorporationUtil.getUserCorporation(user);
 
-                if (!CorporationUtil.hasCeoPermissions(user, corp)) {
+                if (!corp.isCeo(user)) {
                     user.sendMessage(m("Corporation.NotCEO"));
                     return true;
                 }
@@ -67,8 +75,8 @@ public class StockMarketCommand extends SinkCommand {
                 if (corp.getTag() == null && args.length < 5) {
                     user.sendMessage(ChatColor.RED + "Tag not set!"); // Todo
                     return true;
-                } else if (args.length >= 6) {
-                    String tag = args[5];
+                } else if (args.length >= 6 && corp.getTag() == null) {
+                    String tag = args[5].toUpperCase();
                     if (tag.length() < 2 || tag.length() > 5) {
                         user.sendMessage(ChatColor.DARK_RED + "Min Tag Length: 2, Max Tag length: 5"); //Todo
                         return true;
@@ -93,18 +101,97 @@ public class StockMarketCommand extends SinkCommand {
                 row.time = System.currentTimeMillis();
 
                 try {
-                    db.getStocksTable().insert(row);
+                    row = db.getStocksTable().insert(row);
                 } catch (SQLException e) {
                     user.sendMessage(ChatColor.RED + "An internal error occured");
                     e.printStackTrace();
+                    return true;
+                }
+
+                int ceoShare = (int) ((double) (100 * amount) / share) - amount;
+
+                try {
+                    addStocks(user, StockMarketUtil.getStock(row.id), ceoShare);
+                } catch (SQLException e) {
+                    user.sendMessage(ChatColor.RED + "An internal error occured");
+                    e.printStackTrace();
+                    return true;
                 }
 
                 user.sendMessage(m("General.Success"));
                 break;
+            }
+
+            case "buy": {
+                if (args.length < 3) {
+                    user.sendMessage("/sm buy <stock> <amount>");
+                    break;
+                }
+                String tag = args[1].toUpperCase();
+                int amount = Integer.valueOf(args[2]);
+                Stock stock = StockMarketUtil.getStock(tag);
+
+                if (stock == null) {
+                    user.sendMessage(m("Corporation.DoesntExists", tag)); //Todo: stock not found
+                    return true;
+                }
+
+                if (stock.getAmount() < amount) {
+                    user.sendMessage(m("StockMarket.NotEnoughStocksLeft"));
+                    return true;
+                }
+
+                double price = amount * stock.getPrice();
+                if (!VaultBridge.addBalance(user.getPlayer(), -price)) {
+                    user.sendMessage(m("General.NotEnoughMoney"));
+                    return true;
+                }
+
+                try {
+                    addStocks(user, stock, amount);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
+                    return true;
+                }
+
+                user.sendMessage(m("General.Success"));
+                break;
+            }
+
             default:
-                return false;
+                user.sendMessage("/sm <gopublic/buy>");
+                break;
         }
 
         return true;
+    }
+
+    private void addStocks(IngameUser user, Stock stock, int amount) throws SQLException {
+        int newAmount = stock.getAmount() - amount;
+        Database db = ReallifeMain.getInstance().getDB();
+        StocksTable table = db.getStocksTable();
+        table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stock.getId());
+
+        CorpUserRow tmp = CorporationUtil.getCorpUser(user);
+        if (tmp == null) {
+            tmp = CorporationUtil.insertUser(user, null);
+        }
+
+        StockUsersTable usersTable = db.getStockUsersTable();
+
+        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stock.getId());
+        if (rows.length > 0) {
+            StockUserRow row = rows[0];
+            int totalAmount = row.amount + amount;
+            usersTable.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", totalAmount, row.id);
+            return;
+        }
+
+        StockUserRow row = new StockUserRow();
+        row.amount = amount;
+        row.stockId = stock.getId();
+        row.userId = tmp.id;
+        usersTable.insert(row);
     }
 }

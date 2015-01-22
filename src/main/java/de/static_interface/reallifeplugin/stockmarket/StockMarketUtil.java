@@ -27,7 +27,9 @@ import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockPriceRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 import de.static_interface.reallifeplugin.event.StocksUpdateEvent;
+import de.static_interface.sinklibrary.util.BukkitUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -46,6 +48,17 @@ public class StockMarketUtil {
             }
         }
 
+        return null;
+    }
+
+    @Nullable
+    public static Stock getStock(String tag) {
+        tag = tag.toUpperCase();
+        for (Stock stock : getStocks()) {
+            if (stock.getTag().equalsIgnoreCase(tag)) {
+                return stock;
+            }
+        }
         return null;
     }
 
@@ -79,7 +92,17 @@ public class StockMarketUtil {
         }
 
         Database db = ReallifeMain.getInstance().getDB();
-        for (Stock stock : getStocks()) {
+
+        Collection<Stock> stocks = getStocks();
+
+        if (stocks.size() == 0) {
+            return;
+        }
+
+        String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
+        String s = "";
+
+        for (Stock stock : stocks) {
             double percent;
             try {
                 percent = calculateStockQuotation(stock);
@@ -127,7 +150,25 @@ public class StockMarketUtil {
                 ReallifeMain.getInstance().getLogger().warning(stock.getTag() + ": Couldn't insert price");
                 e.printStackTrace();
             }
+
+            if (!s.equals("")) {
+                s += ChatColor.GRAY + " - ";
+            }
+
+            s += ChatColor.GOLD + stock.getTag() + ChatColor.GRAY + " " + stock.getPrice() + " ";
+
+            if (newPrice > oldPrice) {
+                s += ChatColor.DARK_GREEN + "▲ " + percent + "%";
+            }
+            if (newPrice == oldPrice) {
+                s += "● " + percent + "%";
+            }
+            if (oldPrice > newPrice) {
+                s += ChatColor.DARK_RED + "▼ " + percent + "%";
+            }
         }
+
+        BukkitUtil.broadcastMessage(prefix + s, false);
     }
 
     private static double calculateStockQuotation(Stock stock) throws SQLException {

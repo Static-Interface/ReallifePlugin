@@ -38,28 +38,32 @@ public class Settings extends Configuration {
 
     @Override
     public void addDefaults() {
-        addDefault("General.Taxesbase", 0.1);
-        addDefault("General.PaydayTime", 60, "Time in minutes");
         addDefault("General.TaxAccount", "TaxAccount");
-        addDefault("General.MinOnlineTime", 30);
 
-        addDefault("General.AntiEscapeEnabled", true);
-        addDefault("General.CorporationsEnabled", true);
-        //Todo: General.StockMarketEnabled
+        addDefault("Module.AntiEscape.Enabled", true);
+        addDefault("Module.AntiEscape.AutoBanTime", 5);
 
-        addDefault("Insurance.Enabled", false);
-        addDefault("Insurance.Account", "Insurances");
+        addDefault("Module.Corporations.Enabled", true);
+
         //Todo: add whitelist/blacklist regions for insurances
+        addDefault("Module.Insurance.Enabled", false);
+        addDefault("Module.Insurance.Account", "Insurances");
 
-        addDefault("Default.PayDay", 0);
-        addDefault("Default.TaxesModifier", 1);
-        addDefault("Default.Excluded", true);
-        addDefault("Default.ShownName", "%name%");
+        addDefault("Module.Payday.Enabled", true);
+        addDefault("Module.Payday.Time", 60, "Time in minutes");
+        addDefault("Module.Payday.MinOnlineTime", 30);
+        addDefault("Module.Payday.Taxesbase", 0.1);
+
+        addDefault("Module.StockMarket.Enabled", true);
+
+        addDefault("Groups.Default.PayDay", 0);
+        addDefault("Groups.Default.TaxesModifier", 1);
+        addDefault("Groups.Default.Excluded", true);
+        addDefault("Groups.Default.ShownName", "%name%");
 
         addDefault("Ad.Price", 500.0);
-
         addDefault("Ad.Timeout", 30);
-        addDefault("AntiPvPEscape.BanTime", 5);
+
     }
 
     @Override
@@ -82,6 +86,10 @@ public class Settings extends Configuration {
         Map<String, Object> values = yamlConfiguration.getConfigurationSection("Groups").getValues(false);
 
         for (String groupName : values.keySet()) {
+            if (groupName.equals("Default")) {
+                continue;
+            }
+
             Group group = new Group();
             group.name = groupName;
             Map<String, Object> groupValues = yamlConfiguration.getConfigurationSection("Groups." + groupName).getValues(false);
@@ -126,23 +134,23 @@ public class Settings extends Configuration {
     }
 
     public int getDefaultPayday() {
-        return (int) get("Default.PayDay");
+        return (int) get("Groups.Default.PayDay");
     }
 
     public double getDefaultTaxesModifier() {
-        return Double.parseDouble(get("Default.TaxesModifier").toString());
+        return Double.parseDouble(get("Groups.Default.TaxesModifier").toString());
     }
 
     public boolean isDefaultExcluded() {
-        return (boolean) get("Default.Excluded");
+        return (boolean) get("Groups.Default.Excluded");
     }
 
     public double getTaxesBase() {
-        return (double) get("General.Taxesbase");
+        return (double) get("Module.Payday.Taxesbase");
     }
 
     public int getPaydayTime() {
-        return (int) get("General.PaydayTime");
+        return (int) get("Module.Payday.Time");
     }
 
     public String getTaxAccount() {
@@ -150,27 +158,31 @@ public class Settings extends Configuration {
     }
 
     public String getInsuranceAccount() {
-        return (String) get("Insurance.Account");
+        return (String) get("Module.Insurance.Account");
     }
 
     public int getMinOnlineTime() {
-        return (int) get("General.MinOnlineTime");
+        return (int) get("Module.Payday.MinOnlineTime");
     }
 
     public boolean isInsuranceEnabled() {
-        return (boolean) get("Insurance.Enabled");
+        return (boolean) get("Module.Insurance.Enabled");
     }
 
     public boolean isAntiEscapeEnabled() {
-        return (boolean) get("General.AntiEscapeEnabled");
+        return (boolean) get("Module.AntiEscape.Enabled");
     }
 
     public boolean isCorporationsEnabled() {
-        return (boolean) get("General.CorporationsEnabled");
+        return (boolean) get("Module.Corporations.Enabled");
     }
 
     public void setCorporationsEnabled(boolean value) {
-        set("General.CorporationsEnabled", value);
+        set("Module.Corporations.Enabled", value);
+    }
+
+    public boolean isStockMarketEnabled() {
+        return (boolean) get("Module.StockMarket.Enabled");
     }
 
     public double getAdPrice() {
@@ -181,7 +193,7 @@ public class Settings extends Configuration {
         return Integer.valueOf(String.valueOf(get("Ad.Timeout")));
     }
 
-    public int getPvPEscapeBanTime() {
-        return Integer.valueOf(String.valueOf(get("AntiPvPEscape.BanTime")));
+    public int getAntiEscapeBanTime() {
+        return Integer.valueOf(String.valueOf(get("Module.AntiEscape.AutoBanTime")));
     }
 }

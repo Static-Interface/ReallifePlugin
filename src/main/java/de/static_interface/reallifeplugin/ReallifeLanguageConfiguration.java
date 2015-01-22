@@ -132,11 +132,13 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Sign.ChestFull", "&cThe chest is full!");
         addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
 
+        addDefault("StockMarket.NotEnoughStocksLeft", "&cNot enough stocks left!");
+
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");
 
         addDefault("Payday.Taxes", "{0}% Taxes");
         addDefault("Payday.Payday", "Payday ({0} {CURRENCY})");
-        addDefault("AntiPvPEscape.BanMessage", "You have been banned for {0} Minutes. Reason: Escape from PvP by quit");
+        addDefault("AntiEscape.BanMessage", "You have been banned for {0} Minutes. Reason: Escape from PvP by quit");
     }
 }

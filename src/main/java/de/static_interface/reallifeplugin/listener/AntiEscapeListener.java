@@ -16,22 +16,28 @@
 
 package de.static_interface.reallifeplugin.listener;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.*;
-import static org.bukkit.event.entity.EntityDamageEvent.*;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import de.static_interface.reallifeplugin.*;
-import de.static_interface.reallifeplugin.model.*;
-import de.static_interface.sinklibrary.*;
-import de.static_interface.sinklibrary.user.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.entity.*;
-import org.bukkit.event.player.*;
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.model.Damage;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class AntiEscapeListener implements Listener {
 
@@ -148,12 +154,12 @@ public class AntiEscapeListener implements Listener {
                 return;
             }
 
-            int banMinutes = ReallifeMain.getInstance().getSettings().getPvPEscapeBanTime();
+            int banMinutes = ReallifeMain.getInstance().getSettings().getAntiEscapeBanTime();
 
             long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 
             IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
-            user.ban(m("AntiPvPEscape.BanMessage", banMinutes), unbanTimeStamp);
+            user.ban(m("AntiEscape.BanMessage", banMinutes), unbanTimeStamp);
 
         } catch (NullPointerException e) {
             Debug.log(e);
