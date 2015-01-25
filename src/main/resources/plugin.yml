@@ -28,7 +28,7 @@ commands:
   stockmarket:
     description: Stockmarkets
     aliases: sm
-    permission: reallifeplugin.stockmarket.use
+    permission: reallifeplugin.stockmarket
 
 permissions:
   reallifeplugin.command:
@@ -41,5 +41,5 @@ permissions:
      default: true
   reallifeplugin.ad:
      default: true
-  reallifeplugin.stockmarket.use:
+  reallifeplugin.stockmarket:
      default: true

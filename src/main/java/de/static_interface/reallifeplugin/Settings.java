@@ -46,6 +46,8 @@ public class Settings extends Configuration {
         addDefault("Module.Corporations.Enabled", true);
 
         //Todo: add whitelist/blacklist regions for insurances
+        //Todo: Add Taxes
+
         addDefault("Module.Insurance.Enabled", false);
         addDefault("Module.Insurance.Account", "Insurances");
 
@@ -182,7 +184,7 @@ public class Settings extends Configuration {
     }
 
     public boolean isStockMarketEnabled() {
-        return (boolean) get("Module.StockMarket.Enabled");
+        return isCorporationsEnabled() && (boolean) get("Module.StockMarket.Enabled");
     }
 
     public double getAdPrice() {

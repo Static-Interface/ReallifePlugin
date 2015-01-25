@@ -213,8 +213,8 @@ public class CorporationListener implements Listener {
             int stackamount = 0;
             for (ItemStack invStack : inv.getContents()) {
                 if (invStack != null && invStack.getType() == toSell && invStack.getAmount() > stackamount) {
-                    stack = invStack;
-                    stackamount = invStack.getAmount();
+                    stack = invStack.clone();
+                    stackamount = stack.getAmount();
                 }
             }
 
@@ -226,10 +226,11 @@ public class CorporationListener implements Listener {
             if (stack.getAmount() > amount) {
                 stack.setAmount(amount);
                 inv.addItem(new ItemStack(stack.getType(), stack.getAmount() - amount));
-            } else if (stack.getAmount() < amount) { //Todo
-                user.sendMessage(m("Corporation.Sign.NoItemsFound"));
-                return;
             }
+            //else if (stack.getAmount() < amount) { //Todo
+            //    user.sendMessage(m("Corporation.Sign.NoItemsFound"));
+            //    return;
+            //}
 
             Chest chest = CorporationUtil.findConnectedChest(sign.getBlock());
             if (chest == null) {
@@ -248,7 +249,9 @@ public class CorporationListener implements Listener {
 
             if (corp.getBalance() > price && corp.addBalance(-price)) {
                 inv.remove(stack);
+                event.getPlayer().updateInventory();
                 chest.getInventory().addItem(stack);
+                chest.update(true);
                 user.addBalance(price);
                 user.sendMessage(
                         StringUtil.format(m("Corporation.Sign.Sold"), stack.getAmount(), stack.getType().toString(),
@@ -346,8 +349,8 @@ public class CorporationListener implements Listener {
             int stackamount = 0;
             for (ItemStack invStack : inv.getContents()) {
                 if (invStack != null && invStack.getType() == toBuy && invStack.getAmount() > stackamount) {
-                    stack = invStack;
-                    stackamount = invStack.getAmount();
+                    stack = invStack.clone();
+                    stackamount = stack.getAmount();
                 }
             }
 
@@ -359,10 +362,11 @@ public class CorporationListener implements Listener {
             if (stack.getAmount() > amount) {
                 stack.setAmount(amount);
                 inv.addItem(new ItemStack(stack.getType(), stack.getAmount() - amount));
-            } else if (stack.getAmount() < amount) { //Todo
-                user.sendMessage(m("Corporation.Sign.NoItemsFound"));
-                return;
             }
+            //else if (stack.getAmount() < amount) { //Todo
+            //    user.sendMessage(m("Corporation.Sign.NoItemsFound"));
+            //    return;
+            //}
 
             price = pricePerItem * stack.getAmount();
 
@@ -370,7 +374,9 @@ public class CorporationListener implements Listener {
 
             if (VaultBridge.getBalance(user.getPlayer()) > price && VaultBridge.addBalance(user.getPlayer(), -price)) {
                 inv.remove(stack);
+                chest.update(true);
                 user.getPlayer().getInventory().addItem(stack);
+                user.getPlayer().updateInventory();
                 corp.addBalance(price);
                 user.sendMessage(
                         StringUtil.format(m("Corporation.Sign.Bought"), stack.getAmount(), stack.getType().toString(),

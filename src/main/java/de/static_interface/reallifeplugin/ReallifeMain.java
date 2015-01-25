@@ -186,7 +186,9 @@ public class ReallifeMain extends JavaPlugin {
         if (getSettings().isCorporationsEnabled()) {
             SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
         }
+
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
+
         if (getSettings().isStockMarketEnabled()) {
             SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
         }

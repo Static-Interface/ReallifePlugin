@@ -79,7 +79,7 @@ public class StocksTable extends Table<StockRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);";
         executeUpdate(sql, row.amount, row.basePrice, row.corpId, row.dividend, row.price, row.shareHolding, row.time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
@@ -111,6 +111,9 @@ public class StocksTable extends Table<StockRow> {
             }
             if (hasColumn(rs, "dividend")) {
                 row.dividend = rs.getDouble("dividend");
+            }
+            if (hasColumn(rs, "price")) {
+                row.price = rs.getDouble("price");
             }
             if (hasColumn(rs, "share_holding")) {
                 row.shareHolding = rs.getDouble("share_holding");

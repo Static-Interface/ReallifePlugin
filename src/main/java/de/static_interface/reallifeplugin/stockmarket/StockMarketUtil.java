@@ -28,21 +28,27 @@ import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockPr
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 import de.static_interface.reallifeplugin.event.StocksUpdateEvent;
 import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.MathUtil;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 public class StockMarketUtil {
 
+    private static HashMap<Integer, Long> amountCache = new HashMap<>();
+
     @Nullable
-    public static Stock getStock(int id) {
-        for (Stock stock : getStocks()) {
+    public static Stock getStock(Database db, int id) {
+        for (Stock stock : getStocks(db)) {
             if (stock.getId() == id) {
                 return stock;
             }
@@ -52,9 +58,9 @@ public class StockMarketUtil {
     }
 
     @Nullable
-    public static Stock getStock(String tag) {
+    public static Stock getStock(Database db, String tag) {
         tag = tag.toUpperCase();
-        for (Stock stock : getStocks()) {
+        for (Stock stock : getStocks(db)) {
             if (stock.getTag().equalsIgnoreCase(tag)) {
                 return stock;
             }
@@ -62,11 +68,10 @@ public class StockMarketUtil {
         return null;
     }
 
-    public static Collection<Stock> getStocks() {
-        Database db = ReallifeMain.getInstance().getDB();
+    public static Collection<Stock> getStocks(Database db) {
         StockRow[] rows;
         try {
-            rows = db.getStocksTable().get("SELECT id FROM `{TABLE}`");
+            rows = db.getStocksTable().get("SELECT * FROM `{TABLE}`");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -75,15 +80,20 @@ public class StockMarketUtil {
         for (StockRow row : rows) {
             Corporation corp = CorporationUtil.getCorporation(row.corpId);
             if (corp == null) {
+                ReallifeMain.getInstance().getLogger().warning("Corp ID not found: " + row.corpId);
                 continue;
             }
-            Stock stock = new Stock(ReallifeMain.getInstance().getDB(), row.id);
+            Stock stock = new Stock(db, row.id);
             parsedRows.add(stock);
         }
         return parsedRows;
     }
 
     public static void onStocksUpdate() {
+        if (!ReallifeMain.getInstance().getSettings().isStockMarketEnabled()) {
+            return;
+        }
+
         StocksUpdateEvent event = new StocksUpdateEvent();
         Bukkit.getPluginManager().callEvent(event);
 
@@ -93,7 +103,7 @@ public class StockMarketUtil {
 
         Database db = ReallifeMain.getInstance().getDB();
 
-        Collection<Stock> stocks = getStocks();
+        Collection<Stock> stocks = getStocks(db);
 
         if (stocks.size() == 0) {
             return;
@@ -105,7 +115,11 @@ public class StockMarketUtil {
         for (Stock stock : stocks) {
             double percent;
             try {
-                percent = calculateStockQuotation(stock);
+                try {
+                    percent = calculateStockQuotation(stock);
+                } catch (IOException e) {
+                    continue;
+                }
             } catch (SQLException e) {
                 ReallifeMain.getInstance().getLogger()
                         .warning("onStocksUpdate(): Skipping " + stock.getTag() + ": calculateStockQuotation() failed: ");
@@ -121,10 +135,12 @@ public class StockMarketUtil {
             double newPrice = oldPrice;
 
             if (down) {
-                newPrice = newPrice + (newPrice * percent);
+                newPrice = newPrice + (newPrice * (percent / 100));
             } else {
-                newPrice = newPrice - (newPrice * percent);
+                newPrice = newPrice - (newPrice * (percent / 100));
             }
+
+            newPrice = MathUtil.round(newPrice);
 
             try {
                 StocksTable table = db.getStocksTable();
@@ -171,12 +187,12 @@ public class StockMarketUtil {
         BukkitUtil.broadcastMessage(prefix + s, false);
     }
 
-    private static double calculateStockQuotation(Stock stock) throws SQLException {
+    public static double calculateStockQuotation(Stock stock) throws SQLException, IOException {
+        Validate.notNull(stock);
         Database db = ReallifeMain.getInstance().getDB();
         CorpTradesTable corpTrades = db.getCorpTradesTable();
-        long timeSpan = 1000 * 60 * 60 * 24 * 3; // 3 days, Todo: make this configurable
+        long timeSpan = 1000 * 60 * 60 * 24; // 3 days, Todo: make this configurable
         long time = System.currentTimeMillis() - timeSpan;
-        long timeBefore = time - timeSpan;
         CorpTradesRow[]
                 rows =
                 corpTrades.get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ? AND `time` > ? AND `type` = 0", stock.getCorporation().getId(), time);
@@ -187,23 +203,26 @@ public class StockMarketUtil {
             changedAmount += Math.abs(row.changedAmount);
         }
 
-        rows =
-                corpTrades.get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ? AND `time` > ? AND `time` < ?  AND `type` = 0",
-                               stock.getCorporation().getId(), timeBefore, time);
-
+        if (amountCache.get(stock.getId()) == null) {
+            if (changedAmount != 0) {
+                amountCache.put(stock.getId(), changedAmount);
+            }
+            throw new IOException();
+        }
         // calculate amount from last time
-        long changedAmountBefore = 0;
-        for (CorpTradesRow row : rows) {
-            changedAmountBefore += Math.abs(row.changedAmount);
+        long changedAmountBefore = amountCache.get(stock.getId());
+
+        if (changedAmountBefore == 0) {
+            return 0;
         }
 
         // compare them
         if (changedAmount > changedAmountBefore) {
-            return (changedAmount / changedAmountBefore) * 100;
+            return ((changedAmountBefore * 100) / changedAmount) / 10; //??
         }
 
         if (changedAmountBefore > changedAmount) {
-            return -(changedAmountBefore / changedAmount) * 100;
+            return (-(changedAmount * 100) / changedAmountBefore) / 10;
         }
 
         return 0;

@@ -39,7 +39,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
 
 public class StockMarketCommand extends SinkCommand {
 
@@ -54,6 +56,7 @@ public class StockMarketCommand extends SinkCommand {
             return false;
         }
 
+        Database db = ReallifeMain.getInstance().getDB();
         String subcommand = args[0];
 
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
@@ -89,7 +92,6 @@ public class StockMarketCommand extends SinkCommand {
                 double price = Double.parseDouble(args[2]);
                 double divided = Double.parseDouble(args[3]);
                 double share = Double.parseDouble(args[4]);
-                Database db = ReallifeMain.getInstance().getDB();
 
                 StockRow row = new StockRow();
                 row.amount = amount;
@@ -111,7 +113,7 @@ public class StockMarketCommand extends SinkCommand {
                 int ceoShare = (int) ((double) (100 * amount) / share) - amount;
 
                 try {
-                    addStocks(user, StockMarketUtil.getStock(row.id), ceoShare);
+                    addStocks(user, row.id, row.amount, ceoShare, false);
                 } catch (SQLException e) {
                     user.sendMessage(ChatColor.RED + "An internal error occured");
                     e.printStackTrace();
@@ -129,7 +131,7 @@ public class StockMarketCommand extends SinkCommand {
                 }
                 String tag = args[1].toUpperCase();
                 int amount = Integer.valueOf(args[2]);
-                Stock stock = StockMarketUtil.getStock(tag);
+                Stock stock = StockMarketUtil.getStock(db, tag);
 
                 if (stock == null) {
                     user.sendMessage(m("Corporation.DoesntExists", tag)); //Todo: stock not found
@@ -148,7 +150,7 @@ public class StockMarketCommand extends SinkCommand {
                 }
 
                 try {
-                    addStocks(user, stock, amount);
+                    addStocks(user, stock.getId(), stock.getAmount(), amount, true);
                 } catch (SQLException e) {
                     e.printStackTrace();
                     user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
@@ -159,19 +161,83 @@ public class StockMarketCommand extends SinkCommand {
                 break;
             }
 
+            case "list": {
+                String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
+
+                Collection<Stock> stocks = StockMarketUtil.getStocks(db);
+                if (stocks.size() < 1) {
+                    user.sendMessage(prefix + ChatColor.RED + "No stocks found"); //Todo
+                    return true;
+                }
+                for (Stock stock : StockMarketUtil.getStocks(db)) {
+                    double percent = 0;
+                    String a = null;
+                    try {
+                        try {
+                            percent = StockMarketUtil.calculateStockQuotation(stock);
+                        } catch (IOException e) {
+                            a = ChatColor.GRAY + "[-] %";
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+
+                    double oldPrice = stock.getPrice();
+
+                    double newPrice = oldPrice;
+
+                    String
+                            s =
+                            ChatColor.GOLD + "" + ChatColor.BOLD + stock.getTag() + ChatColor.RESET + "" + ChatColor.GRAY + " - " + ChatColor.GOLD
+                            + stock.getCorporation().getName() + ChatColor.GRAY + " - " + ChatColor.GOLD + stock.getPrice() + ChatColor.GRAY + " ";
+
+                    if (a == null) {
+                        boolean down = percent < 0;
+
+                        percent = Math.abs(percent);
+
+                        if (down) {
+                            newPrice = newPrice + (newPrice * percent);
+                        } else {
+                            newPrice = newPrice - (newPrice * percent);
+                        }
+                        if (newPrice > oldPrice) {
+                            s += ChatColor.DARK_GREEN + "▲ " + percent + "%";
+                        }
+                        if (newPrice == oldPrice) {
+                            s += ChatColor.YELLOW + "● " + percent + "%";
+                        }
+                        if (oldPrice > newPrice) {
+                            s += ChatColor.DARK_RED + "▼ " + percent + "%";
+                        }
+                    } else {
+                        s += a;
+                    }
+
+                    s += ChatColor.GRAY + " - " + "Anzahl: " + ChatColor.GOLD + stock.getAmount();
+                    user.sendMessage(prefix + s);
+                }
+
+                break;
+            }
+
             default:
-                user.sendMessage("/sm <gopublic/buy>");
+                user.sendMessage("/sm <buy/sell/list/gopublic>");
                 break;
         }
 
         return true;
     }
 
-    private void addStocks(IngameUser user, Stock stock, int amount) throws SQLException {
-        int newAmount = stock.getAmount() - amount;
+    private void addStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
+        int newAmount = stockAmount - amount;
         Database db = ReallifeMain.getInstance().getDB();
-        StocksTable table = db.getStocksTable();
-        table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stock.getId());
+
+        if (removeFromStock) {
+            StocksTable table = db.getStocksTable();
+            table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stockId);
+        }
 
         CorpUserRow tmp = CorporationUtil.getCorpUser(user);
         if (tmp == null) {
@@ -180,7 +246,7 @@ public class StockMarketCommand extends SinkCommand {
 
         StockUsersTable usersTable = db.getStockUsersTable();
 
-        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stock.getId());
+        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stockId);
         if (rows.length > 0) {
             StockUserRow row = rows[0];
             int totalAmount = row.amount + amount;
@@ -190,7 +256,7 @@ public class StockMarketCommand extends SinkCommand {
 
         StockUserRow row = new StockUserRow();
         row.amount = amount;
-        row.stockId = stock.getId();
+        row.stockId = stockId;
         row.userId = tmp.id;
         usersTable.insert(row);
     }

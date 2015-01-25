@@ -26,6 +26,7 @@ import de.static_interface.reallifeplugin.database.table.row.corp.CorpRow;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -65,6 +66,8 @@ public class Corporation {
         if (amount == 0) {
             return true;
         }
+
+        amount = MathUtil.round(amount);
 
         if (checkAmount && amount < 0 && getBalance() < amount) {
             return false;

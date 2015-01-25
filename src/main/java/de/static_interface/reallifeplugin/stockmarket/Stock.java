@@ -21,6 +21,7 @@ import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
+import de.static_interface.sinklibrary.util.MathUtil;
 
 import java.sql.SQLException;
 
@@ -49,7 +50,7 @@ public class Stock {
     }
 
     public Corporation getCorporation() {
-        return CorporationUtil.getCorporation(getId());
+        return CorporationUtil.getCorporation(getBase().corpId);
     }
 
     public final int getId() {
@@ -57,7 +58,7 @@ public class Stock {
     }
 
     public double getPrice() {
-        return getBase().price;
+        return MathUtil.round(getBase().price);
     }
 
     public String getTag() {

@@ -28,6 +28,7 @@ import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
 import de.static_interface.sinklibrary.util.Debug;
+import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.bukkit.Bukkit;
@@ -561,7 +562,7 @@ public class CorporationCommand extends SinkCommand {
             user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBaseRegion().getId());
         }
 
-        user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + corporation.getBalance() + " " + VaultBridge.getCurrenyName());
+        user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + MathUtil.round(corporation.getBalance()) + " " + VaultBridge.getCurrenyName());
         Set<IngameUser> members = corporation.getMembers(true);
         if (members.size() > 0) {
             String membersList = "";
