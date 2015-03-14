@@ -21,6 +21,7 @@ import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.reallifeplugin.module.payday.PaydayModule;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -59,7 +60,7 @@ public class TaxesEntry extends Entry {
             return 0; /* no taxes */
         }
 
-        double taxesBase = ReallifeMain.getInstance().getSettings().getTaxesBase();
+        double taxesBase = PaydayModule.getInstance().getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
         if (money <= 25000) {

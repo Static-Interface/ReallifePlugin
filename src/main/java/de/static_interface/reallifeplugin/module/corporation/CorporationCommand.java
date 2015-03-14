@@ -14,19 +14,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.commands;
+package de.static_interface.reallifeplugin.module.corporation;
 
 import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
+import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
+import de.static_interface.reallifeplugin.corporation.CorporationRanks;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.api.command.SinkCommand;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
+import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
@@ -35,18 +40,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
-public class CorporationCommand extends SinkCommand {
+public class CorporationCommand extends ModuleCommand {
 
-    public CorporationCommand(Plugin plugin) {
-        super(plugin);
+    public CorporationCommand(Module module) {
+        super(module);
         getCommandOptions().setPlayerOnly(true);
     }
 
@@ -55,7 +61,7 @@ public class CorporationCommand extends SinkCommand {
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Corporation userCorp = null;
         if (user instanceof IngameUser) {
-            userCorp = CorporationUtil.getUserCorporation((IngameUser) user);
+            userCorp = CorporationUtil.getUserCorporation(getDatabase(), (IngameUser) user);
         }
 
         if (args.length < 1 && user instanceof IngameUser) {
@@ -79,6 +85,19 @@ public class CorporationCommand extends SinkCommand {
                 sendHelp(user);
                 break;
 
+            case "user":
+                if (args.length < 2) {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    break;
+                }
+
+                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
+                if (!target.hasPlayedBefore()) {
+                    throw new UserNotFoundException(args[1]);
+                }
+                sendUserInfo(user, target);
+
+                break;
             case "ceo": {
                 if (user instanceof IngameUser) {
                     if (moreArgs.length < 1) {
@@ -150,7 +169,7 @@ public class CorporationCommand extends SinkCommand {
                 }
 
             default: {
-                Corporation corporation = CorporationUtil.getCorporation(args[0]);
+                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[0]);
                 sendCorporationInfo(user, corporation);
                 break;
             }
@@ -193,27 +212,6 @@ public class CorporationCommand extends SinkCommand {
         CorporationUtil.sendMessage(corp, m("Corporation.Withdraw", user.getDisplayName(), amount));
     }
 
-    private void sendCorporationsList(SinkUser user, boolean listByMoney) {
-        user.sendMessage(ChatColor.GOLD + "Corporations: ");
-        String msg = "";
-        for (Corporation corporation : CorporationUtil.getCorporations()) {
-            int data;
-            if (listByMoney) {
-                data = (int) corporation.getBalance();
-            } else {
-                data = corporation.getMembers(false).size();
-            }
-            String formattedName = corporation.getFormattedName() + ChatColor.WHITE + "[" +
-                                   data + "]" + ChatColor.RESET;
-            if (msg.equals("")) {
-                msg = formattedName;
-                continue;
-            }
-            msg += " " + formattedName;
-        }
-        user.sendMessage(msg);
-    }
-
     private void handleAdminCommand(SinkUser user, String[] args) {
         switch (args[0].toLowerCase()) {
             case "?":
@@ -224,6 +222,7 @@ public class CorporationCommand extends SinkCommand {
             case "new": {
                 if ((user instanceof IngameUser && args.length < 4) || (!(user instanceof IngameUser) && args.length < 5)) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
                 }
                 //Todo: remove ceo_user_id from any corporation
                 //Todo cancel if ceo_user_id is already a ceo_user_id of another corporation
@@ -242,8 +241,8 @@ public class CorporationCommand extends SinkCommand {
                     world = Bukkit.getWorld(args[4]);
                 }
 
-                boolean successful = CorporationUtil.createCorporation(user, name, args[2], base, world);
-                Corporation corp = CorporationUtil.getCorporation(name);
+                boolean successful = CorporationUtil.createCorporation(getDatabase(), user, name, args[2], base, world);
+                Corporation corp = CorporationUtil.getCorporation(getDatabase(), name);
                 String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
                 msg = StringUtil.format(msg, corp.getFormattedName());
                 user.sendMessage(msg);
@@ -251,7 +250,7 @@ public class CorporationCommand extends SinkCommand {
             }
 
             case "migrate": {
-                user.sendMessage("" + CorporationUtil.migrate(user));
+                user.sendMessage("" + CorporationUtil.migrate(getDatabase(), user));
                 break;
             }
 
@@ -261,8 +260,8 @@ public class CorporationCommand extends SinkCommand {
                     return;
                 }
 
-                Corporation corp = CorporationUtil.getCorporation(args[1]);
-                boolean successful = CorporationUtil.deleteCorporation(user, corp);
+                Corporation corp = CorporationUtil.getCorporation(getDatabase(), args[1]);
+                boolean successful = CorporationUtil.deleteCorporation(getDatabase(), user, corp);
 
                 if (successful) {
                     user.sendMessage(StringUtil.format(m("Corporation.Deleted"), corp.getFormattedName()));
@@ -276,7 +275,7 @@ public class CorporationCommand extends SinkCommand {
                     return;
                 }
 
-                Corporation corporation = CorporationUtil.getCorporation(args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
 
                 World world;
                 if (user instanceof IngameUser) {
@@ -299,7 +298,7 @@ public class CorporationCommand extends SinkCommand {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
                 if (corporation == null) {
                     user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
                     return;
@@ -315,7 +314,7 @@ public class CorporationCommand extends SinkCommand {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
                 double amount;
                 try {
                     amount = Double.valueOf(args[2]);
@@ -342,7 +341,7 @@ public class CorporationCommand extends SinkCommand {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
                 double amount;
                 try {
                     amount = Double.valueOf(args[2]);
@@ -383,13 +382,16 @@ public class CorporationCommand extends SinkCommand {
                     user.sendMessage(ChatColor.RED + "/corp ceo help");
                     break;
                 }
-                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
+
+                UUID uuid = BukkitUtil.getUniqueIdByName(args[1]);
+                ReallifeMain.getInstance().getLogger().log(Level.INFO, "[Debug] UUID of " + args[1] + ": " + uuid.toString());
+                IngameUser target = SinkLibrary.getInstance().getIngameUser(uuid);
 
                 if (!target.hasPlayedBefore()) {
                     throw new UserNotFoundException(args[1]);
                 }
 
-                Corporation targetCorporation = CorporationUtil.getUserCorporation(target);
+                Corporation targetCorporation = CorporationUtil.getUserCorporation(getDatabase(), target);
                 if (targetCorporation != null) {
                     user.sendMessage(m("Corporation.AlreadyMemberOther", target.getName()));
                     return;
@@ -404,7 +406,7 @@ public class CorporationCommand extends SinkCommand {
                 if (target.isOnline()) {
                     target.sendMessage(StringUtil.format(m("Corporation.Added"), corporation.getName()));
                 }
-                user.sendMessage(StringUtil.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(target)));
+                user.sendMessage(StringUtil.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(getDatabase(), target)));
                 break;
             }
 
@@ -413,24 +415,31 @@ public class CorporationCommand extends SinkCommand {
                     user.sendMessage(ChatColor.RED + "/corp ceo help");
                     break;
                 }
-                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
 
-                if (!corporation.getMembers(false).contains(target)) {
-                    user.sendMessage(StringUtil.format(m("Corporation.NotMember"), target.getName()));
+                boolean success = false;
+                for (IngameUser u : corporation.getMembers(false)) {
+                    if (ChatColor.stripColor(u.getDisplayName()).equalsIgnoreCase(args[1])
+                        || u.getName().equalsIgnoreCase(args[1])) {
+                        corporation.removeMember(u);
+                        if (u.isOnline()) {
+                            u.sendMessage(StringUtil.format(m("Corporation.Kicked"), corporation.getName()));
+                            user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(getDatabase(), u)));
+                        }
+                        success = true;
+                        break;
+                    }
+                }
+                if (!success) {
+                    user.sendMessage(StringUtil.format(m("Corporation.NotMember"), args[1]));
                     break;
                 }
 
-                corporation.removeMember(target);
-                if (target.isOnline()) {
-                    target.sendMessage(StringUtil.format(m("Corporation.Kicked"), corporation.getName()));
-                }
-                user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(target)));
                 break;
             }
             case "acc":
             case "addcoceo": {
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
-                if (corporation.isCoCeo(target)) {
+                if (!corporation.getCEO().equals(user)) {
                     user.sendMessage(m("Corporation.NotCEO"));
                     break;
                 }
@@ -449,7 +458,7 @@ public class CorporationCommand extends SinkCommand {
             case "rcc":
             case "removecoceo": {
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
-                if (!corporation.getCEO().equals(target)) {
+                if (!corporation.getCEO().equals(user)) {
                     user.sendMessage(m("Corporation.NotCEO"));
                     return;
                 }
@@ -526,6 +535,83 @@ public class CorporationCommand extends SinkCommand {
         user.sendMessage(ChatColor.GRAY + "/corp ceo withdraw <amount>");
     }
 
+    private void sendCorporationsList(SinkUser user, boolean listByMoney) {
+        user.sendMessage(ChatColor.GOLD + "Corporations: ");
+        String msg = "";
+        for (Corporation corporation : CorporationUtil.getCorporations(getDatabase())) {
+            int data;
+            if (listByMoney) {
+                data = (int) corporation.getBalance();
+            } else {
+                data = corporation.getMembers(false).size();
+            }
+            String formattedName = corporation.getFormattedName() + ChatColor.WHITE + "[" +
+                                   data + "]" + ChatColor.RESET;
+            if (msg.equals("")) {
+                msg = formattedName;
+                continue;
+            }
+            msg += " " + formattedName;
+        }
+        user.sendMessage(msg);
+    }
+
+
+    private void sendUserInfo(SinkUser user, IngameUser target) {
+        user.sendMessage("");
+        String divider = ChatColor.GOLD + "";
+        for (int i = 0; i < 32; i++) {
+            divider += "-";
+        }
+        user.sendMessage("");
+        user.sendMessage(ChatColor.GOLD + " User: " + CorporationUtil.getFormattedName(getDatabase(), target));
+        user.sendMessage(divider);
+        Corporation corp = CorporationUtil.getUserCorporation(getDatabase(), target);
+        user.sendMessage(ChatColor.GRAY + "Corporation: " + ChatColor.GOLD + (corp == null ? "-" : corp.getFormattedName()));
+        String rank;
+        if (corp == null) {
+            rank = ChatColor.GOLD + "-";
+        } else if (corp.getCEO().equals(target)) {
+            rank = CorporationRanks.RANK_CEO;
+        } else if (corp.getCoCEOs().contains(target)) {
+            rank = CorporationRanks.RANK_CO_CEO;
+        } else {
+            rank = CorporationRanks.RANK_DEFAULT + "Member";
+        }
+        user.sendMessage(ChatColor.GRAY + "Rank: " + rank);
+
+        try {
+            String soldItems = "-";
+            Integer userId = CorporationUtil.getUserId(getDatabase(), target);
+            if (corp != null && userId != null) {
+                //Todo make time configurable
+                int days = 3;
+                long maxTime = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * days;
+                CorpTradesRow[] rows =
+                        getDatabase().getCorpTradesTable().get(
+                                "SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `corp_id` = ? AND `time` > ?", userId,
+                                corp.getId(), maxTime);
+                if (rows.length > 0) {
+                    int i = 0;
+                    for (CorpTradesRow row : rows) {
+                        if (row.type != 0) {
+                            continue; //wasn't selling items
+                        }
+                        i += row.changedAmount;
+                    }
+                    soldItems = m("Corporation.ItemsSold", target.getDisplayName(), i, days + " " + LanguageConfiguration.m("TimeUnit.Days"));
+                }
+            }
+            user.sendMessage(ChatColor.GRAY + "Items sold: " + ChatColor.GOLD + soldItems);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        user.sendMessage(divider);
+        user.sendMessage("");
+    }
+
+
     private void sendCorporationInfo(SinkUser user, Corporation corporation) {
         if (corporation == null) {
             user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
@@ -534,58 +620,65 @@ public class CorporationCommand extends SinkCommand {
 
         user.sendMessage("");
         String text = ChatColor.GOLD + " Corporation: " + corporation.getFormattedName();
-        String divider = "";
+        String divider = ChatColor.GOLD + "";
         for (int i = 0; i < 32; i++) {
             divider += "-";
         }
         user.sendMessage(ChatColor.RED + text);
-        user.sendMessage(ChatColor.GOLD + divider);
-        user.sendMessage(ChatColor.GRAY + "CEO: " + CorporationUtil.getFormattedName(corporation.getCEO()));
-        String coCeos = "";
+        user.sendMessage(divider);
+        String ceo = ChatColor.GOLD + "-";
+        if (corporation.getCEO() != null) {
+            ceo = CorporationUtil.getFormattedName(getDatabase(), corporation.getCEO());
+        }
+        user.sendMessage(ChatColor.GRAY + "CEO: " + ceo);
+        String coCeos = "-";
         if (corporation.getCoCEOs().size() > 0) {
             for (IngameUser coCeo : corporation.getCoCEOs()) {
-                String name = CorporationUtil.getFormattedName(coCeo);
+                String name = CorporationUtil.getFormattedName(getDatabase(), coCeo);
                 if (StringUtil.isEmptyOrNull(name)) {
                     Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
                     continue;
                 }
-                if (coCeos.equals("")) {
+                if (coCeos.equals("-")) {
                     coCeos = name;
                     continue;
                 }
                 coCeos += ChatColor.GRAY + ", " + name;
             }
-            user.sendMessage(ChatColor.GRAY + "Co-CEO's: " + coCeos);
         }
-
+        user.sendMessage(ChatColor.GRAY + "Co-CEO's: " + ChatColor.GOLD + coCeos);
         if (corporation.getBaseRegion() != null) {
             user.sendMessage(ChatColor.GRAY + "Base: " + ChatColor.GOLD + corporation.getBaseRegion().getId());
         }
 
         user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + MathUtil.round(corporation.getBalance()) + " " + VaultBridge.getCurrenyName());
         Set<IngameUser> members = corporation.getMembers(true);
+        String membersFormatted = "-";
         if (members.size() > 0) {
-            String membersList = "";
             for (IngameUser member : members) {
-                String name = CorporationUtil.getFormattedName(member);
-                if (StringUtil.isEmptyOrNull(name)) {
-                    Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
-                    continue;
-                }
-                if (!member.hasPlayedBefore()) {
-                    Debug.log(Level.WARNING, "Couldn't find user: " + member.toString() + ": Wrong UUID?");
-                    continue;
-                }
+                try {
+                    String name = CorporationUtil.getFormattedName(getDatabase(), member);
+                    if (StringUtil.isEmptyOrNull(name)) {
+                        Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
+                        continue;
+                    }
+                    if (!member.hasPlayedBefore()) {
+                        Debug.log(Level.WARNING, "Couldn't find user: " + member.toString() + ": Wrong UUID?");
+                        continue;
+                    }
 
-                if (StringUtil.isEmptyOrNull(name)) {
-                    membersList = name;
-                    continue;
+                    if (membersFormatted.equals("-")) {
+                        membersFormatted = name;
+                        continue;
+                    }
+                    membersFormatted += ChatColor.GRAY + ", " + name;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                membersList += ChatColor.GRAY + ", " + name;
             }
-            user.sendMessage(ChatColor.GRAY + "Members: " + ChatColor.GOLD + membersList);
         }
-        user.sendMessage(ChatColor.GOLD + divider);
+        user.sendMessage(ChatColor.GRAY + "Members: " + ChatColor.GOLD + membersFormatted);
+        user.sendMessage(divider);
         user.sendMessage("");
     }
 }

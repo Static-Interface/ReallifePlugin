@@ -14,17 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.listener;
+package de.static_interface.reallifeplugin.module.payday;
 
-import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.ModuleListener;
+import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -32,11 +32,12 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class OnlineTimeListener implements Listener {
+public class PaydayListener extends ModuleListener {
 
     public HashMap<UUID, Long> onlineTimes = new HashMap<>();
 
-    public OnlineTimeListener() {
+    public PaydayListener(Module module) {
+        super(module);
         for (Player player : BukkitUtil.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
         {
             onlineTimes.put(player.getUniqueId(), System.currentTimeMillis());
@@ -60,7 +61,7 @@ public class OnlineTimeListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPayDay(PayDayEvent event) {
-        long minTime = TimeUnit.MINUTES.toMillis(ReallifeMain.getInstance().getSettings().getMinOnlineTime());
+        long minTime = TimeUnit.MINUTES.toMillis(PaydayModule.getInstance().getMinOnlineTime());
 
         if (minTime <= 0 || !event.isCheckTimeEnabled()) {
             return; //Don't check...

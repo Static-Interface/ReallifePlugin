@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.entry;
 
-import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.reallifeplugin.module.insurance.InsuranceModule;
 import org.bukkit.entity.Player;
 
 public class InsuranceEntry extends Entry {
@@ -54,6 +54,6 @@ public class InsuranceEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return ReallifeMain.getInstance().getSettings().getInsuranceAccount();
+        return InsuranceModule.getInstance().getInsuranceAccount();
     }
 }

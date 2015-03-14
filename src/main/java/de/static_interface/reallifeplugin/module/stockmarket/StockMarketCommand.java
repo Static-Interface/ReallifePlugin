@@ -14,11 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.commands;
+package de.static_interface.reallifeplugin.module.stockmarket;
 
 import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
@@ -27,26 +26,27 @@ import de.static_interface.reallifeplugin.database.table.impl.stockmarket.Stocks
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockUserRow;
-import de.static_interface.reallifeplugin.stockmarket.Stock;
-import de.static_interface.reallifeplugin.stockmarket.StockMarketUtil;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.reallifeplugin.stock.Stock;
+import de.static_interface.reallifeplugin.stock.StockMarket;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 
-public class StockMarketCommand extends SinkCommand {
+public class StockMarketCommand extends ModuleCommand {
 
-    public StockMarketCommand(Plugin plugin) {
-        super(plugin);
+    public StockMarketCommand(Module module) {
+        super(module);
         getCommandOptions().setPlayerOnly(true);
     }
 
@@ -56,7 +56,6 @@ public class StockMarketCommand extends SinkCommand {
             return false;
         }
 
-        Database db = ReallifeMain.getInstance().getDB();
         String subcommand = args[0];
 
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
@@ -68,7 +67,7 @@ public class StockMarketCommand extends SinkCommand {
                     break;
                 }
 
-                Corporation corp = CorporationUtil.getUserCorporation(user);
+                Corporation corp = CorporationUtil.getUserCorporation(getDatabase(), user);
 
                 if (!corp.isCeo(user)) {
                     user.sendMessage(m("Corporation.NotCEO"));
@@ -103,7 +102,7 @@ public class StockMarketCommand extends SinkCommand {
                 row.time = System.currentTimeMillis();
 
                 try {
-                    row = db.getStocksTable().insert(row);
+                    row = getDatabase().getStocksTable().insert(row);
                 } catch (SQLException e) {
                     user.sendMessage(ChatColor.RED + "An internal error occured");
                     e.printStackTrace();
@@ -113,7 +112,7 @@ public class StockMarketCommand extends SinkCommand {
                 int ceoShare = (int) ((double) (100 * amount) / share) - amount;
 
                 try {
-                    addStocks(user, row.id, row.amount, ceoShare, false);
+                    addStocks(getDatabase(), user, row.id, row.amount, ceoShare, false);
                 } catch (SQLException e) {
                     user.sendMessage(ChatColor.RED + "An internal error occured");
                     e.printStackTrace();
@@ -131,7 +130,7 @@ public class StockMarketCommand extends SinkCommand {
                 }
                 String tag = args[1].toUpperCase();
                 int amount = Integer.valueOf(args[2]);
-                Stock stock = StockMarketUtil.getStock(db, tag);
+                Stock stock = StockMarket.getInstance().getStock(getDatabase(), tag);
 
                 if (stock == null) {
                     user.sendMessage(m("Corporation.DoesntExists", tag)); //Todo: stock not found
@@ -150,7 +149,7 @@ public class StockMarketCommand extends SinkCommand {
                 }
 
                 try {
-                    addStocks(user, stock.getId(), stock.getAmount(), amount, true);
+                    addStocks(getDatabase(), user, stock.getId(), stock.getAmount(), amount, true);
                 } catch (SQLException e) {
                     e.printStackTrace();
                     user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
@@ -161,20 +160,35 @@ public class StockMarketCommand extends SinkCommand {
                 break;
             }
 
+            case "forceupdate": {
+                if (!user.hasPermission("ReallifePlugin.StockMarket.ForceUpdate")) {
+                    user.sendMessage(LanguageConfiguration.m("Permissions.General"));
+                    return false;
+                }
+
+                if (StockMarket.getInstance().onStocksUpdate(getDatabase())) {
+                    user.sendMessage(m("General.Success"));
+                } else {
+                    user.sendMessage(m("StockMarket.ForceFailed"));
+                }
+
+                break;
+            }
+
             case "list": {
                 String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
 
-                Collection<Stock> stocks = StockMarketUtil.getStocks(db);
+                Collection<Stock> stocks = StockMarket.getInstance().getAllStocks(getDatabase());
                 if (stocks.size() < 1) {
                     user.sendMessage(prefix + ChatColor.RED + "No stocks found"); //Todo
                     return true;
                 }
-                for (Stock stock : StockMarketUtil.getStocks(db)) {
+                for (Stock stock : StockMarket.getInstance().getAllStocks(getDatabase())) {
                     double percent = 0;
                     String a = null;
                     try {
                         try {
-                            percent = StockMarketUtil.calculateStockQuotation(stock);
+                            percent = StockMarket.getInstance().calculateStockQuotation(getDatabase(), stock);
                         } catch (IOException e) {
                             a = ChatColor.GRAY + "[-] %";
                         }
@@ -215,7 +229,9 @@ public class StockMarketCommand extends SinkCommand {
                         s += a;
                     }
 
-                    s += ChatColor.GRAY + " - " + "Anzahl: " + ChatColor.GOLD + stock.getAmount();
+                    s +=
+                            ChatColor.GRAY + " - " + "Dividenden: " + ChatColor.GOLD + stock.getDividend() + " €" + ChatColor.GRAY + " - "
+                            + "Anzahl: " + ChatColor.GOLD + stock.getAmount();
                     user.sendMessage(prefix + s);
                 }
 
@@ -230,18 +246,16 @@ public class StockMarketCommand extends SinkCommand {
         return true;
     }
 
-    private void addStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
+    private void addStocks(Database db, IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
         int newAmount = stockAmount - amount;
-        Database db = ReallifeMain.getInstance().getDB();
-
         if (removeFromStock) {
             StocksTable table = db.getStocksTable();
             table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stockId);
         }
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(user);
+        CorpUserRow tmp = CorporationUtil.getCorpUser(db, user);
         if (tmp == null) {
-            tmp = CorporationUtil.insertUser(user, null);
+            tmp = CorporationUtil.insertUser(db, user, null);
         }
 
         StockUsersTable usersTable = db.getStockUsersTable();

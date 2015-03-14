@@ -16,12 +16,18 @@
 
 package de.static_interface.reallifeplugin;
 
+import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.entry.PayDayEntry;
 import de.static_interface.reallifeplugin.entry.TaxesEntry;
-import de.static_interface.reallifeplugin.event.PayDayEvent;
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.EntryResult;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.payday.PaydayModule;
+import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
+import de.static_interface.reallifeplugin.stock.Stock;
+import de.static_interface.reallifeplugin.stock.StockMarket;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
@@ -35,10 +41,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PayDayRunnable implements Runnable {
+import javax.annotation.Nullable;
+
+public class PayDayTask implements Runnable {
+
+    private Database db;
+
+    public PayDayTask(@Nullable Database db) {
+        this.db = db;
+    }
 
     public void givePayDay(Player player, Group group, boolean checkTime) {
-        PayDayEvent event = new PayDayEvent(player, group, checkTime);
+        PayDayEvent event = new PayDayEvent(PaydayModule.getInstance(), player, group, checkTime);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
@@ -48,6 +62,11 @@ public class PayDayRunnable implements Runnable {
         List<Entry> entries = new ArrayList<>();
         entries.add(new PayDayEntry(player, group));
         entries.add(new TaxesEntry(player, group));
+
+        if (db != null && Module.isEnabled(StockMarketModule.NAME)) {
+            List<Stock> stocks = StockMarket.getInstance().getAllStocks(db, player);
+            //Todo
+        }
         entries.addAll(event.getEntries());
         List<Entry> queue = PayDayQueue.getPlayerQueue(player.getUniqueId());
         if (queue != null) {
@@ -126,6 +145,9 @@ public class PayDayRunnable implements Runnable {
     }
 
     public void run(boolean checktime) {
+        if (!Module.isEnabled(PaydayModule.NAME)) {
+            return;
+        }
         BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
         for (Player player : BukkitUtil.getOnlinePlayers()) {
             boolean isInGroup = false;

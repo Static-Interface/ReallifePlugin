@@ -1,0 +1,679 @@
+/*
+ * Copyright (c) 2013 - 2014 <http://static-interface.de> and contributors
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package de.static_interface.reallifeplugin.module.corporation;
+
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.corporation.Corporation;
+import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.ModuleListener;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
+import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinklibrary.util.VaultBridge;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+public class CorporationListener extends ModuleListener {
+
+    public static final String CURRENCY = "€"; //TODO
+
+    public CorporationListener(Module module) {
+        super(module);
+    }
+
+    private static boolean isCorpTradesSign(String[] lines) {
+        return ChatColor.stripColor(lines[0]).equals("[CBuy]") ||
+               ChatColor.stripColor(lines[0]).equals("[CSell]");
+    }
+
+    private static ItemStack getItemStack(String materialName, int amount) {
+        Map.Entry<String, Short> entry = getItemIds(materialName);
+        Material material = Material.matchMaterial(unformatItemName(entry.getKey()));
+        ItemStack stack = new ItemStack(material, amount, entry.getValue());
+        if (material == null || stack == null) {
+            throw new NullPointerException("Unknown material: " + materialName);
+        }
+        return stack;
+    }
+
+    public static String formatItemName(String s) {
+        s = s.replace("_", " ");
+        String tmp = "";
+        for (String word : s.split(" ")) {
+            word = Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase();
+
+            if (tmp.equals("")) {
+                tmp = word;
+                continue;
+            }
+            tmp += " " + word;
+        }
+
+        return tmp;
+    }
+
+    public static String unformatItemName(String s) {
+        s = s.replace(" ", "_");
+        return s.toUpperCase();
+    }
+
+    public static Map.Entry<String, Short> getItemIds(String s) {
+        String base = formatItemName(s.split(":")[0]);
+        String sub = s.split(":").length > 1 ? s.split(":")[1] : null;
+
+        Integer baseId;
+        try {
+            baseId = Integer.parseInt(base);
+            base = formatItemName(Material.getMaterial(baseId).name());
+        } catch (NumberFormatException ignored) {
+
+        }
+
+        Short subId = 0;
+        if (sub != null) {
+            try {
+                subId = Short.parseShort(sub);
+            } catch (NumberFormatException ignored) {
+
+            }
+        }
+
+        final String finalBase = base;
+        final Short finalSubId = subId;
+
+        if (Material.matchMaterial(unformatItemName(base)) == null) {
+            throw new NullPointerException();
+        }
+
+        return new Map.Entry<String, Short>() {
+            @Override
+            public String getKey() {
+                return finalBase;
+            }
+
+            @Override
+            public Short getValue() {
+                return finalSubId;
+            }
+
+            @Override
+            public Short setValue(Short value) {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public static boolean equalsItemStack(ItemStack stack, String s) {
+        Map.Entry<String, Short> entry = getItemIds(s);
+        ItemStack sStack = new ItemStack(Material.matchMaterial(unformatItemName(entry.getKey())), stack.getAmount(), entry.getValue());
+        return sStack.equals(stack);
+    }
+
+    @Nullable
+    public static ItemStack getItem(@Nonnull Inventory inv, String s, boolean preferNotSold) {
+        int stackamount = 0;
+        ItemStack stack = null;
+        ItemStack soldItemStack = null;
+
+        for (ItemStack invStack : inv.getContents()) {
+            if (invStack == null) {
+                continue;
+            }
+
+            if (invStack != null && equalsItemStack(invStack, s) && invStack.getAmount() > stackamount) {
+                if (preferNotSold && isTagged(invStack)) {
+                    soldItemStack = invStack;
+                    continue;
+                }
+
+                stack = invStack;
+            }
+        }
+
+        if (stack == null && soldItemStack != null) {
+            return soldItemStack;
+        }
+
+        return stack;
+    }
+
+    @EventHandler
+    public static void untagListener(PlayerInteractEvent event) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        if (event.getClickedBlock().getType() != Material.WALL_SIGN && event.getClickedBlock().getType() != Material.SIGN
+            && event.getClickedBlock().getType() != Material.SIGN_POST) {
+            return;
+        }
+
+        if (!(event.getClickedBlock().getState() instanceof Sign)) {
+            return;
+        }
+
+        Sign sign = (Sign) event.getClickedBlock().getState();
+        if (!sign.getLine(1).trim().equals(ChatColor.BLUE + "[CUntag]")) {
+            return;
+        }
+
+        for (ItemStack stack : event.getPlayer().getInventory()) {
+            untag(stack);
+        }
+
+        user.sendMessage(m("General.Success"));
+    }
+
+    public static boolean removeItem(@Nonnull Inventory inv, @Nonnull ItemStack stack, boolean preferNotSold) {
+
+        boolean soldFound = false;
+        for (ItemStack invStack : inv.getContents()) {
+            if (invStack == null) {
+                continue;
+            }
+
+            if (invStack.getType() != stack.getType()) {
+                continue;
+            }
+
+            soldFound = isTagged(invStack);
+
+            if (soldFound && preferNotSold) {
+                continue;
+            }
+
+            inv.removeItem(stack);
+            return true;
+        }
+
+        if (soldFound && preferNotSold) {
+            throw new RuntimeException();
+        }
+
+        return false;
+    }
+
+    public static void tag(ItemStack stack) {
+        List<String> lore = new ArrayList<>();
+        ItemMeta meta = stack.getItemMeta();
+        if (meta.hasLore()) {
+            lore = meta.getLore();
+        }
+
+        lore.add(m("Corporation.Sign.SoldWatermark"));
+        meta.setLore(lore);
+        stack.setItemMeta(meta);
+    }
+
+    public static void untag(ItemStack stack) {
+        if (!isTagged(stack)) {
+            return;
+        }
+
+        ItemMeta meta = stack.getItemMeta();
+        if (meta == null) {
+            return;
+        }
+        List<String> lore = meta.getLore();
+        if (lore == null) {
+            return;
+        }
+        lore.remove(m("Corporation.Sign.SoldWatermark"));
+        meta.setLore(lore);
+        stack.setItemMeta(meta);
+    }
+
+    public static boolean isTagged(ItemStack stack) {
+        if (stack == null) {
+            return false;
+        }
+        return stack.getItemMeta().hasLore() && stack.getItemMeta().getLore().contains(m("Corporation.Sign.SoldWatermark"));
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private boolean validateSign(SignChangeEvent event, String[] lines, Location location, IngameUser user) {
+        Corporation corp = CorporationUtil.getUserCorporation(getDatabase(), user);
+        if (corp == null) {
+            user.sendMessage(m("Corporation.NotInCorporation"));
+            return false;
+        }
+
+        if (!CorporationUtil.hasCeoPermissions(user, corp)) {
+            user.sendMessage(m("Corporation.NotCEO"));
+            return false;
+        }
+
+        try {
+            int amount;
+
+            try {
+                amount = Integer.valueOf(lines[1]);
+            } catch (NumberFormatException e) {
+                user.sendMessage(ChatColor.RED + "Invalid Amount: " + lines[1]);
+                return false;
+            }
+
+            try {
+                Double.parseDouble(lines[2].split(" ")[0]);
+            } catch (NumberFormatException e) {
+                user.sendMessage(ChatColor.RED + "Invalid price: " + lines[2]);
+                return false;
+            }
+
+            if (amount > 64 || amount < 1) {  //Invalid stack_amount ( stack_amount must be [1,64) )
+                throw new NumberFormatException();
+            }
+
+            //Check if Material is valid
+            try {
+                String material_name = lines[3];
+                getItemStack(material_name, amount);
+                Map.Entry<String, Short> idData = getItemIds(material_name);
+                String s = idData.getKey() + ":" + idData.getValue();
+                if (idData.getValue() == 0) {
+                    s = idData.getKey();
+                }
+                event.setLine(3, s);
+            } catch (Exception e) {
+                user.sendMessage(ChatColor.RED + "Unknown item or block: " + lines[3]);
+                return false;
+            }
+
+            //Validate location
+            Corporation locationCorporation = CorporationUtil.getCorporation(getDatabase(), location);
+
+            if (locationCorporation.getId() != corp.getId()) {
+                user.sendMessage(m("Corporation.Sign.InvalidCreateLocation"));
+                return false;
+            }
+        } catch (Exception e) {
+            Debug.log("Exception while trying to create sign: ", e);
+            return false;
+        }
+        return true;
+    }
+
+    @EventHandler
+    public void onSignChangeCorpTrades(SignChangeEvent event) {
+        Block signBlock = event.getBlock();
+        String[] lines = event.getLines();
+        event.setLine(1, lines[1].trim());
+        event.setLine(3, lines[3].trim());
+
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+        if (!(signBlock.getState() instanceof Sign)) {
+            return;
+        }
+
+        if (!isCorpTradesSign(lines)) {
+            return;
+        }
+
+        event.setLine(2, lines[2].split(" ")[0] + " " + CURRENCY);
+
+        lines = event.getLines();
+
+        if (!validateSign(event, lines, signBlock.getLocation(), user)) {
+            event.setLine(0, ChatColor.DARK_RED + ChatColor.stripColor(lines[0]));
+            return;
+        }
+
+        Chest chest = CorporationUtil.findConnectedChest(signBlock);
+        if (chest == null) {
+            user.sendMessage(m("Corporation.Sign.InvalidChest"));
+            event.setLine(0, ChatColor.DARK_RED + ChatColor.stripColor(lines[0]));
+            return;
+        }
+
+        event.setLine(0, ChatColor.BLUE + ChatColor.stripColor(lines[0]));
+
+        user.sendMessage(m("General.Success"));
+        registerBlock(chest.getBlock(), event.getPlayer());
+        registerBlock(signBlock, event.getPlayer());
+
+    }
+
+    private void registerBlock(Block block, Player player) {
+        if (ReallifeMain.getInstance().isLwcAvailable()) {
+            com.griefcraft.model.Protection.Type type = com.griefcraft.model.Protection.Type.PRIVATE;
+            com.griefcraft.model.Protection protection = ReallifeMain.getInstance().getLWC().getPhysicalDatabase().
+                    registerProtection(block.getTypeId(), type, block.getWorld().toString(), player.getName(), "",
+                                       (int) block.getLocation().getX(), (int) block.getLocation().getY(),
+                                       (int) block.getLocation().getZ());
+            ReallifeMain.getInstance().getLWC().wrapPlayer(player).addAccessibleProtection(protection);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteractCSell(PlayerInteractEvent event) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+
+        try {
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+                return;
+            }
+
+            if (event.getClickedBlock().getType() != Material.WALL_SIGN && event.getClickedBlock().getType() != Material.SIGN
+                && event.getClickedBlock().getType() != Material.SIGN_POST) {
+                return;
+            }
+
+            if (!(event.getClickedBlock().getState() instanceof Sign)) {
+                return;
+            }
+
+            Sign sign = (Sign) event.getClickedBlock().getState();
+            if (!sign.getLine(0).trim().equals(ChatColor.BLUE + "[CSell]")) {
+                return;
+            }
+
+            //Todo
+            if (!sign.getLine(2).endsWith("€")) {
+                sign.setLine(2, sign.getLine(2).split(" ")[0] + " " + CURRENCY);
+            }
+
+            if (!sign.getLine(3).contains(":") && sign.getLine(3).toUpperCase().equals(sign.getLine(3))) {
+                Material material = Material.matchMaterial(unformatItemName(sign.getLine(3)));
+                sign.setLine(3, formatItemName(material.name()));
+            }
+
+            sign.update(true);
+
+            Corporation corp = CorporationUtil.getCorporation(getDatabase(), event.getClickedBlock().getLocation());
+            if (corp == null) {
+                user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
+                sign.setLine(0, ChatColor.DARK_RED + "[CSell]");
+                return;
+            }
+
+            if (CorporationUtil.getUserCorporation(getDatabase(), user) == null) {
+                user.sendMessage(m("Corporation.NotInCorporation"));
+                return;
+            }
+
+            if (CorporationUtil.getUserCorporation(getDatabase(), user).getId() != corp.getId()) {
+                user.sendMessage(CorporationUtil.getUserCorporation(getDatabase(), user).getName() + ":" + corp.getName());
+                user.sendMessage(m("Corporation.Sign.InvalidSellCorporation"));
+                return;
+            }
+
+            int amount = Integer.valueOf(sign.getLine(1));
+            double price = Double.valueOf(sign.getLine(2).split(" ")[0]);
+
+            double pricePerItem = price / (double) amount;
+
+            Inventory inv = event.getPlayer().getInventory();
+            ItemStack stack = getItem(inv, sign.getLine(3), true);
+
+            if (stack == null) {
+                user.sendMessage(m("Corporation.Sign.NoItemsFound"));
+                return;
+            }
+
+            if (isTagged(stack)) {
+                user.sendMessage(m("Corporation.Sign.ItemAlreadySold"));
+                return;
+            }
+
+            Chest chest = CorporationUtil.findConnectedChest(sign.getBlock());
+            if (chest == null) {
+                user.sendMessage(m("Corporation.Sign.InvalidChest"));
+                return;
+            }
+
+            if (!CorporationUtil.canAddItemStack(chest.getInventory())) {
+                user.sendMessage(m("Corporation.Sign.ChestFull"));
+                return;
+            }
+
+            price = pricePerItem * stack.getAmount();
+            price = MathUtil.round(price);
+
+            if (corp.getBalance() <= price) {
+                user.sendMessage(m("Corporation.NotEnoughMoney"));
+                return;
+            }
+
+            try {
+                if (!removeItem(inv, stack, true)) {
+                    user.sendMessage(m("Corporation.Sign.NoItemsFound"));
+                    return;
+                }
+            } catch (RuntimeException e) {
+                user.sendMessage(m("Corporation.Sign.ItemAlreadySold"));
+                return;
+            }
+
+            user.getPlayer().updateInventory();
+
+            chest.getInventory().addItem(stack);
+            chest.update(true);
+
+            for (ItemStack chestStack : chest.getInventory().getContents()) {
+                if (chestStack.getType() == stack.getType() && chestStack.getItemMeta().equals(stack.getItemMeta())) {
+                    if (!isTagged(chestStack)) {
+                        tag(chestStack);
+                        break;
+                    }
+                }
+            }
+
+            if (!corp.addBalance(-price)) {
+                user.sendMessage(m("Corporation.NotEnoughMoney"));
+                return;
+            }
+
+            user.addBalance(price);
+            user.sendMessage(
+                    StringUtil.format(m("Corporation.Sign.Sold"), stack.getAmount(), formatItemName(stack.getType().name()),
+                                      price));
+
+            int newAmount = 0;
+            for (ItemStack invStack : chest.getInventory().getContents()) {
+                if (invStack != null && invStack.getType() == stack.getType()) {
+                    newAmount += invStack.getAmount();
+                }
+            }
+
+            CorpTradesRow row = new CorpTradesRow();
+            row.id = null;
+            row.signAmount = amount;
+            row.corpId = corp.getId();
+            row.location = sign.getLocation();
+            row.material = stack.getType();
+            row.newAmount = newAmount;
+            row.price = -price;
+            row.changedAmount = stack.getAmount();
+            row.time = System.currentTimeMillis();
+            row.type = 0;
+            row.userId = CorporationUtil.getUserId(getDatabase(), user);
+            getDatabase().getCorpTradesTable().insert(row);
+        } catch (Exception e) {
+            user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteractCBuy(PlayerInteractEvent event) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+        try {
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+                return;
+            }
+
+            if (event.getClickedBlock().getType() != Material.WALL_SIGN && event.getClickedBlock().getType() != Material.SIGN
+                && event.getClickedBlock().getType() != Material.SIGN_POST) {
+                return;
+            }
+
+            if (!(event.getClickedBlock().getState() instanceof Sign)) {
+                return;
+            }
+
+            Sign sign = (Sign) event.getClickedBlock().getState();
+            if (!sign.getLine(0).trim().equals(ChatColor.BLUE + "[CBuy]")) {
+                return;
+            }
+
+            if (!sign.getLine(2).endsWith(CURRENCY)) {
+                sign.setLine(2, sign.getLine(2).split(" ")[0] + " " + CURRENCY);
+            }
+            sign.update(true);
+
+            Corporation corp = CorporationUtil.getCorporation(getDatabase(), event.getClickedBlock().getLocation());
+            if (corp == null) {
+                user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
+                sign.setLine(0, ChatColor.DARK_RED + "[CBuy]");
+                return;
+            }
+
+            if (CorporationUtil.getUserCorporation(getDatabase(), user) == null) {
+                user.sendMessage(m("Corporation.NotInCorporation"));
+                return;
+            }
+
+            if (CorporationUtil.getUserCorporation(getDatabase(), user).getId() != corp.getId()) {
+                user.sendMessage(m("Corporation.Sign.InvalidBuyCorporation"));
+                return;
+            }
+
+            int amount = Integer.valueOf(sign.getLine(1));
+            double price = Double.valueOf(sign.getLine(2).split(" ")[0]);
+
+            if (!CorporationUtil.canAddItemStack(user.getPlayer().getInventory())) {
+                user.sendMessage(m("Corporation.Sign.CantPickup"));
+                return;
+            }
+
+            Chest chest = CorporationUtil.findConnectedChest(sign.getBlock());
+            if (chest == null) {
+                user.sendMessage(m("Corporation.Sign.InvalidChest"));
+                return;
+            }
+
+            double pricePerItem = price / (double) amount;
+
+            Inventory inv = chest.getInventory();
+            ItemStack stack = getItem(inv, sign.getLine(3), false);
+
+            if (stack == null) {
+                user.sendMessage(m("Corporation.Sign.NoItemsFound"));
+                return;
+            }
+            price = pricePerItem * stack.getAmount();
+
+            price = MathUtil.round(price);
+
+            if (VaultBridge.getBalance(user.getPlayer()) <= price) {
+                user.sendMessage(m("Corporation.Sign.NotEnoughMoney"));
+                return;
+            }
+
+            if (!removeItem(inv, stack, false)) {
+                user.sendMessage(m("Corporation.Sign.NoItemsFound"));
+                return;
+            }
+
+            if (!VaultBridge.addBalance(user.getPlayer(), -price)) {
+                user.sendMessage(m("Corporation.Sign.NotEnoughMoney"));
+                return;
+            }
+
+            chest.update(true);
+            user.getPlayer().getInventory().addItem(stack);
+            user.getPlayer().updateInventory();
+            corp.addBalance(price);
+            user.sendMessage(
+                    StringUtil.format(m("Corporation.Sign.Bought"), stack.getAmount(), formatItemName(stack.getType().name()),
+                                      price));
+            int newAmount = 0;
+            for (ItemStack invStack : chest.getInventory().getContents()) {
+                if (invStack != null && invStack.getType() == stack.getType()) {
+                    newAmount += invStack.getAmount();
+                }
+            }
+
+            CorpTradesRow row = new CorpTradesRow();
+            row.id = null;
+            row.corpId = corp.getId();
+            row.location = sign.getLocation();
+            row.material = stack.getType();
+            row.newAmount = newAmount;
+            row.price = price;
+            row.changedAmount = -stack.getAmount();
+            row.signAmount = amount;
+            row.time = System.currentTimeMillis();
+            row.type = 1;
+            row.userId = CorporationUtil.getUserId(getDatabase(), user);
+
+            getDatabase().getCorpTradesTable().insert(row);
+        } catch (Exception e) {
+            user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @EventHandler
+    public void onSignChangeUntag(SignChangeEvent event) {
+        Block signBlock = event.getBlock();
+        String[] lines = event.getLines();
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+
+        if (!(signBlock.getState() instanceof Sign)) {
+            return;
+        }
+
+        if (!ChatColor.stripColor(lines[1]).equals("[CUntag]")) {
+            return;
+        }
+
+        if (!user.hasPermission("reallifeplugin.corporation.untag")) {
+            event.setLine(1, ChatColor.DARK_RED + ChatColor.stripColor(lines[1]));
+            return;
+        }
+
+        event.setLine(1, ChatColor.BLUE + ChatColor.stripColor(lines[1]));
+    }
+}

@@ -40,24 +40,6 @@ public class Settings extends Configuration {
     public void addDefaults() {
         addDefault("General.TaxAccount", "TaxAccount");
 
-        addDefault("Module.AntiEscape.Enabled", true);
-        addDefault("Module.AntiEscape.AutoBanTime", 5);
-
-        addDefault("Module.Corporations.Enabled", true);
-
-        //Todo: add whitelist/blacklist regions for insurances
-        //Todo: Add Taxes
-
-        addDefault("Module.Insurance.Enabled", false);
-        addDefault("Module.Insurance.Account", "Insurances");
-
-        addDefault("Module.Payday.Enabled", true);
-        addDefault("Module.Payday.Time", 60, "Time in minutes");
-        addDefault("Module.Payday.MinOnlineTime", 30);
-        addDefault("Module.Payday.Taxesbase", 0.1);
-
-        addDefault("Module.StockMarket.Enabled", true);
-
         addDefault("Groups.Default.PayDay", 0);
         addDefault("Groups.Default.TaxesModifier", 1);
         addDefault("Groups.Default.Excluded", true);
@@ -65,7 +47,6 @@ public class Settings extends Configuration {
 
         addDefault("Ad.Price", 500.0);
         addDefault("Ad.Timeout", 30);
-
     }
 
     @Override
@@ -147,44 +128,8 @@ public class Settings extends Configuration {
         return (boolean) get("Groups.Default.Excluded");
     }
 
-    public double getTaxesBase() {
-        return (double) get("Module.Payday.Taxesbase");
-    }
-
-    public int getPaydayTime() {
-        return (int) get("Module.Payday.Time");
-    }
-
     public String getTaxAccount() {
         return (String) get("General.TaxAccount");
-    }
-
-    public String getInsuranceAccount() {
-        return (String) get("Module.Insurance.Account");
-    }
-
-    public int getMinOnlineTime() {
-        return (int) get("Module.Payday.MinOnlineTime");
-    }
-
-    public boolean isInsuranceEnabled() {
-        return (boolean) get("Module.Insurance.Enabled");
-    }
-
-    public boolean isAntiEscapeEnabled() {
-        return (boolean) get("Module.AntiEscape.Enabled");
-    }
-
-    public boolean isCorporationsEnabled() {
-        return (boolean) get("Module.Corporations.Enabled");
-    }
-
-    public void setCorporationsEnabled(boolean value) {
-        set("Module.Corporations.Enabled", value);
-    }
-
-    public boolean isStockMarketEnabled() {
-        return isCorporationsEnabled() && (boolean) get("Module.StockMarket.Enabled");
     }
 
     public double getAdPrice() {
@@ -193,9 +138,5 @@ public class Settings extends Configuration {
 
     public int getAdTimeout() {
         return Integer.valueOf(String.valueOf(get("Ad.Timeout")));
-    }
-
-    public int getAntiEscapeBanTime() {
-        return Integer.valueOf(String.valueOf(get("Module.AntiEscape.AutoBanTime")));
     }
 }

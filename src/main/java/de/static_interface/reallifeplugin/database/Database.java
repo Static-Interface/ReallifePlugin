@@ -18,6 +18,7 @@ package de.static_interface.reallifeplugin.database;
 
 import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariDataSource;
+import de.static_interface.reallifeplugin.database.table.Table;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
@@ -29,6 +30,10 @@ import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 public abstract class Database {
 
@@ -47,6 +52,8 @@ public abstract class Database {
     private StockTradesTable stockTradeHistoryTable;
     private StockUsersTable stockUsersTable;
     private StockPricesTable stockPriceTable;
+
+    private List<Table> tables = new ArrayList<>();
 
     public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type) {
         this.plugin = plugin;
@@ -84,30 +91,34 @@ public abstract class Database {
     }
 
     protected void createTables() throws SQLException {
+        corpsTable = new CorpsTable(this);
+        tables.add(corpsTable);
+        corpUsersTable = new CorpUsersTable(this);
+        tables.add(corpUsersTable);
+        corpTradesTable = new CorpTradesTable(this);
+        tables.add(corpTradesTable);
+        stocksTable = new StocksTable(this);
+        tables.add(stocksTable);
+        stockPriceTable = new StockPricesTable(this);
+        tables.add(stockPriceTable);
+        stockTradeHistoryTable = new StockTradesTable(this);
+        tables.add(stockTradeHistoryTable);
+        stockUsersTable = new StockUsersTable(this);
+        tables.add(stockUsersTable);
+    }
+
+    public void addTable(Table table) {
         try {
-            corpsTable = new CorpsTable(this);
-            corpsTable.create();
-
-            corpUsersTable = new CorpUsersTable(this);
-            corpUsersTable.create();
-
-            corpTradesTable = new CorpTradesTable(this);
-            corpTradesTable.create();
-
-            stocksTable = new StocksTable(this);
-            stocksTable.create();
-
-            stockPriceTable = new StockPricesTable(this);
-            stockPriceTable.create();
-
-            stockTradeHistoryTable = new StockTradesTable(this);
-            stockTradeHistoryTable.create();
-
-            stockUsersTable = new StockUsersTable(this);
-            stockUsersTable.create();
+            addTable(table, false);
         } catch (SQLException e) {
-            connection.close();
-            throw e;
+            //shouldn't happen
+        }
+    }
+
+    public void addTable(Table table, boolean create) throws SQLException {
+        tables.add(table);
+        if (create) {
+            table.create();
         }
     }
 
@@ -141,5 +152,15 @@ public abstract class Database {
 
     public SQLTemplates getDialect() {
         return dialect;
+    }
+
+    @Nullable
+    public Table getTable(String table) {
+        for (Table tbl : tables) {
+            if (tbl.getName().equals(table)) {
+                return tbl;
+            }
+        }
+        return null;
     }
 }

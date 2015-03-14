@@ -14,10 +14,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.commands;
+package de.static_interface.reallifeplugin.command;
 
-import de.static_interface.reallifeplugin.*;
-import org.bukkit.command.*;
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.payday.PaydayModule;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 
 public class ReallifePluginCommand implements CommandExecutor {
 
@@ -28,17 +32,20 @@ public class ReallifePluginCommand implements CommandExecutor {
         }
         switch (args[0]) {
             case "payday":
-                boolean skipTime = false;
+                if (Module.isEnabled(PaydayModule.NAME)) {
+                    boolean skipTime = false;
 
-                for (String s : args) {
-                    if (s.equalsIgnoreCase("--skiptime")) {
-                        skipTime = true;
-                        break;
+                    for (String s : args) {
+                        if (s.equalsIgnoreCase("--skiptime")) {
+                            skipTime = true;
+                            break;
+                        }
                     }
+
+                    PaydayModule.getInstance().getPayDayTask().run(!skipTime);
+                    break;
                 }
 
-                ReallifeMain.getInstance().getPayDayRunnable().run(!skipTime);
-                break;
             case "reload":
                 ReallifeMain.getInstance().getSettings().reload();
                 break;

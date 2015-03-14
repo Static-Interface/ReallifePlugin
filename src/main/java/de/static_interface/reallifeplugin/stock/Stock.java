@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.stockmarket;
+package de.static_interface.reallifeplugin.stock;
 
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
@@ -28,12 +28,11 @@ import java.sql.SQLException;
 public class Stock {
 
     private final int id;
-
     private StocksTable stocksTable;
-
+    private Database db;
     public Stock(Database db, int id) {
         this.id = id;
-
+        this.db = db;
         stocksTable = db.getStocksTable();
     }
 
@@ -50,7 +49,7 @@ public class Stock {
     }
 
     public Corporation getCorporation() {
-        return CorporationUtil.getCorporation(getBase().corpId);
+        return CorporationUtil.getCorporation(db, getBase().corpId);
     }
 
     public final int getId() {
@@ -63,5 +62,9 @@ public class Stock {
 
     public String getTag() {
         return getCorporation().getTag();
+    }
+
+    public double getDividend() {
+        return getBase().dividend;
     }
 }

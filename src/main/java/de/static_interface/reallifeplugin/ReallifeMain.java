@@ -17,27 +17,22 @@
 package de.static_interface.reallifeplugin;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import de.static_interface.reallifeplugin.commands.AdCommand;
-import de.static_interface.reallifeplugin.commands.CorporationCommand;
-import de.static_interface.reallifeplugin.commands.InsuranceCommand;
-import de.static_interface.reallifeplugin.commands.ReallifePluginCommand;
-import de.static_interface.reallifeplugin.commands.StockMarketCommand;
+import de.static_interface.reallifeplugin.command.AdCommand;
+import de.static_interface.reallifeplugin.command.ReallifePluginCommand;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
 import de.static_interface.reallifeplugin.database.DatabaseType;
 import de.static_interface.reallifeplugin.database.impl.H2Database;
 import de.static_interface.reallifeplugin.database.impl.MySqlDatabase;
-import de.static_interface.reallifeplugin.listener.AntiEscapeListener;
-import de.static_interface.reallifeplugin.listener.CorporationListener;
-import de.static_interface.reallifeplugin.listener.InsuranceListener;
-import de.static_interface.reallifeplugin.listener.OnlineTimeListener;
-import de.static_interface.reallifeplugin.stockmarket.StockMarketUtil;
-import de.static_interface.sinklibrary.Constants;
+import de.static_interface.reallifeplugin.module.antiescape.AntiEscapeModule;
+import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
+import de.static_interface.reallifeplugin.module.insurance.InsuranceModule;
+import de.static_interface.reallifeplugin.module.payday.PaydayModule;
+import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -49,17 +44,10 @@ public class ReallifeMain extends JavaPlugin {
     static WorldGuardPlugin wgp;
     private static ReallifeMain instance;
     private Settings settings = null;
-    private PayDayRunnable payDayRunnable = null;
-    private BukkitTask payDayTask;
     private Database db;
-    private BukkitTask stocksTask;
 
     public static ReallifeMain getInstance() {
         return instance;
-    }
-
-    public PayDayRunnable getPayDayRunnable() {
-        return payDayRunnable;
     }
 
     public Settings getSettings() {
@@ -80,11 +68,6 @@ public class ReallifeMain extends JavaPlugin {
 
         settings = new Settings(this);
 
-        long delay = settings.getPaydayTime() * 60 * (long) Constants.TICK;
-
-        payDayRunnable = new PayDayRunnable();
-        payDayTask = Bukkit.getScheduler().runTaskTimer(this, payDayRunnable, delay, delay);
-
         DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder());
         DatabaseType type = config.getDatabaseType();
         switch (type) {
@@ -99,7 +82,6 @@ public class ReallifeMain extends JavaPlugin {
                 getLogger().log(Level.WARNING, "Invalid Database type: " + config.get("Type"));
             case NONE:
                 db = null;
-                getSettings().setCorporationsEnabled(false);
                 break;
         }
 
@@ -111,22 +93,17 @@ public class ReallifeMain extends JavaPlugin {
             } catch (SQLException e) {
                 getLogger().log(Level.SEVERE, "Database connection failed. Disabling database-based features.");
                 e.printStackTrace();
-                getSettings().setCorporationsEnabled(false);
                 db = null;
             }
         }
 
-        if (db != null && getSettings().isStockMarketEnabled()) {
-            stocksTask = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
-                @Override
-                public void run() {
-                    StockMarketUtil.onStocksUpdate();
-                }
-            }, 0, 20 * 60 * 60);
-        }
+        new AntiEscapeModule(this).enable();
+        new PaydayModule(this, db).enable();
+        new InsuranceModule(this).enable();
+        new CorporationModule(this, db).enable();
+        new StockMarketModule(this, db).enable();
 
         registerCommands();
-        registerListeners();
 
         wgp = (WorldGuardPlugin) Bukkit.getPluginManager().getPlugin("WorldGuard");
     }
@@ -138,14 +115,6 @@ public class ReallifeMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (payDayTask != null) {
-            payDayTask.cancel();
-        }
-
-        if (stocksTask != null) {
-            stocksTask.cancel();
-        }
-
         if (db != null) {
             try {
                 db.close();
@@ -180,31 +149,7 @@ public class ReallifeMain extends JavaPlugin {
 
     private void registerCommands() {
         Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand());
-        if (getSettings().isInsuranceEnabled()) {
-            Bukkit.getPluginCommand("insurance").setExecutor(new InsuranceCommand(this));
-        }
-        if (getSettings().isCorporationsEnabled()) {
-            SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
-        }
-
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
-
-        if (getSettings().isStockMarketEnabled()) {
-            SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
-        }
-    }
-
-    private void registerListeners() {
-        if (getSettings().isInsuranceEnabled()) {
-            Bukkit.getPluginManager().registerEvents(new InsuranceListener(), this);
-        }
-        if (getSettings().isAntiEscapeEnabled()) {
-            Bukkit.getPluginManager().registerEvents(new AntiEscapeListener(), this);
-        }
-        if (getSettings().isCorporationsEnabled()) {
-            Bukkit.getPluginManager().registerEvents(new CorporationListener(), this);
-        }
-        Bukkit.getPluginManager().registerEvents(new OnlineTimeListener(), this);
     }
 
     public boolean isLwcAvailable() {

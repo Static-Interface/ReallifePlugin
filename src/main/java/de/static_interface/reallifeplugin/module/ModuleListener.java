@@ -14,33 +14,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.event;
+package de.static_interface.reallifeplugin.module;
 
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
+import de.static_interface.reallifeplugin.database.Database;
+import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 
-public class StocksUpdateEvent extends Event implements Cancellable {
+import javax.annotation.Nullable;
 
-    private static final HandlerList handlers = new HandlerList();
-    boolean cancelled;
+public class ModuleListener implements Listener {
 
-    public static HandlerList getHandlerList() {
-        return handlers;
+    private final Module module;
+
+    public ModuleListener(Module module) {
+        this.module = module;
     }
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
+    @Nullable
+    public Database getDatabase() {
+        return module.getDatabase();
     }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
+    public void register() {
+        if (!module.isEnabled()) {
+            return;
+        }
+
+        Bukkit.getPluginManager().registerEvents(this, module.getPlugin());
     }
 
-    @Override
-    public void setCancelled(boolean value) {
-        cancelled = value;
+    public Module getModule() {
+        return module;
+    }
+
+    public void unregister() {
+        HandlerList.unregisterAll(this);
     }
 }

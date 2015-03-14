@@ -28,6 +28,8 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpRow;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
 import de.static_interface.sinklibrary.api.user.SinkUser;
@@ -64,19 +66,31 @@ public class CorporationUtil {
             SIGN_FACES = {BlockFace.SELF, BlockFace.DOWN, BlockFace.UP, BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
 
     @Nullable
-    public static Corporation getUserCorporation(IngameUser user) {
-        for (Corporation corporation : getCorporations()) {
-            if (corporation.getMembers(false).contains(user)) {
-                return corporation;
+    public static Corporation getUserCorporation(Database db, IngameUser user) {
+        if (user == null) {
+            return null;
+        }
+
+        for (Corporation corporation : getCorporations(db)) {
+            for (IngameUser member : corporation.getMembers(false)) {
+                if (member == null) {
+                    continue;
+                }
+                if (member.getUniqueId().equals(user.getUniqueId())) {
+                    return corporation;
+                }
             }
         }
         return null;
     }
 
+    /**
+     * Returns the internal database ID of an user
+     * @param user The user whichs id will returned
+     * @return id of the user if the user is registered, null if no entrys were found or the user never joined a corporation
+     */
     @Nullable
-    public static Integer getUserId(IngameUser user) {
-        Database db = ReallifeMain.getInstance().getDB();
-
+    public static Integer getUserId(Database db, IngameUser user) {
         try {
             return db.getCorpUsersTable().get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString())[0].id;
         } catch (SQLException e) {
@@ -85,8 +99,7 @@ public class CorporationUtil {
         }
     }
 
-    public static CorpUserRow getCorpUser(int userId) {
-        Database db = ReallifeMain.getInstance().getDB();
+    public static CorpUserRow getCorpUser(Database db, int userId) {
         try {
             return db.getCorpUsersTable().get("SELECT * FROM `{TABLE}` WHERE `id`=?", userId)[0];
         } catch (SQLException e) {
@@ -95,8 +108,7 @@ public class CorporationUtil {
     }
 
     @Nullable
-    public static CorpUserRow getCorpUser(IngameUser user) {
-        Database db = ReallifeMain.getInstance().getDB();
+    public static CorpUserRow getCorpUser(Database db, IngameUser user) {
         try {
             CorpUserRow[] rows = db.getCorpUsersTable().get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString());
             if (rows.length < 1) {
@@ -108,20 +120,20 @@ public class CorporationUtil {
         }
     }
 
-    public static boolean hasEntry(IngameUser user) {
+    public static boolean hasEntry(Database db, IngameUser user) {
         try {
-            return ReallifeMain.getInstance().getDB().getCorpUsersTable()
+            return db.getCorpUsersTable()
                            .get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString()).length > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static CorpUserRow insertUser(IngameUser user, @Nullable String rank) {
-        if (hasEntry(user)) {
-            return getCorpUser(user);
+    public static CorpUserRow insertUser(Database db, IngameUser user, @Nullable String rank) {
+        if (hasEntry(db, user)) {
+            return getCorpUser(db, user);
         }
-        Database db = ReallifeMain.getInstance().getDB();
+
         if (rank == null) {
             rank = CorporationRanks.RANK_DEFAULT;
         }
@@ -139,7 +151,7 @@ public class CorporationUtil {
         }
     }
 
-    public static String getFormattedName(IngameUser user) {
+    public static String getFormattedName(Database db, IngameUser user) {
         String name =
                 ChatColor.stripColor(user.getDisplayName() == null ? user.getName() : user.getDisplayName());
 
@@ -147,7 +159,7 @@ public class CorporationUtil {
             return null;
         }
 
-        Corporation corp = getUserCorporation(user);
+        Corporation corp = getUserCorporation(db, user);
         if (corp == null) {
             return ChatColor.GOLD + name;
         }
@@ -159,8 +171,8 @@ public class CorporationUtil {
     }
 
     @Nullable
-    public static Corporation getCorporation(String name) {
-        for (Corporation corporation : getCorporations()) {
+    public static Corporation getCorporation(Database db, String name) {
+        for (Corporation corporation : getCorporations(db)) {
             if (corporation.getName().equalsIgnoreCase(name)) {
                 return corporation;
             }
@@ -170,8 +182,8 @@ public class CorporationUtil {
     }
 
     @Nullable
-    public static Corporation getCorporation(Location location) {
-        for (Corporation corporation : getCorporations()) {
+    public static Corporation getCorporation(Database db, Location location) {
+        for (Corporation corporation : getCorporations(db)) {
             ProtectedRegion region = corporation.getBaseRegion();
             Vector vec = BukkitUtil.toVector(location);
             if (region.contains(vec)) {
@@ -182,8 +194,8 @@ public class CorporationUtil {
     }
 
     @Nullable
-    public static Corporation getCorporation(int id) {
-        for (Corporation corporation : getCorporations()) {
+    public static Corporation getCorporation(Database db, int id) {
+        for (Corporation corporation : getCorporations(db)) {
             if (corporation.getId() == id) {
                 return corporation;
             }
@@ -216,16 +228,19 @@ public class CorporationUtil {
                || corporation.getCoCEOs().contains(user);
     }
 
-    public static boolean createCorporation(@Nullable SinkUser user, String name, String username, String base, World world) {
-        if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help")
-            || name.equals("deposit") || name.equals("list") || name.equals("leave")) {
+    public static boolean createCorporation(Database db, @Nullable SinkUser user, String name, String username, String base, World world) {
+        name = name.trim();
+        if (name.equalsIgnoreCase("ceo") || name.equalsIgnoreCase("admin") || name.equalsIgnoreCase("help") || name.equalsIgnoreCase("?") || name
+                .contains(" ")
+            || name.contains("§") || name.equalsIgnoreCase("deposit") || name.equalsIgnoreCase("user") || name.equalsIgnoreCase("list") || name
+                .equalsIgnoreCase("leave")) {
             if (user != null) {
                 user.sendMessage(m("Corporation.InvalidName"));
             }
             return false;
         }
 
-        if (getCorporation(name) != null) {
+        if (getCorporation(db, name) != null) {
             if (user != null) {
                 user.sendMessage(m("Corporation.Exists"));
             }
@@ -247,8 +262,7 @@ public class CorporationUtil {
         row.isDeleted = false;
 
         try {
-            Database db = ReallifeMain.getInstance().getDB();
-            insertUser(ceo, CorporationRanks.RANK_CEO);
+            insertUser(db, ceo, CorporationRanks.RANK_CEO);
             db.getCorpsTable().insert(row);
         } catch (Exception e) {
             if (user != null) {
@@ -257,11 +271,11 @@ public class CorporationUtil {
             throw new RuntimeException(e);
         }
 
-        getCorporation(name).setCEO(ceo);
+        getCorporation(db, name).setCEO(ceo);
         return true;
     }
 
-    public static boolean migrate(SinkUser user) {
+    public static boolean migrate(Database db, SinkUser user) {
         Configuration
                 config =
                 new Configuration(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Corporations.yml"), true) {
@@ -280,7 +294,7 @@ public class CorporationUtil {
         }
         for (String corpName : section.getKeys(false)) {
             try {
-                if (getCorporation(corpName) != null) {
+                if (getCorporation(db, corpName) != null) {
                     continue;
                 }
 
@@ -300,10 +314,8 @@ public class CorporationUtil {
                 ProtectedRegion region = ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(world).getRegion(regionId);
                 region.setMembers(new DefaultDomain());
 
-                createCorporation(null, corpName, Bukkit.getOfflinePlayer(ceo).getName(), regionId, world);
-                Corporation corp = getCorporation(corpName);
-
-                Database db = ReallifeMain.getInstance().getDB();
+                createCorporation(db, null, corpName, Bukkit.getOfflinePlayer(ceo).getName(), regionId, world);
+                Corporation corp = getCorporation(db, corpName);
 
                 db.getCorpsTable().executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", balance, corp.getId());
 
@@ -351,13 +363,12 @@ public class CorporationUtil {
         return true;
     }
 
-    public static boolean deleteCorporation(SinkUser user, Corporation corporation) {
+    public static boolean deleteCorporation(Database db, SinkUser user, Corporation corporation) {
         if (corporation == null) {
             user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
             return false;
         }
 
-        Database db = ReallifeMain.getInstance().getDB();
         try {
             db.getCorpsTable().executeUpdate("UPDATE `{TABLE}` SET `isdeleted`=1 WHERE `id`=?", corporation.getId());
         } catch (SQLException e) {
@@ -380,12 +391,11 @@ public class CorporationUtil {
         SinkLibrary.getInstance().getConsoleUser().sendMessage(message);
     }
 
-    public static Collection<Corporation> getCorporations() {
-        if (!ReallifeMain.getInstance().getSettings().isCorporationsEnabled() || ReallifeMain.getInstance().getDB() == null) {
+    public static Collection<Corporation> getCorporations(Database db) {
+        if (!Module.isEnabled(CorporationModule.NAME) || db == null) {
             return new ArrayList<>();
         }
 
-        Database db = ReallifeMain.getInstance().getDB();
         CorpRow[] rows;
         try {
             rows = db.getCorpsTable().get("SELECT * FROM `{TABLE}` WHERE `isdeleted`=0");

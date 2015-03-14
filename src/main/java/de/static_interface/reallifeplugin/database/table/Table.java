@@ -20,6 +20,7 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import org.apache.commons.lang.Validate;
 
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -36,6 +37,7 @@ public abstract class Table<T> {
     public static final String STOCK_TRADES_TABLE = "stock_trades";
     public static final String STOCK_PRICE_TABLE = "stock_price";
     public static final String STOCK_USERS_TABLE = "stock_users";
+
     private final String name;
     protected Database db;
 
@@ -132,5 +134,15 @@ public abstract class Table<T> {
             }
         }
         return false;
+    }
+
+    public boolean exists() {
+        try {
+            DatabaseMetaData dbm = db.getConnection().getMetaData();
+            ResultSet tables = dbm.getTables(null, null, name, null);
+            return tables.next();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

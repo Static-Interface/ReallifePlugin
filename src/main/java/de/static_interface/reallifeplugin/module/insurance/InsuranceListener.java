@@ -14,17 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.listener;
+package de.static_interface.reallifeplugin.module.insurance;
 
-import de.static_interface.reallifeplugin.commands.InsuranceCommand;
 import de.static_interface.reallifeplugin.entry.InsuranceEntry;
-import de.static_interface.reallifeplugin.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.ModuleListener;
+import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -35,10 +35,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-public class InsuranceListener implements Listener {
+public class InsuranceListener extends ModuleListener {
 
     HashMap<String, ItemStack[]> inventories = new HashMap<>();
     List<String> activatedPlayers = new ArrayList<>();
+
+    public InsuranceListener(Module module) {
+        super(module);
+    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {

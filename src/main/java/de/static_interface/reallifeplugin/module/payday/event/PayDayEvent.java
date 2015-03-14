@@ -14,12 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.event;
+package de.static_interface.reallifeplugin.module.payday.event;
 
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.ModuleEvent;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.List;
  * This event is fired when a payday starts
  * Its fired seperatly for each player, so not only one time
  */
-public class PayDayEvent extends Event {
+public class PayDayEvent extends ModuleEvent {
 
     private static final HandlerList handlers = new HandlerList();
     List<Entry> entries = new ArrayList<>();
@@ -38,7 +39,8 @@ public class PayDayEvent extends Event {
     private Group group;
     private boolean cancelled;
 
-    public PayDayEvent(Player player, Group group, boolean checkTime) {
+    public PayDayEvent(Module module, Player player, Group group, boolean checkTime) {
+        super(module);
         this.player = player;
         this.group = group;
         this.checkTime = checkTime;

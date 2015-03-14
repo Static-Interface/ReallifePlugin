@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - 2014 <http://static-interface.de> and contributors
+ * Copyright (c) 2013 - 2015 <http://static-interface.de> and contributors
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
@@ -14,23 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.commands;
+package de.static_interface.reallifeplugin.module;
 
-import de.static_interface.sinklibrary.api.command.*;
-import org.bukkit.command.*;
-import org.bukkit.plugin.*;
-
-public class SmsCommand extends SinkCommand {
-
-    // Todo
-
-    public SmsCommand(Plugin plugin) {
-        super(plugin);
-        getCommandOptions().setPlayerOnly(true);
-    }
-
-    @Override
-    protected boolean onExecute(CommandSender sender, String label, String[] args) {
-        return false;
-    }
+public enum ModuleDependencyType {
+    TABLE,
+    PLUGIN
 }

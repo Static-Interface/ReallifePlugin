@@ -14,23 +14,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.commands;
+package de.static_interface.reallifeplugin.command;
 
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.*;
+import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.*;
-import de.static_interface.sinklibrary.*;
-import de.static_interface.sinklibrary.api.command.*;
-import de.static_interface.sinklibrary.user.*;
-import de.static_interface.sinklibrary.util.*;
-import org.bukkit.*;
-import org.bukkit.command.*;
-import org.bukkit.entity.*;
-import org.bukkit.plugin.*;
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class AdCommand extends SinkCommand {
 

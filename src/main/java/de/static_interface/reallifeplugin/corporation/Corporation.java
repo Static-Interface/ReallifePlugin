@@ -42,14 +42,20 @@ import javax.annotation.Nullable;
 
 public class Corporation {
 
+    /**
+     * Todo: fix stack bug
+     * Todo: add corporation chat
+     * Todo: Fix protection for chests
+     * Todo: send messages to ceo (and coceos) if someone sold something
+     */
     private final int id;
 
     private CorpsTable corpsTable;
     private CorpUsersTable corpUsersTable;
-
+    private Database db;
     public Corporation(Database db, int id) {
         this.id = id;
-
+        this.db = db;
         corpsTable = db.getCorpsTable();
         corpUsersTable = db.getCorpUsersTable();
     }
@@ -100,7 +106,7 @@ public class Corporation {
 
     public void addMember(IngameUser user) {
         resetUser(user, true);
-        CorporationUtil.insertUser(user, CorporationRanks.RANK_DEFAULT);
+        CorporationUtil.insertUser(db, user, CorporationRanks.RANK_DEFAULT);
         try {
             corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `corp_id`=? WHERE `uuid`=?", id, user.getUniqueId().toString());
         } catch (SQLException e) {

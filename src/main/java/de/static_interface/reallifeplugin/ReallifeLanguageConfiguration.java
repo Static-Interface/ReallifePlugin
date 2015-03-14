@@ -74,18 +74,6 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("General.InvalidValue", "Invalid Value: {0}");
         addDefault("General.Success", "&aSuccess");
 
-        addDefault("Fractions.Fraction", "&6Fraction");
-        addDefault("Fractions.DoesntExists", "&4Error: &cCouldn't find fraction: {0}!");
-        addDefault("Fractions.BaseSet", "&6Base has been updated!");
-        addDefault("Fractions.NotInFraction", "&4Error: &cYou're not a member of any fraction!");
-        addDefault("Fractions.NotLeader", "&4Error: &cYou're not a leader!");
-        addDefault("Fractions.Added", "&4You've been added to the {0} fraction!");
-        addDefault("Fractions.Kick", "&eYou've been kicked from the {0} fraction!");
-        addDefault("Fractions.Created", "&eYou've successfully created {0}!");
-        addDefault("Fractions.CreationFailed", "&4Error: &cCouldn't create {0}!");
-        addDefault("Fractions.Deleted", "&eYou've successfully deleted {0}!");
-        addDefault("Fractions.DeletionFailed", "&4Error: &cCouldn't delete {0}!");
-
         addDefault("Corporation.Corporation", "&6Corporation");
         addDefault("Corporation.Exists", "&4Error: &cCorporation already exists!");
         addDefault("Corporation.DoesntExists", "&4Error: &cCouldn't find corporation {0}!");
@@ -118,8 +106,9 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.NotEnoughMoney", "&4 The Corporation doesn't have enough money!");
         addDefault("Corporation.InvalidName", "Invalid Corporation Name");
         addDefault("Corporation.NotInCorporation", "&4Error:&c You aren't in any corporation!");
-
+        addDefault("Corporation.Sign.ItemAlreadySold", "&4This item has been already sold. You can't re-sell it");
         addDefault("Corporation.NotEnoughMoney", "&cYour corporation doesn't have enough money!");
+        addDefault("Corporation.ItemsSold", "&6{0} has sold {1} items in the last {2}");
 
         addDefault("Corporation.Sign.CantPickup", "&4Error:&c Your inventory is full!");
         addDefault("Corporation.Sign.Bought", "&aSuccessfully bought {0} {1} for {2}{CURRENCY}!");
@@ -131,8 +120,10 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Sign.NoItemsFound", "&cNo Items left!");
         addDefault("Corporation.Sign.ChestFull", "&cThe chest is full!");
         addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
+        addDefault("Corporation.Sign.SoldWatermark", "&4- &oSold");
 
         addDefault("StockMarket.NotEnoughStocksLeft", "&cNot enough stocks left!");
+        addDefault("StockMarket.ForceFailed", "&4Couldn't update stocks");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");
@@ -140,5 +131,6 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Payday.Taxes", "{0}% Taxes");
         addDefault("Payday.Payday", "Payday ({0} {CURRENCY})");
         addDefault("AntiEscape.BanMessage", "You have been banned for {0} Minutes. Reason: Escape from PvP by quit");
+
     }
 }
