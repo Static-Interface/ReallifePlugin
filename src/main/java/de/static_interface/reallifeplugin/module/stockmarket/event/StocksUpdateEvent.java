@@ -16,8 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.event;
 
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleEvent;
+import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.reallifeplugin.stock.Stock;
 import de.static_interface.sinklibrary.util.MathUtil;
 import org.bukkit.event.Cancellable;
@@ -26,13 +26,13 @@ import org.bukkit.event.HandlerList;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class StocksUpdateEvent extends ModuleEvent implements Cancellable {
+public class StocksUpdateEvent extends ModuleEvent<StockMarketModule> implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     boolean cancelled;
     private HashMap<Stock, Double> newPrices;
 
-    public StocksUpdateEvent(Module module, HashMap<Stock, Double> newPrices) {
+    public StocksUpdateEvent(StockMarketModule module, HashMap<Stock, Double> newPrices) {
         super(module);
         this.newPrices = newPrices;
     }

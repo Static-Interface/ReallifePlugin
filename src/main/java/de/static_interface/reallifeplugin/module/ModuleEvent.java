@@ -19,15 +19,15 @@ package de.static_interface.reallifeplugin.module;
 import de.static_interface.reallifeplugin.database.Database;
 import org.bukkit.event.Event;
 
-public abstract class ModuleEvent extends Event {
+public abstract class ModuleEvent<T extends Module> extends Event {
 
-    private final Module module;
+    private final T module;
 
-    public ModuleEvent(Module module) {
+    public ModuleEvent(T module) {
         this(module, false);
     }
 
-    public ModuleEvent(Module module, boolean isAsync) {
+    public ModuleEvent(T module, boolean isAsync) {
         super(isAsync);
         this.module = module;
         if (module == null || !module.isEnabled()) {
@@ -39,7 +39,7 @@ public abstract class ModuleEvent extends Event {
         return module.getDatabase();
     }
 
-    public Module getModule() {
+    public T getModule() {
         return module;
     }
 }

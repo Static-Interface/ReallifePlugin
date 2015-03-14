@@ -16,14 +16,13 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.command.CommandSender;
 
-public class ContractCommand extends ModuleCommand {
+public class ContractCommand extends ModuleCommand<ContractModule> {
 
-    public ContractCommand(Module module) {
+    public ContractCommand(ContractModule module) {
         super(module);
     }
 

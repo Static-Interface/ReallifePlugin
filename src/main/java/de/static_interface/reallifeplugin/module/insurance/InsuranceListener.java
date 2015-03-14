@@ -17,7 +17,6 @@
 package de.static_interface.reallifeplugin.module.insurance;
 
 import de.static_interface.reallifeplugin.entry.InsuranceEntry;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.sinklibrary.SinkLibrary;
@@ -35,12 +34,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-public class InsuranceListener extends ModuleListener {
+public class InsuranceListener extends ModuleListener<InsuranceModule> {
 
     HashMap<String, ItemStack[]> inventories = new HashMap<>();
     List<String> activatedPlayers = new ArrayList<>();
 
-    public InsuranceListener(Module module) {
+    public InsuranceListener(InsuranceModule module) {
         super(module);
     }
 
@@ -89,7 +88,7 @@ public class InsuranceListener extends ModuleListener {
         if (!InsuranceCommand.isActive(event.getPlayer())) {
             return;
         }
-        InsuranceEntry entry = new InsuranceEntry((InsuranceModule) getModule(), event.getPlayer(), event.getGroup());
+        InsuranceEntry entry = new InsuranceEntry(getModule(), event.getPlayer(), event.getGroup());
         event.addEntry(entry);
     }
 }

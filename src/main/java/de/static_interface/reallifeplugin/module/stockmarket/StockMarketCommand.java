@@ -26,7 +26,6 @@ import de.static_interface.reallifeplugin.database.table.impl.stockmarket.Stocks
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockUserRow;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.stock.Stock;
 import de.static_interface.reallifeplugin.stock.StockMarket;
@@ -43,9 +42,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 
-public class StockMarketCommand extends ModuleCommand {
+public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
-    public StockMarketCommand(Module module) {
+    public StockMarketCommand(StockMarketModule module) {
         super(module);
         getCommandOptions().setPlayerOnly(true);
     }

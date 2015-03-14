@@ -18,8 +18,8 @@ package de.static_interface.reallifeplugin.module.payday.event;
 
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.Group;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleEvent;
+import de.static_interface.reallifeplugin.module.payday.PaydayModule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
@@ -30,7 +30,7 @@ import java.util.List;
  * This event is fired when a payday starts
  * Its fired seperatly for each player, so not only one time
  */
-public class PayDayEvent extends ModuleEvent {
+public class PayDayEvent extends ModuleEvent<PaydayModule> {
 
     private static final HandlerList handlers = new HandlerList();
     List<Entry> entries = new ArrayList<>();
@@ -39,7 +39,7 @@ public class PayDayEvent extends ModuleEvent {
     private Group group;
     private boolean cancelled;
 
-    public PayDayEvent(Module module, Player player, Group group, boolean checkTime) {
+    public PayDayEvent(PaydayModule module, Player player, Group group, boolean checkTime) {
         super(module);
         this.player = player;
         this.group = group;

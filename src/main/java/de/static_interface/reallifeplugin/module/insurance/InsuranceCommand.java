@@ -16,7 +16,6 @@
 
 package de.static_interface.reallifeplugin.module.insurance;
 
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.configuration.IngameUserConfiguration;
@@ -27,13 +26,13 @@ import org.bukkit.entity.Player;
 
 import java.util.concurrent.TimeUnit;
 
-public class InsuranceCommand extends ModuleCommand {
+public class InsuranceCommand extends ModuleCommand<InsuranceModule> {
 
     // Todo: Replace hardcode with LanguageConfiguration
     public static final String ACTIVATED_PATH = "Insurance.Activated";
     public static final String TIMEOUT_TIMESTAMP = "Insurance.Timestamp";
 
-    public InsuranceCommand(Module module) {
+    public InsuranceCommand(InsuranceModule module) {
         super(module);
         getCommandOptions().setPlayerOnly(true);
     }

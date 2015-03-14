@@ -16,7 +16,6 @@
 
 package de.static_interface.reallifeplugin.module.payday;
 
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.sinklibrary.util.BukkitUtil;
@@ -32,11 +31,11 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class PaydayListener extends ModuleListener {
+public class PaydayListener extends ModuleListener<PaydayModule> {
 
     public HashMap<UUID, Long> onlineTimes = new HashMap<>();
 
-    public PaydayListener(Module module) {
+    public PaydayListener(PaydayModule module) {
         super(module);
         for (Player player : BukkitUtil.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
         {

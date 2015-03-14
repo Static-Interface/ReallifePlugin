@@ -148,7 +148,7 @@ public class ReallifeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand());
+        Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand(this));
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 

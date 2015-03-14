@@ -23,7 +23,6 @@ import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationRanks;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
@@ -49,9 +48,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class CorporationCommand extends ModuleCommand {
+public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
-    public CorporationCommand(Module module) {
+    public CorporationCommand(CorporationModule module) {
         super(module);
         getCommandOptions().setPlayerOnly(true);
     }

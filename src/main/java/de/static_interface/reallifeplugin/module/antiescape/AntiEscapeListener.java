@@ -20,7 +20,6 @@ import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.static_interface.reallifeplugin.model.Damage;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
@@ -39,12 +38,12 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class AntiEscapeListener extends ModuleListener {
+public class AntiEscapeListener extends ModuleListener<AntiEscapeModule> {
 
     public static final int COOLDOWN = 10 * 1000;
     HashMap<UUID, Damage> damageInstances = new HashMap<>();
 
-    public AntiEscapeListener(Module module) {
+    public AntiEscapeListener(AntiEscapeModule module) {
         super(module);
     }
 
@@ -158,7 +157,7 @@ public class AntiEscapeListener extends ModuleListener {
                 return;
             }
 
-            int banMinutes = ((AntiEscapeModule) getModule()).getAntiEscapeBanTime();
+            int banMinutes = getModule().getAntiEscapeBanTime();
 
             long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 

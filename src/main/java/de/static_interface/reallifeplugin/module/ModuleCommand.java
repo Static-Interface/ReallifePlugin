@@ -21,11 +21,11 @@ import de.static_interface.sinklibrary.api.command.SinkCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-public abstract class ModuleCommand extends SinkCommand {
+public abstract class ModuleCommand<T extends Module> extends SinkCommand {
 
-    private final Module module;
+    private final T module;
 
-    public ModuleCommand(Module module) {
+    public ModuleCommand(T module) {
         super(module.getPlugin());
         this.module = module;
     }
@@ -35,7 +35,7 @@ public abstract class ModuleCommand extends SinkCommand {
         return !(module == null || !module.isEnabled()) && super.onPreExecute(sender, command, label, args);
     }
 
-    public final Module getModule() {
+    public final T getModule() {
         return module;
     }
 

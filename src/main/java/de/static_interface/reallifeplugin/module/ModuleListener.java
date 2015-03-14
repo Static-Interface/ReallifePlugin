@@ -23,11 +23,11 @@ import org.bukkit.event.Listener;
 
 import javax.annotation.Nullable;
 
-public class ModuleListener implements Listener {
+public class ModuleListener<T extends Module> implements Listener {
 
-    private final Module module;
+    private final T module;
 
-    public ModuleListener(Module module) {
+    public ModuleListener(T module) {
         this.module = module;
     }
 
@@ -44,7 +44,7 @@ public class ModuleListener implements Listener {
         Bukkit.getPluginManager().registerEvents(this, module.getPlugin());
     }
 
-    public Module getModule() {
+    public T getModule() {
         return module;
     }
 
