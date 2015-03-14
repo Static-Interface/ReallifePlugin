@@ -33,22 +33,14 @@ public class StockMarketModule extends Module {
 
     public static final String NAME = "StockMarket";
     public static final int STOCK_TIME = 60 * 60;
-    private static StockMarketModule instance;
     private BukkitTask stocksTask;
 
     public StockMarketModule(Plugin plugin, @Nullable Database db) {
         super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true,
               Table.STOCKS_TABLE, Table.STOCK_USERS_TABLE, Table.STOCK_PRICE_TABLE, Table.STOCK_TRADES_TABLE);
     }
-
-    @Nullable
-    public static StockMarketModule getInstance() {
-        return instance;
-    }
-
     @Override
     protected void onEnable() {
-        instance = this;
         if (!Module.isEnabled(CorporationModule.NAME)) {
             getPlugin().getLogger().warning("Corporation module not active, deactivating...");
             disable();
@@ -57,7 +49,7 @@ public class StockMarketModule extends Module {
         stocksTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), new Runnable() {
             @Override
             public void run() {
-                StockMarket.getInstance().onStocksUpdate(getDatabase());
+                StockMarket.getInstance().onStocksUpdate(StockMarketModule.this);
             }
         }, 0, 20 * STOCK_TIME);
         SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
@@ -65,7 +57,6 @@ public class StockMarketModule extends Module {
 
     @Override
     protected void onDisable() {
-        instance = null;
         if (stocksTask != null) {
             stocksTask.cancel();
         }

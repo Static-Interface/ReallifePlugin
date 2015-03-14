@@ -14,27 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.antiescape;
+package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
-import org.bukkit.plugin.Plugin;
+import de.static_interface.reallifeplugin.module.ModuleCommand;
+import org.apache.commons.cli.ParseException;
+import org.bukkit.command.CommandSender;
 
-public class AntiEscapeModule extends Module {
+public class ContractCommand extends ModuleCommand {
 
-    public static final String NAME = "AntiEscape";
-
-    public AntiEscapeModule(Plugin plugin) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, true);
+    public ContractCommand(Module module) {
+        super(module);
     }
 
     @Override
-    protected void onEnable() {
-        addDefaultValue("AutoBanTime", 5);
-        addListener(new AntiEscapeListener(this));
-    }
-
-    public int getAntiEscapeBanTime() {
-        return Integer.valueOf(String.valueOf(getValue("AutoBanTime")));
+    protected boolean onExecute(CommandSender commandSender, String s, String[] strings) throws ParseException {
+        return false;
     }
 }

@@ -16,40 +16,43 @@
 
 package de.static_interface.reallifeplugin.command;
 
-import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
+import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
-public class ReallifePluginCommand implements CommandExecutor {
+public class ReallifePluginCommand extends SinkCommand {
+
+    public ReallifePluginCommand(Plugin plugin) {
+        super(plugin);
+    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onExecute(CommandSender sender, String label, String[] args) {
         if (args.length < 1) {
-            return false;
+            throw new NotEnoughArgumentsException();
         }
+
         switch (args[0]) {
             case "payday":
                 if (Module.isEnabled(PaydayModule.NAME)) {
-                    boolean skipTime = false;
+                    boolean skipTimeCheck = false;
 
                     for (String s : args) {
-                        if (s.equalsIgnoreCase("--skiptime")) {
-                            skipTime = true;
+                        if (s.equalsIgnoreCase("skiptimecheck")) {
+                            skipTimeCheck = true;
                             break;
                         }
                     }
 
-                    PaydayModule.getInstance().getPayDayTask().run(!skipTime);
+                    PaydayModule module = Module.getModule(PaydayModule.NAME, PaydayModule.class);
+                    module.getPayDayTask().run(!skipTimeCheck);
                     break;
                 }
-
-            case "reload":
-                ReallifeMain.getInstance().getSettings().reload();
-                break;
             default:
+                sender.sendMessage("Unknown subcommand: " + args[0]);
                 return false;
         }
         return true;

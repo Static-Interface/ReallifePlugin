@@ -61,7 +61,7 @@ public class PaydayListener extends ModuleListener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPayDay(PayDayEvent event) {
-        long minTime = TimeUnit.MINUTES.toMillis(PaydayModule.getInstance().getMinOnlineTime());
+        long minTime = TimeUnit.MINUTES.toMillis(((PaydayModule) getModule()).getMinOnlineTime());
 
         if (minTime <= 0 || !event.isCheckTimeEnabled()) {
             return; //Don't check...

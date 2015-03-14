@@ -25,6 +25,10 @@ commands:
     description: Ad Command
     permission: reallifeplugin.ad
     usage: "/<command> text"
+  contract:
+    description: Contract command
+    permission: reallifeplugin.contract
+    usage: "/<command> <subcommand>"
   stockmarket:
     description: Stockmarkets
     aliases: sm
@@ -42,4 +46,6 @@ permissions:
   reallifeplugin.ad:
      default: true
   reallifeplugin.stockmarket:
+     default: true
+  reallifeplugin.contract:
      default: true

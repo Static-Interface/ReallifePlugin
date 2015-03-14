@@ -29,27 +29,14 @@ public class CorporationModule extends Module {
 
     public static final String NAME = "Corporations";
 
-    private static CorporationModule instance;
-
     public CorporationModule(Plugin plugin, @Nullable Database db) {
         super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true,
               Table.CORPS_TABLE, Table.CORP_USERS_TABLE, Table.CORP_TRADES_TABLE);
     }
 
-    @Nullable
-    public static CorporationModule getInstance() {
-        return instance;
-    }
-
     @Override
     protected void onEnable() {
-        instance = this;
         addListener(new CorporationListener(this));
         SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
-    }
-
-    @Override
-    protected void onDisable() {
-        instance = null;
     }
 }

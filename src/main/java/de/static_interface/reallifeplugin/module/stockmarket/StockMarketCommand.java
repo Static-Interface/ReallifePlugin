@@ -166,7 +166,7 @@ public class StockMarketCommand extends ModuleCommand {
                     return false;
                 }
 
-                if (StockMarket.getInstance().onStocksUpdate(getDatabase())) {
+                if (StockMarket.getInstance().onStocksUpdate((StockMarketModule) getModule())) {
                     user.sendMessage(m("General.Success"));
                 } else {
                     user.sendMessage(m("StockMarket.ForceFailed"));

@@ -22,26 +22,16 @@ import de.static_interface.reallifeplugin.module.payday.PaydayModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.plugin.Plugin;
 
-import javax.annotation.Nullable;
-
 public class InsuranceModule extends Module {
 
     public static final String NAME = "Insurance";
-
-    private static InsuranceModule instance;
 
     public InsuranceModule(Plugin plugin) {
         super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, true);
     }
 
-    @Nullable
-    public static InsuranceModule getInstance() {
-        return instance;
-    }
-
     @Override
     protected void onEnable() {
-        instance = this;
         if (!Module.isEnabled(PaydayModule.NAME)) {
             getPlugin().getLogger().warning("Payday module not active, deactivating...");
             disable();
@@ -52,11 +42,6 @@ public class InsuranceModule extends Module {
         addDefaultValue("Account", "Insurances");
         addListener(new InsuranceListener(this));
         SinkLibrary.getInstance().registerCommand("insurance", new InsuranceCommand(this));
-    }
-
-    @Override
-    protected void onDisable() {
-        instance = null;
     }
 
     public String getInsuranceAccount() {

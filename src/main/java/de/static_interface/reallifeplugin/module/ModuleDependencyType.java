@@ -18,5 +18,6 @@ package de.static_interface.reallifeplugin.module;
 
 public enum ModuleDependencyType {
     TABLE,
+    MODULE,
     PLUGIN
 }

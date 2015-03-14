@@ -25,10 +25,12 @@ public class InsuranceEntry extends Entry {
 
     Player player;
     Group group;
+    InsuranceModule module;
 
-    public InsuranceEntry(Player player, Group group) {
+    public InsuranceEntry(InsuranceModule module, Player player, Group group) {
         this.player = player;
         this.group = group;
+        this.module = module;
     }
 
 
@@ -54,6 +56,6 @@ public class InsuranceEntry extends Entry {
 
     @Override
     public String getTargetAccount() {
-        return InsuranceModule.getInstance().getInsuranceAccount();
+        return module.getInsuranceAccount();
     }
 }

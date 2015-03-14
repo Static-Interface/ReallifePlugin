@@ -158,7 +158,7 @@ public class AntiEscapeListener extends ModuleListener {
                 return;
             }
 
-            int banMinutes = AntiEscapeModule.getInstance().getAntiEscapeBanTime();
+            int banMinutes = ((AntiEscapeModule) getModule()).getAntiEscapeBanTime();
 
             long unbanTimeStamp = System.currentTimeMillis() + (banMinutes * 60 * 1000);
 

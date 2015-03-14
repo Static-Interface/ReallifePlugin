@@ -41,18 +41,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 public class PayDayTask implements Runnable {
 
     private Database db;
+    private PaydayModule module;
 
-    public PayDayTask(@Nullable Database db) {
+    public PayDayTask(PaydayModule module, Database db) {
         this.db = db;
+        this.module = module;
     }
 
     public void givePayDay(Player player, Group group, boolean checkTime) {
-        PayDayEvent event = new PayDayEvent(PaydayModule.getInstance(), player, group, checkTime);
+        PayDayEvent event = new PayDayEvent(module, player, group, checkTime);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
@@ -61,7 +61,7 @@ public class PayDayTask implements Runnable {
 
         List<Entry> entries = new ArrayList<>();
         entries.add(new PayDayEntry(player, group));
-        entries.add(new TaxesEntry(player, group));
+        entries.add(new TaxesEntry(module, player, group));
 
         if (db != null && Module.isEnabled(StockMarketModule.NAME)) {
             List<Stock> stocks = StockMarket.getInstance().getAllStocks(db, player);

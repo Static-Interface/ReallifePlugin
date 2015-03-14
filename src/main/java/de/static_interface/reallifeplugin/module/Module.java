@@ -68,6 +68,10 @@ public abstract class Module {
         return m != null && m.isEnabled();
     }
 
+    public static <T> T getModule(String name, Class<T> clazz) {
+        return (T) getModule(name);
+    }
+
     public final Object getValue(String path) {
         return getConfig().get(modulePrefix + path);
     }

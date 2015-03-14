@@ -89,7 +89,7 @@ public class InsuranceListener extends ModuleListener {
         if (!InsuranceCommand.isActive(event.getPlayer())) {
             return;
         }
-        InsuranceEntry entry = new InsuranceEntry(event.getPlayer(), event.getGroup());
+        InsuranceEntry entry = new InsuranceEntry((InsuranceModule) getModule(), event.getPlayer(), event.getGroup());
         event.addEntry(entry);
     }
 }

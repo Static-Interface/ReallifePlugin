@@ -31,10 +31,12 @@ public class TaxesEntry extends Entry {
 
     Player player;
     Group group;
+    PaydayModule module;
 
-    public TaxesEntry(Player player, Group group) {
+    public TaxesEntry(PaydayModule module, Player player, Group group) {
         this.player = player;
         this.group = group;
+        this.module = module;
     }
 
 
@@ -60,7 +62,7 @@ public class TaxesEntry extends Entry {
             return 0; /* no taxes */
         }
 
-        double taxesBase = PaydayModule.getInstance().getTaxesBase();
+        double taxesBase = module.getTaxesBase();
 
         double taxesmodifier = group.taxesmodifier;
         if (money <= 25000) {

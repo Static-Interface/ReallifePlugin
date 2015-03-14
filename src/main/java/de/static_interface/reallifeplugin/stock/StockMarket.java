@@ -100,7 +100,8 @@ public class StockMarket {
         return parsedRows;
     }
 
-    public boolean onStocksUpdate(Database db) {
+    public boolean onStocksUpdate(StockMarketModule module) {
+        Database db = module.getDatabase();
         if (!Module.isEnabled(StockMarketModule.NAME)) {
             return false;
         }
@@ -137,7 +138,7 @@ public class StockMarket {
             newPrices.put(stock, MathUtil.round(newPrice));
         }
 
-        StocksUpdateEvent event = new StocksUpdateEvent(StockMarketModule.getInstance(), newPrices);
+        StocksUpdateEvent event = new StocksUpdateEvent(module, newPrices);
         Bukkit.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {

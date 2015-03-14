@@ -14,21 +14,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.command;
+package de.static_interface.reallifeplugin.module.contract;
 
+import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.reallifeplugin.module.ModuleCommand;
-import org.apache.commons.cli.ParseException;
-import org.bukkit.command.CommandSender;
+import de.static_interface.sinklibrary.SinkLibrary;
+import org.bukkit.plugin.Plugin;
 
-public class ContractCommand extends ModuleCommand {
+public class ContractModule extends Module {
 
-    public ContractCommand(Module module) {
-        super(module);
+    public static final String NAME = "Contract";
+
+    public ContractModule(Plugin plugin, Database db) {
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
     }
 
     @Override
-    protected boolean onExecute(CommandSender commandSender, String s, String[] strings) throws ParseException {
-        return false;
+    protected void onEnable() {
+        SinkLibrary.getInstance().registerCommand("contract", new ContractCommand(this));
     }
 }

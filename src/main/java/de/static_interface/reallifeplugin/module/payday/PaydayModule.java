@@ -30,7 +30,6 @@ import javax.annotation.Nullable;
 public class PaydayModule extends Module {
 
     public static final String NAME = "Payday";
-    private static PaydayModule instance;
 
     private PayDayTask payDayTask;
     private BukkitTask payDayBukkitTask;
@@ -39,26 +38,20 @@ public class PaydayModule extends Module {
         super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
     }
 
-    public static PaydayModule getInstance() {
-        return instance;
-    }
-
     @Override
     protected void onEnable() {
-        instance = this;
         addDefaultValue("Time", 60, "Time in minutes");
         addDefaultValue("MinOnlineTime", 30);
         addDefaultValue("Taxesbase", 0.1);
         addListener(new PaydayListener(this));
 
-        long delay = PaydayModule.getInstance().getPaydayTime() * 60 * (long) Constants.TICK;
-        payDayTask = new PayDayTask(getDatabase());
+        long delay = getPaydayTime() * 60 * (long) Constants.TICK;
+        payDayTask = new PayDayTask(this, getDatabase());
         payDayBukkitTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), payDayTask, delay, delay);
     }
 
     @Override
     protected void onDisable() {
-        instance = null;
         if (payDayBukkitTask != null) {
             payDayBukkitTask.cancel();
         }
