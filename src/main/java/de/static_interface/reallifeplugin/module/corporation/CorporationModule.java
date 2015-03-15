@@ -19,9 +19,15 @@ package de.static_interface.reallifeplugin.module.corporation;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.Table;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -30,13 +36,24 @@ public class CorporationModule extends Module {
     public static final String NAME = "Corporations";
 
     public CorporationModule(Plugin plugin, @Nullable Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true,
-              Table.CORPS_TABLE, Table.CORP_USERS_TABLE, Table.CORP_TRADES_TABLE);
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
+    }
+
+    @Override
+    protected Collection<Table> getTables() {
+        List<Table> tables = new ArrayList<>();
+        Table table = new CorpsTable(getDatabase());
+        tables.add(table);
+        table = new CorpUsersTable(getDatabase());
+        tables.add(table);
+        table = new CorpTradesTable(getDatabase());
+        tables.add(table);
+        return tables;
     }
 
     @Override
     protected void onEnable() {
-        addListener(new CorporationListener(this));
-        SinkLibrary.getInstance().registerCommand("corporation", new CorporationCommand(this));
+        registerListener(new CorporationListener(this));
+        registerCommand("corporation", new CorporationCommand(this));
     }
 }

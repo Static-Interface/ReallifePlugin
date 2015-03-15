@@ -18,22 +18,10 @@ package de.static_interface.reallifeplugin.database;
 
 import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariDataSource;
-import de.static_interface.reallifeplugin.database.table.Table;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockPricesTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockUsersTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 public abstract class Database {
 
@@ -43,17 +31,6 @@ public abstract class Database {
     protected HikariDataSource dataSource;
     protected Plugin plugin;
     protected Connection connection;
-
-    private CorpsTable corpsTable;
-    private CorpUsersTable corpUsersTable;
-    private CorpTradesTable corpTradesTable;
-
-    private StocksTable stocksTable;
-    private StockTradesTable stockTradeHistoryTable;
-    private StockUsersTable stockUsersTable;
-    private StockPricesTable stockPriceTable;
-
-    private List<Table> tables = new ArrayList<>();
 
     public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type) {
         this.plugin = plugin;
@@ -78,89 +55,11 @@ public abstract class Database {
         return type;
     }
 
-    public void initTables() throws SQLException {
-        if (connection == null) {
-            throw new IllegalStateException("Use connect() before calling this method");
-        }
-
-        createTables();
-    }
-
     public Connection getConnection() {
         return connection;
     }
 
-    protected void createTables() throws SQLException {
-        corpsTable = new CorpsTable(this);
-        tables.add(corpsTable);
-        corpUsersTable = new CorpUsersTable(this);
-        tables.add(corpUsersTable);
-        corpTradesTable = new CorpTradesTable(this);
-        tables.add(corpTradesTable);
-        stocksTable = new StocksTable(this);
-        tables.add(stocksTable);
-        stockPriceTable = new StockPricesTable(this);
-        tables.add(stockPriceTable);
-        stockTradeHistoryTable = new StockTradesTable(this);
-        tables.add(stockTradeHistoryTable);
-        stockUsersTable = new StockUsersTable(this);
-        tables.add(stockUsersTable);
-    }
-
-    public void addTable(Table table) {
-        try {
-            addTable(table, false);
-        } catch (SQLException e) {
-            //shouldn't happen
-        }
-    }
-
-    public void addTable(Table table, boolean create) throws SQLException {
-        tables.add(table);
-        if (create) {
-            table.create();
-        }
-    }
-
-    public CorpsTable getCorpsTable() {
-        return corpsTable;
-    }
-
-    public CorpUsersTable getCorpUsersTable() {
-        return corpUsersTable;
-    }
-
-    public CorpTradesTable getCorpTradesTable() {
-        return corpTradesTable;
-    }
-
-    public StocksTable getStocksTable() {
-        return stocksTable;
-    }
-
-    public StockPricesTable getStockPriceTable() {
-        return stockPriceTable;
-    }
-
-    public StockTradesTable getStockTradeHistoryTable() {
-        return stockTradeHistoryTable;
-    }
-
-    public StockUsersTable getStockUsersTable() {
-        return stockUsersTable;
-    }
-
     public SQLTemplates getDialect() {
         return dialect;
-    }
-
-    @Nullable
-    public Table getTable(String table) {
-        for (Table tbl : tables) {
-            if (tbl.getName().equals(table)) {
-                return tbl;
-            }
-        }
-        return null;
     }
 }

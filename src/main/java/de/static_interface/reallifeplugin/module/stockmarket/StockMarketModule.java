@@ -19,26 +19,46 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.Table;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockPricesTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockUsersTable;
+import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.stock.StockMarket;
-import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class StockMarketModule extends Module {
+public class StockMarketModule extends Module<ReallifeMain> {
 
     public static final String NAME = "StockMarket";
     public static final int STOCK_TIME = 60 * 60;
     private BukkitTask stocksTask;
 
-    public StockMarketModule(Plugin plugin, @Nullable Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true,
-              Table.STOCKS_TABLE, Table.STOCK_USERS_TABLE, Table.STOCK_PRICE_TABLE, Table.STOCK_TRADES_TABLE);
+    public StockMarketModule(ReallifeMain plugin, @Nullable Database db) {
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
     }
+
+    @Override
+    protected Collection<Table> getTables() {
+        List<Table> tables = new ArrayList<>();
+        Table table = new StocksTable(getDatabase());
+        tables.add(table);
+        table = new StockPricesTable(getDatabase());
+        tables.add(table);
+        table = new StockTradesTable(getDatabase());
+        tables.add(table);
+        table = new StockUsersTable(getDatabase());
+        tables.add(table);
+        return tables;
+    }
+
     @Override
     protected void onEnable() {
         if (!Module.isEnabled(CorporationModule.NAME)) {
@@ -46,13 +66,15 @@ public class StockMarketModule extends Module {
             disable();
             return;
         }
+
+        final CorporationModule corpModule = Module.getModule(CorporationModule.NAME, CorporationModule.class);
         stocksTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), new Runnable() {
             @Override
             public void run() {
-                StockMarket.getInstance().onStocksUpdate(StockMarketModule.this);
+                StockMarket.getInstance().onStocksUpdate(StockMarketModule.this, corpModule);
             }
         }, 0, 20 * STOCK_TIME);
-        SinkLibrary.getInstance().registerCommand("stockmarket", new StockMarketCommand(this));
+        registerCommand("stockmarket", new StockMarketCommand(this, corpModule));
     }
 
     @Override

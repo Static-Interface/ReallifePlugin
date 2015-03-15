@@ -19,11 +19,12 @@ package de.static_interface.reallifeplugin.corporation;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
 import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpRow;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
@@ -52,12 +53,13 @@ public class Corporation {
 
     private CorpsTable corpsTable;
     private CorpUsersTable corpUsersTable;
-    private Database db;
-    public Corporation(Database db, int id) {
+    private CorporationModule module;
+
+    public Corporation(CorporationModule module, int id) {
         this.id = id;
-        this.db = db;
-        corpsTable = db.getCorpsTable();
-        corpUsersTable = db.getCorpUsersTable();
+        this.module = module;
+        corpsTable = Module.getTable(module, CorpsTable.class);
+        corpUsersTable = Module.getTable(module, CorpUsersTable.class);
     }
 
     public final int getId() {
@@ -106,7 +108,7 @@ public class Corporation {
 
     public void addMember(IngameUser user) {
         resetUser(user, true);
-        CorporationUtil.insertUser(db, user, CorporationRanks.RANK_DEFAULT);
+        CorporationUtil.insertUser(module, user, CorporationRanks.RANK_DEFAULT);
         try {
             corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `corp_id`=? WHERE `uuid`=?", id, user.getUniqueId().toString());
         } catch (SQLException e) {

@@ -22,7 +22,9 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationRanks;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
@@ -60,7 +62,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         SinkUser user = SinkLibrary.getInstance().getUser(sender);
         Corporation userCorp = null;
         if (user instanceof IngameUser) {
-            userCorp = CorporationUtil.getUserCorporation(getDatabase(), (IngameUser) user);
+            userCorp = CorporationUtil.getUserCorporation(getModule(), (IngameUser) user);
         }
 
         if (args.length < 1 && user instanceof IngameUser) {
@@ -168,7 +170,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
             default: {
-                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[0]);
+                Corporation corporation = CorporationUtil.getCorporation(getModule(), args[0]);
                 sendCorporationInfo(user, corporation);
                 break;
             }
@@ -240,8 +242,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     world = Bukkit.getWorld(args[4]);
                 }
 
-                boolean successful = CorporationUtil.createCorporation(getDatabase(), user, name, args[2], base, world);
-                Corporation corp = CorporationUtil.getCorporation(getDatabase(), name);
+                boolean successful = CorporationUtil.createCorporation(getModule(), user, name, args[2], base, world);
+                Corporation corp = CorporationUtil.getCorporation(getModule(), name);
                 String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
                 msg = StringUtil.format(msg, corp.getFormattedName());
                 user.sendMessage(msg);
@@ -249,7 +251,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
 
             case "migrate": {
-                user.sendMessage("" + CorporationUtil.migrate(getDatabase(), user));
+                user.sendMessage("" + CorporationUtil.migrate(getModule(), user));
                 break;
             }
 
@@ -259,8 +261,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return;
                 }
 
-                Corporation corp = CorporationUtil.getCorporation(getDatabase(), args[1]);
-                boolean successful = CorporationUtil.deleteCorporation(getDatabase(), user, corp);
+                Corporation corp = CorporationUtil.getCorporation(getModule(), args[1]);
+                boolean successful = CorporationUtil.deleteCorporation(getModule(), user, corp);
 
                 if (successful) {
                     user.sendMessage(StringUtil.format(m("Corporation.Deleted"), corp.getFormattedName()));
@@ -274,7 +276,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return;
                 }
 
-                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
 
                 World world;
                 if (user instanceof IngameUser) {
@@ -297,7 +299,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
                 if (corporation == null) {
                     user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
                     return;
@@ -313,7 +315,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
                 double amount;
                 try {
                     amount = Double.valueOf(args[2]);
@@ -340,7 +342,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
-                Corporation corporation = CorporationUtil.getCorporation(getDatabase(), args[1]);
+                Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
                 double amount;
                 try {
                     amount = Double.valueOf(args[2]);
@@ -390,7 +392,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new UserNotFoundException(args[1]);
                 }
 
-                Corporation targetCorporation = CorporationUtil.getUserCorporation(getDatabase(), target);
+                Corporation targetCorporation = CorporationUtil.getUserCorporation(getModule(), target);
                 if (targetCorporation != null) {
                     user.sendMessage(m("Corporation.AlreadyMemberOther", target.getName()));
                     return;
@@ -405,7 +407,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 if (target.isOnline()) {
                     target.sendMessage(StringUtil.format(m("Corporation.Added"), corporation.getName()));
                 }
-                user.sendMessage(StringUtil.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(getDatabase(), target)));
+                user.sendMessage(StringUtil.format(m("Corporation.CEOAdded"), CorporationUtil.getFormattedName(getModule(), target)));
                 break;
             }
 
@@ -422,7 +424,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         corporation.removeMember(u);
                         if (u.isOnline()) {
                             u.sendMessage(StringUtil.format(m("Corporation.Kicked"), corporation.getName()));
-                            user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(getDatabase(), u)));
+                            user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationUtil.getFormattedName(getModule(), u)));
                         }
                         success = true;
                         break;
@@ -537,7 +539,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
     private void sendCorporationsList(SinkUser user, boolean listByMoney) {
         user.sendMessage(ChatColor.GOLD + "Corporations: ");
         String msg = "";
-        for (Corporation corporation : CorporationUtil.getCorporations(getDatabase())) {
+        for (Corporation corporation : CorporationUtil.getCorporations(getModule())) {
             int data;
             if (listByMoney) {
                 data = (int) corporation.getBalance();
@@ -563,9 +565,9 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             divider += "-";
         }
         user.sendMessage("");
-        user.sendMessage(ChatColor.GOLD + " User: " + CorporationUtil.getFormattedName(getDatabase(), target));
+        user.sendMessage(ChatColor.GOLD + " User: " + CorporationUtil.getFormattedName(getModule(), target));
         user.sendMessage(divider);
-        Corporation corp = CorporationUtil.getUserCorporation(getDatabase(), target);
+        Corporation corp = CorporationUtil.getUserCorporation(getModule(), target);
         user.sendMessage(ChatColor.GRAY + "Corporation: " + ChatColor.GOLD + (corp == null ? "-" : corp.getFormattedName()));
         String rank;
         if (corp == null) {
@@ -581,13 +583,13 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
         try {
             String soldItems = "-";
-            Integer userId = CorporationUtil.getUserId(getDatabase(), target);
+            Integer userId = CorporationUtil.getUserId(getModule(), target);
             if (corp != null && userId != null) {
                 //Todo make time configurable
                 int days = 3;
                 long maxTime = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * days;
                 CorpTradesRow[] rows =
-                        getDatabase().getCorpTradesTable().get(
+                        Module.getTable(getModule(), CorpTradesTable.class).get(
                                 "SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `corp_id` = ? AND `time` > ?", userId,
                                 corp.getId(), maxTime);
                 if (rows.length > 0) {
@@ -627,13 +629,13 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         user.sendMessage(divider);
         String ceo = ChatColor.GOLD + "-";
         if (corporation.getCEO() != null) {
-            ceo = CorporationUtil.getFormattedName(getDatabase(), corporation.getCEO());
+            ceo = CorporationUtil.getFormattedName(getModule(), corporation.getCEO());
         }
         user.sendMessage(ChatColor.GRAY + "CEO: " + ceo);
         String coCeos = "-";
         if (corporation.getCoCEOs().size() > 0) {
             for (IngameUser coCeo : corporation.getCoCEOs()) {
-                String name = CorporationUtil.getFormattedName(getDatabase(), coCeo);
+                String name = CorporationUtil.getFormattedName(getModule(), coCeo);
                 if (StringUtil.isEmptyOrNull(name)) {
                     Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
                     continue;
@@ -656,7 +658,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         if (members.size() > 0) {
             for (IngameUser member : members) {
                 try {
-                    String name = CorporationUtil.getFormattedName(getDatabase(), member);
+                    String name = CorporationUtil.getFormattedName(getModule(), member);
                     if (StringUtil.isEmptyOrNull(name)) {
                         Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
                         continue;

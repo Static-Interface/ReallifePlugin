@@ -7,20 +7,20 @@ main: de.static_interface.reallifeplugin.ReallifeMain
 depend: [SinkLibrary, WorldGuard]
 
 commands:
-  reallifeplugin:
+  rp:
     description: Reallifeplugin command
     permission: reallifeplugin.command
     usage: "Wrong usage! Correct Usage: /<command> <option> <args>"
-    aliases: rp
-  insurance:
+    aliases: reallifeplugin
+  ic:
     description: Insurance Command
     permission: reallifeplugin.insurance
     usage: "Wrong usage! Correct Usage: /<command> <on/off>"
-    aliases: [versicherung,ic]
-  corporation:
+    aliases: [insurance]
+  corp:
     description: Corporation Command
     permission: reallifeplugin.corporation
-    aliases: corp
+    aliases: corporation
   ad:
     description: Ad Command
     permission: reallifeplugin.ad
@@ -29,9 +29,9 @@ commands:
     description: Contract command
     permission: reallifeplugin.contract
     usage: "/<command> <subcommand>"
-  stockmarket:
+  sm:
     description: Stockmarkets
-    aliases: sm
+    aliases: stockmarket
     permission: reallifeplugin.stockmarket
 
 permissions:

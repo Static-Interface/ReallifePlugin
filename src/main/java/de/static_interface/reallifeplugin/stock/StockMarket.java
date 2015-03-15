@@ -27,6 +27,7 @@ import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockPriceRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.reallifeplugin.module.stockmarket.event.StocksUpdateEvent;
 import de.static_interface.sinklibrary.util.BukkitUtil;
@@ -58,8 +59,8 @@ public class StockMarket {
     }
 
     @Nullable
-    public Stock getStock(Database db, int id) {
-        for (Stock stock : getAllStocks(db)) {
+    public Stock getStock(StockMarketModule module, CorporationModule corpModule, int id) {
+        for (Stock stock : getAllStocks(module, corpModule)) {
             if (stock.getId() == id) {
                 return stock;
             }
@@ -69,9 +70,9 @@ public class StockMarket {
     }
 
     @Nullable
-    public Stock getStock(Database db, String tag) {
+    public Stock getStock(StockMarketModule module, CorporationModule corpModule, String tag) {
         tag = tag.toUpperCase();
-        for (Stock stock : getAllStocks(db)) {
+        for (Stock stock : getAllStocks(module, corpModule)) {
             if (stock.getTag().equalsIgnoreCase(tag)) {
                 return stock;
             }
@@ -79,36 +80,35 @@ public class StockMarket {
         return null;
     }
 
-    public Collection<Stock> getAllStocks(Database db) {
+    public Collection<Stock> getAllStocks(StockMarketModule module, CorporationModule corpModule) {
         StockRow[] rows;
         try {
-            rows = db.getStocksTable().get("SELECT * FROM `{TABLE}`");
+            rows = Module.getTable(module, StocksTable.class).get("SELECT * FROM `{TABLE}`");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
         List<Stock> parsedRows = new ArrayList<>();
         for (StockRow row : rows) {
-            Corporation corp = CorporationUtil.getCorporation(db, row.corpId);
+            Corporation corp = CorporationUtil.getCorporation(corpModule, row.corpId);
             if (corp == null) {
                 ReallifeMain.getInstance().getLogger().warning("Corp ID not found: " + row.corpId);
                 continue;
             }
-            Stock stock = new Stock(db, row.id);
+            Stock stock = new Stock(module, corpModule, row.id);
             parsedRows.add(stock);
         }
         return parsedRows;
     }
 
-    public boolean onStocksUpdate(StockMarketModule module) {
-        Database db = module.getDatabase();
+    public boolean onStocksUpdate(StockMarketModule module, CorporationModule corpModule) {
         if (!Module.isEnabled(StockMarketModule.NAME)) {
             return false;
         }
 
         HashMap<Stock, Double> newPrices = new HashMap<>();
 
-        Collection<Stock> stocks = getAllStocks(db);
+        Collection<Stock> stocks = getAllStocks(module, corpModule);
 
         String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
         String s = "";
@@ -116,7 +116,7 @@ public class StockMarket {
         for (Stock stock : stocks) {
             double percent;
             try {
-                percent = MathUtil.round(calculateStockQuotation(db, stock));
+                percent = MathUtil.round(calculateStockQuotation(corpModule, stock));
             } catch (Exception e) {
                 ReallifeMain.getInstance().getLogger()
                         .warning("onStocksUpdate(): Skipping " + stock.getTag() + ": Couldn't calculate stock quotation: ");
@@ -154,7 +154,7 @@ public class StockMarket {
 
             double oldPrice = stock.getPrice();
             try {
-                StocksTable table = db.getStocksTable();
+                StocksTable table = Module.getTable(module, StocksTable.class);
                 table.executeUpdate("UPDATE `{TABLE}` SET `price`=? WHERE `id`=?", newPrice, stock.getId());
             } catch (Exception e) {
                 ReallifeMain.getInstance().getLogger().warning("onStocksUpdate(): Skipping " + stock.getTag() + ": Couldn't update price: ");
@@ -171,7 +171,7 @@ public class StockMarket {
                 row.stockId = stock.getId();
                 row.time = System.currentTimeMillis();
 
-                StockPricesTable table = db.getStockPriceTable();
+                StockPricesTable table = Module.getTable(module, StockPricesTable.class);
                 table.insert(row);
             } catch (Exception e) {
                 ReallifeMain.getInstance().getLogger().warning(stock.getTag() + ": Couldn't insert price");
@@ -206,16 +206,16 @@ public class StockMarket {
         return false;
     }
 
-    public double calculateStockQuotation(Database db, Stock stock) throws SQLException, IOException {
+    public double calculateStockQuotation(CorporationModule module, Stock stock) throws SQLException, IOException {
         Validate.notNull(stock);
 
         long timeSpan = 1000 * 3 * 60 * 60 * 24; // 3 days, Todo: make this configurable
 
-        long changedAmount = getChangedAmount(db, stock, timeSpan);
+        long changedAmount = getChangedAmount(module, stock, timeSpan);
 
         Long changedAmountBefore = amountCache.get(stock.getId());
         if (amountCache.get(stock.getId()) == null) {
-            changedAmountBefore = getChangedAmount(db, stock, timeSpan - (StockMarketModule.STOCK_TIME * 1000));
+            changedAmountBefore = getChangedAmount(module, stock, timeSpan - (StockMarketModule.STOCK_TIME * 1000));
         }
         // calculate amount from last time
         //if (changedAmountBefore == 0) {
@@ -239,8 +239,8 @@ public class StockMarket {
         return 0;
     }
 
-    private long getChangedAmount(Database db, Stock stock, long timespan) throws SQLException {
-        CorpTradesTable corpTrades = db.getCorpTradesTable();
+    private long getChangedAmount(CorporationModule module, Stock stock, long timespan) throws SQLException {
+        CorpTradesTable corpTrades = Module.getTable(module, CorpTradesTable.class);
 
         CorpTradesRow[]
                 rows =

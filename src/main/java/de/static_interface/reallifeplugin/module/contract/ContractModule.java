@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.module.contract;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.plugin.Plugin;
 
 public class ContractModule extends Module {
@@ -32,6 +31,6 @@ public class ContractModule extends Module {
 
     @Override
     protected void onEnable() {
-        SinkLibrary.getInstance().registerCommand("contract", new ContractCommand(this));
+        registerCommand("contract", new ContractCommand(this));
     }
 }

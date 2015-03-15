@@ -26,7 +26,9 @@ import de.static_interface.reallifeplugin.database.table.impl.stockmarket.Stocks
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockUserRow;
+import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.stock.Stock;
 import de.static_interface.reallifeplugin.stock.StockMarket;
 import de.static_interface.sinklibrary.SinkLibrary;
@@ -44,9 +46,12 @@ import java.util.Collection;
 
 public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
-    public StockMarketCommand(StockMarketModule module) {
+    private CorporationModule corpModule;
+
+    public StockMarketCommand(StockMarketModule module, CorporationModule corpModule) {
         super(module);
         getCommandOptions().setPlayerOnly(true);
+        this.corpModule = corpModule;
     }
 
     @Override
@@ -66,7 +71,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     break;
                 }
 
-                Corporation corp = CorporationUtil.getUserCorporation(getDatabase(), user);
+                Corporation corp = CorporationUtil.getUserCorporation(corpModule, user);
 
                 if (!corp.isCeo(user)) {
                     user.sendMessage(m("Corporation.NotCEO"));
@@ -101,7 +106,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 row.time = System.currentTimeMillis();
 
                 try {
-                    row = getDatabase().getStocksTable().insert(row);
+                    row = Module.getTable(getModule(), StocksTable.class).insert(row);
                 } catch (SQLException e) {
                     user.sendMessage(ChatColor.RED + "An internal error occured");
                     e.printStackTrace();
@@ -129,7 +134,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
                 String tag = args[1].toUpperCase();
                 int amount = Integer.valueOf(args[2]);
-                Stock stock = StockMarket.getInstance().getStock(getDatabase(), tag);
+                Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, tag);
 
                 if (stock == null) {
                     user.sendMessage(m("Corporation.DoesntExists", tag)); //Todo: stock not found
@@ -165,7 +170,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return false;
                 }
 
-                if (StockMarket.getInstance().onStocksUpdate((StockMarketModule) getModule())) {
+                if (StockMarket.getInstance().onStocksUpdate(getModule(), corpModule)) {
                     user.sendMessage(m("General.Success"));
                 } else {
                     user.sendMessage(m("StockMarket.ForceFailed"));
@@ -177,17 +182,17 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             case "list": {
                 String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
 
-                Collection<Stock> stocks = StockMarket.getInstance().getAllStocks(getDatabase());
+                Collection<Stock> stocks = StockMarket.getInstance().getAllStocks(getModule(), corpModule);
                 if (stocks.size() < 1) {
                     user.sendMessage(prefix + ChatColor.RED + "No stocks found"); //Todo
                     return true;
                 }
-                for (Stock stock : StockMarket.getInstance().getAllStocks(getDatabase())) {
+                for (Stock stock : StockMarket.getInstance().getAllStocks(getModule(), corpModule)) {
                     double percent = 0;
                     String a = null;
                     try {
                         try {
-                            percent = StockMarket.getInstance().calculateStockQuotation(getDatabase(), stock);
+                            percent = StockMarket.getInstance().calculateStockQuotation(corpModule, stock);
                         } catch (IOException e) {
                             a = ChatColor.GRAY + "[-] %";
                         }
@@ -248,16 +253,16 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
     private void addStocks(Database db, IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
         int newAmount = stockAmount - amount;
         if (removeFromStock) {
-            StocksTable table = db.getStocksTable();
+            StocksTable table = Module.getTable(getModule(), StocksTable.class);
             table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stockId);
         }
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(db, user);
+        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
         if (tmp == null) {
-            tmp = CorporationUtil.insertUser(db, user, null);
+            tmp = CorporationUtil.insertUser(corpModule, user, null);
         }
 
-        StockUsersTable usersTable = db.getStockUsersTable();
+        StockUsersTable usersTable = Module.getTable(getModule(), StockUsersTable.class);
 
         StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stockId);
         if (rows.length > 0) {

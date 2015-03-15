@@ -24,7 +24,9 @@ import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
 import de.static_interface.reallifeplugin.database.DatabaseType;
 import de.static_interface.reallifeplugin.database.impl.H2Database;
 import de.static_interface.reallifeplugin.database.impl.MySqlDatabase;
+import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.antiescape.AntiEscapeModule;
+import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.insurance.InsuranceModule;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
@@ -89,7 +91,6 @@ public class ReallifeMain extends JavaPlugin {
             try {
                 db.setupConfig();
                 db.connect();
-                db.initTables();
             } catch (SQLException e) {
                 getLogger().log(Level.SEVERE, "Database connection failed. Disabling database-based features.");
                 e.printStackTrace();
@@ -98,6 +99,7 @@ public class ReallifeMain extends JavaPlugin {
         }
 
         new AntiEscapeModule(this).enable();
+        new ContractModule(this, db).enable();
         new PaydayModule(this, db).enable();
         new InsuranceModule(this).enable();
         new CorporationModule(this, db).enable();
@@ -119,6 +121,13 @@ public class ReallifeMain extends JavaPlugin {
             try {
                 db.close();
             } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        for (Module module : Module.getModules()) {
+            try {
+                module.disable();
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
         }

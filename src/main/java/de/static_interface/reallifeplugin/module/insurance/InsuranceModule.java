@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.module.insurance;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
-import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.plugin.Plugin;
 
 public class InsuranceModule extends Module {
@@ -40,8 +39,8 @@ public class InsuranceModule extends Module {
 
         //Todo: add whitelist/blacklist regions for insurances
         addDefaultValue("Account", "Insurances");
-        addListener(new InsuranceListener(this));
-        SinkLibrary.getInstance().registerCommand("insurance", new InsuranceCommand(this));
+        registerListener(new InsuranceListener(this));
+        registerCommand("insurance", new InsuranceCommand(this));
     }
 
     public String getInsuranceAccount() {

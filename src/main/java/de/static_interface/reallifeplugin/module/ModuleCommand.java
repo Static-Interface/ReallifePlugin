@@ -32,7 +32,10 @@ public abstract class ModuleCommand<T extends Module> extends SinkCommand {
 
     @Override
     public boolean onPreExecute(CommandSender sender, Command command, String label, String[] args) {
-        return !(module == null || !module.isEnabled()) && super.onPreExecute(sender, command, label, args);
+        if (module == null || !module.isEnabled()) {
+            return false;
+        }
+        return super.onPreExecute(sender, command, label, args);
     }
 
     public final T getModule() {

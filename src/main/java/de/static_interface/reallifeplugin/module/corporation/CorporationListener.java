@@ -21,7 +21,9 @@ import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
 import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
@@ -272,7 +274,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private boolean validateSign(SignChangeEvent event, String[] lines, Location location, IngameUser user) {
-        Corporation corp = CorporationUtil.getUserCorporation(getDatabase(), user);
+        Corporation corp = CorporationUtil.getUserCorporation(getModule(), user);
         if (corp == null) {
             user.sendMessage(m("Corporation.NotInCorporation"));
             return false;
@@ -320,7 +322,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             }
 
             //Validate location
-            Corporation locationCorporation = CorporationUtil.getCorporation(getDatabase(), location);
+            Corporation locationCorporation = CorporationUtil.getCorporation(getModule(), location);
 
             if (locationCorporation.getId() != corp.getId()) {
                 user.sendMessage(m("Corporation.Sign.InvalidCreateLocation"));
@@ -419,20 +421,20 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
             sign.update(true);
 
-            Corporation corp = CorporationUtil.getCorporation(getDatabase(), event.getClickedBlock().getLocation());
+            Corporation corp = CorporationUtil.getCorporation(getModule(), event.getClickedBlock().getLocation());
             if (corp == null) {
                 user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
                 sign.setLine(0, ChatColor.DARK_RED + "[CSell]");
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getDatabase(), user) == null) {
+            if (CorporationUtil.getUserCorporation(getModule(), user) == null) {
                 user.sendMessage(m("Corporation.NotInCorporation"));
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getDatabase(), user).getId() != corp.getId()) {
-                user.sendMessage(CorporationUtil.getUserCorporation(getDatabase(), user).getName() + ":" + corp.getName());
+            if (CorporationUtil.getUserCorporation(getModule(), user).getId() != corp.getId()) {
+                user.sendMessage(CorporationUtil.getUserCorporation(getModule(), user).getName() + ":" + corp.getName());
                 user.sendMessage(m("Corporation.Sign.InvalidSellCorporation"));
                 return;
             }
@@ -526,8 +528,8 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             row.changedAmount = stack.getAmount();
             row.time = System.currentTimeMillis();
             row.type = 0;
-            row.userId = CorporationUtil.getUserId(getDatabase(), user);
-            getDatabase().getCorpTradesTable().insert(row);
+            row.userId = CorporationUtil.getUserId(getModule(), user);
+            Module.getTable(getModule(), CorpTradesTable.class).insert(row);
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
             e.printStackTrace();
@@ -561,19 +563,19 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             }
             sign.update(true);
 
-            Corporation corp = CorporationUtil.getCorporation(getDatabase(), event.getClickedBlock().getLocation());
+            Corporation corp = CorporationUtil.getCorporation(getModule(), event.getClickedBlock().getLocation());
             if (corp == null) {
                 user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
                 sign.setLine(0, ChatColor.DARK_RED + "[CBuy]");
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getDatabase(), user) == null) {
+            if (CorporationUtil.getUserCorporation(getModule(), user) == null) {
                 user.sendMessage(m("Corporation.NotInCorporation"));
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getDatabase(), user).getId() != corp.getId()) {
+            if (CorporationUtil.getUserCorporation(getModule(), user).getId() != corp.getId()) {
                 user.sendMessage(m("Corporation.Sign.InvalidBuyCorporation"));
                 return;
             }
@@ -645,9 +647,9 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             row.signAmount = amount;
             row.time = System.currentTimeMillis();
             row.type = 1;
-            row.userId = CorporationUtil.getUserId(getDatabase(), user);
+            row.userId = CorporationUtil.getUserId(getModule(), user);
 
-            getDatabase().getCorpTradesTable().insert(row);
+            Module.getTable(getModule(), CorpTradesTable.class).insert(row);
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
             e.printStackTrace();

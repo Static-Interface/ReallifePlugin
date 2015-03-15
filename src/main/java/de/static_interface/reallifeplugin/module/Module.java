@@ -18,28 +18,41 @@ package de.static_interface.reallifeplugin.module;
 
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.Table;
+import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public abstract class Module {
+public abstract class Module<T extends Plugin> {
 
     private final static List<Module> modules = new ArrayList<>();
     private final String name;
-    private final Plugin plugin;
-    private final String[] requiredTables;
+    private final T plugin;
     private final List<ModuleListener> listeners = new ArrayList<>();
     private final Configuration config;
     private final Database db;
+    private final Map<String, ModuleCommand> commands = new HashMap<>();
+
+    private Collection<Table> requiredTables;
     private boolean enabled;
     private String modulePrefix;
 
-    public Module(Plugin plugin, Configuration config,
-                  @Nullable Database db, String name, boolean useConfigPrefix, @Nullable String... requiredTables) {
+    @SuppressWarnings("FieldCanBeLocal")
+    private boolean registered = false;
+
+    public Module(T plugin, Configuration config,
+                  @Nullable Database db, String name, boolean useConfigPrefix) {
+        if (Module.getModule(name) != null && !registered) {
+            throw new IllegalStateException("A module with the name \"" + name + "\" is already registered");
+        }
         name = name.trim();
         if (name.contains(".") || name.contains(" ")) {
             throw new IllegalArgumentException("Illegal name characters");
@@ -48,15 +61,36 @@ public abstract class Module {
         this.db = db;
         this.name = name;
         this.plugin = plugin;
-        this.requiredTables = requiredTables;
+        this.requiredTables = getTables();
+        if (requiredTables == null) {
+            requiredTables = new ArrayList<>();
+        }
         this.config = config;
         modules.add(this);
+        registered = true;
+    }
+
+    @Nullable
+    public static <E extends Table> E getTable(Module module, Class<E> classOfE) {
+        if (module.requiredTables.size() == 0) {
+            throw new IllegalStateException("This module doesn't have any tables");
+        }
+
+        for (Object o : module.getRequiredTables()) {
+            if (o.getClass().equals(classOfE)) {
+                return (E) o;
+            }
+        }
+
+        return null;
     }
 
     @Nullable
     public static Module getModule(String name) {
+        name = name.trim().replace(" ", "_");
+
         for (Module module : modules) {
-            if (module.getName().equals(name)) {
+            if (module.getName().equalsIgnoreCase(name)) {
                 return module;
             }
         }
@@ -68,8 +102,35 @@ public abstract class Module {
         return m != null && m.isEnabled();
     }
 
-    public static <T> T getModule(String name, Class<T> clazz) {
+    public static <T extends Module> T getModule(String name, Class<T> classOfT) {
         return (T) getModule(name);
+    }
+
+    public static Collection<Module> getModules() {
+        return Collections.unmodifiableCollection(modules);
+    }
+
+    @Nullable
+    public Table getTable(String name) {
+        if (requiredTables.size() == 0) {
+            throw new IllegalStateException("This module doesn't have any tables");
+        }
+
+        for (Table table : requiredTables) {
+            if (table.getName().equals(name)) {
+                return table;
+            }
+        }
+
+        return null;
+    }
+
+    public final Collection<ModuleListener> getListenesr() {
+        return Collections.unmodifiableCollection(listeners);
+    }
+
+    public final Map<String, ModuleCommand> getCommands() {
+        return Collections.unmodifiableMap(commands);
     }
 
     public final Object getValue(String path) {
@@ -89,6 +150,7 @@ public abstract class Module {
     }
 
     public final void enable() {
+        getPlugin().getLogger().info("[" + getName() + "-Module]: Enabling...");
         addDefaultValue("Enabled", false);
 
         if (getValue("Enabled") != Boolean.TRUE) {
@@ -96,16 +158,15 @@ public abstract class Module {
             return;
         }
 
-        if (requiredTables != null) {
+        if (requiredTables != null && requiredTables.size() > 0) {
             if (getDatabase() == null) {
                 throw new IllegalStateException("Database connection failed");
             }
 
             try {
-                for (String table : requiredTables) {
-                    Table tbl = db.getTable(table);
-                    if (!tbl.exists()) {
-                        tbl.create();
+                for (Table table : requiredTables) {
+                    if (table != null && !table.exists()) {
+                        table.create();
                     }
                 }
             } catch (Exception e) {
@@ -122,12 +183,20 @@ public abstract class Module {
     }
 
     public final void disable() {
-        if (listeners != null) {
-            for (ModuleListener listener : listeners) {
-                listener.unregister();
-            }
+        getPlugin().getLogger().info("[" + getName() + "-Module]: Disabling...");
+        for (ModuleListener listener : listeners) {
+            listener.unregister();
         }
+
+        //for(String cmd : commands.keySet()) {
+        //    SinkLibrary.getInstance().unregisterCommand(cmd, getPlugin());
+        //}
+
         enabled = false;
+    }
+
+    protected Collection<Table> getRequiredTables() {
+        return requiredTables;
     }
 
     protected void onEnable() {
@@ -138,8 +207,13 @@ public abstract class Module {
 
     }
 
-    protected final void addListener(ModuleListener listener) {
-        if (!listeners.contains(listener) && enabled) {
+    @Nullable
+    protected Collection<Table> getTables() {
+        return new ArrayList<>();
+    }
+
+    protected final void registerListener(ModuleListener listener) {
+        if (!listeners.contains(listener)) {
             listeners.add(listener);
             if (enabled) {
                 listener.register();
@@ -147,7 +221,16 @@ public abstract class Module {
         }
     }
 
-    public final Plugin getPlugin() {
+    protected final void registerCommand(String name, ModuleCommand command) {
+        if (!commands.keySet().contains(name) && enabled) {
+            commands.put(name, command);
+            if (enabled) {
+                SinkLibrary.getInstance().registerCommand(name, command);
+            }
+        }
+    }
+
+    public final T getPlugin() {
         return plugin;
     }
 
@@ -165,5 +248,10 @@ public abstract class Module {
 
     public final Database getDatabase() {
         return db;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

@@ -18,9 +18,11 @@ package de.static_interface.reallifeplugin.stock;
 
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
+import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.util.MathUtil;
 
 import java.sql.SQLException;
@@ -29,11 +31,12 @@ public class Stock {
 
     private final int id;
     private StocksTable stocksTable;
-    private Database db;
-    public Stock(Database db, int id) {
+    private CorporationModule corpModule;
+
+    public Stock(StockMarketModule module, CorporationModule corpModule, int id) {
         this.id = id;
-        this.db = db;
-        stocksTable = db.getStocksTable();
+        this.corpModule = corpModule;
+        stocksTable = Module.getTable(module, StocksTable.class);
     }
 
     public int getAmount() {
@@ -49,7 +52,7 @@ public class Stock {
     }
 
     public Corporation getCorporation() {
-        return CorporationUtil.getCorporation(db, getBase().corpId);
+        return CorporationUtil.getCorporation(corpModule, getBase().corpId);
     }
 
     public final int getId() {
