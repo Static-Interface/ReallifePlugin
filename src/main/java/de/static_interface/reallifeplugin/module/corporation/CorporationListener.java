@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.corporation;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.corporation.Corporation;
@@ -39,7 +39,9 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -55,6 +57,7 @@ import javax.annotation.Nullable;
 
 public class CorporationListener extends ModuleListener<CorporationModule> {
 
+    // http://hastebin.com/ripetuxafe.avrasm
     public static final String CURRENCY = "€"; //TODO
 
     public CorporationListener(CorporationModule module) {
@@ -149,32 +152,12 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         return sStack.equals(stack);
     }
 
-    @Nullable
-    public static ItemStack getItem(@Nonnull Inventory inv, String s, boolean preferNotSold) {
-        int stackamount = 0;
-        ItemStack stack = null;
-        ItemStack soldItemStack = null;
-
-        for (ItemStack invStack : inv.getContents()) {
-            if (invStack == null) {
-                continue;
-            }
-
-            if (invStack != null && equalsItemStack(invStack, s) && invStack.getAmount() > stackamount) {
-                if (preferNotSold && isTagged(invStack)) {
-                    soldItemStack = invStack;
-                    continue;
-                }
-
-                stack = invStack;
-            }
+    @EventHandler(priority = EventPriority.LOWEST)
+    public static void onBlockPlace(BlockPlaceEvent event) {
+        ItemStack stack = event.getPlayer().getItemInHand();
+        if (stack != null && isTagged(stack)) {
+            event.setCancelled(true);
         }
-
-        if (stack == null && soldItemStack != null) {
-            return soldItemStack;
-        }
-
-        return stack;
     }
 
     @EventHandler
@@ -207,8 +190,9 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
     }
 
     public static boolean removeItem(@Nonnull Inventory inv, @Nonnull ItemStack stack, boolean preferNotSold) {
-
         boolean soldFound = false;
+        ItemStack foundStack = null;
+
         for (ItemStack invStack : inv.getContents()) {
             if (invStack == null) {
                 continue;
@@ -224,7 +208,15 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
                 continue;
             }
 
-            inv.removeItem(stack);
+            if (foundStack != null && foundStack.getAmount() == stack.getAmount()) {
+                continue;
+            }
+
+            foundStack = invStack;
+        }
+
+        if (foundStack != null) {
+            inv.removeItem(foundStack);
             return true;
         }
 
@@ -266,10 +258,40 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
     }
 
     public static boolean isTagged(ItemStack stack) {
-        if (stack == null) {
-            return false;
+        return stack != null && stack.getItemMeta().hasLore() && stack.getItemMeta().getLore().contains(m("Corporation.Sign.SoldWatermark"));
+    }
+
+    @Nullable
+    public ItemStack getItem(@Nonnull Inventory inv, String itemName, int amount, boolean preferNotSold) {
+        int stackamount = 0;
+        ItemStack stack = null;
+        ItemStack soldItemStack = null;
+
+        for (ItemStack invStack : inv.getContents()) {
+            if (invStack == null) {
+                continue;
+            }
+
+            if (equalsItemStack(invStack, itemName) && invStack.getAmount() >= stackamount) {
+                if (preferNotSold && isTagged(invStack)) {
+                    soldItemStack = invStack;
+                    continue;
+                }
+
+                stack = invStack;
+            }
         }
-        return stack.getItemMeta().hasLore() && stack.getItemMeta().getLore().contains(m("Corporation.Sign.SoldWatermark"));
+
+        if (stack == null && soldItemStack != null) {
+            return soldItemStack;
+        }
+
+        if (stack != null) {
+            getModule().getPlugin().getLogger()
+                    .info("getItem: " + stack.getType() + ", stack amount: " + stack.getAmount() + ", stackamount: " + stackamount);
+
+        }
+        return stack;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -428,14 +450,21 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getModule(), user) == null) {
+            Corporation userCorp = CorporationUtil.getUserCorporation(getModule(), user);
+
+            if (userCorp == null) {
                 user.sendMessage(m("Corporation.NotInCorporation"));
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getModule(), user).getId() != corp.getId()) {
+            if (userCorp.getId() != corp.getId()) {
                 user.sendMessage(CorporationUtil.getUserCorporation(getModule(), user).getName() + ":" + corp.getName());
                 user.sendMessage(m("Corporation.Sign.InvalidSellCorporation"));
+                return;
+            }
+
+            if (CorporationUtil.hasCeoPermissions(user, userCorp)) {
+                user.sendMessage(m("Corporation.Sign.IsCeo"));
                 return;
             }
 
@@ -445,7 +474,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             double pricePerItem = price / (double) amount;
 
             Inventory inv = event.getPlayer().getInventory();
-            ItemStack stack = getItem(inv, sign.getLine(3), true);
+            ItemStack stack = getItem(inv, sign.getLine(3), amount, true);
 
             if (stack == null) {
                 user.sendMessage(m("Corporation.Sign.NoItemsFound"));
@@ -563,20 +592,27 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             }
             sign.update(true);
 
-            Corporation corp = CorporationUtil.getCorporation(getModule(), event.getClickedBlock().getLocation());
-            if (corp == null) {
+            Corporation signCorp = CorporationUtil.getCorporation(getModule(), event.getClickedBlock().getLocation());
+            if (signCorp == null) {
                 user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
                 sign.setLine(0, ChatColor.DARK_RED + "[CBuy]");
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getModule(), user) == null) {
+            Corporation userCorp = CorporationUtil.getUserCorporation(getModule(), user);
+
+            if (userCorp == null) {
                 user.sendMessage(m("Corporation.NotInCorporation"));
                 return;
             }
 
-            if (CorporationUtil.getUserCorporation(getModule(), user).getId() != corp.getId()) {
+            if (userCorp.getId() != signCorp.getId()) {
                 user.sendMessage(m("Corporation.Sign.InvalidBuyCorporation"));
+                return;
+            }
+
+            if (CorporationUtil.hasCeoPermissions(user, userCorp)) {
+                user.sendMessage(m("Corporation.Sign.IsCeo"));
                 return;
             }
 
@@ -597,7 +633,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             double pricePerItem = price / (double) amount;
 
             Inventory inv = chest.getInventory();
-            ItemStack stack = getItem(inv, sign.getLine(3), false);
+            ItemStack stack = getItem(inv, sign.getLine(3), amount, false);
 
             if (stack == null) {
                 user.sendMessage(m("Corporation.Sign.NoItemsFound"));
@@ -625,7 +661,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             chest.update(true);
             user.getPlayer().getInventory().addItem(stack);
             user.getPlayer().updateInventory();
-            corp.addBalance(price);
+            signCorp.addBalance(price);
             user.sendMessage(
                     StringUtil.format(m("Corporation.Sign.Bought"), stack.getAmount(), formatItemName(stack.getType().name()),
                                       price));
@@ -638,7 +674,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
             CorpTradesRow row = new CorpTradesRow();
             row.id = null;
-            row.corpId = corp.getId();
+            row.corpId = signCorp.getId();
             row.location = sign.getLocation();
             row.material = stack.getType();
             row.newAmount = newAmount;

@@ -73,7 +73,7 @@ public class StockMarketModule extends Module<ReallifeMain> {
             public void run() {
                 StockMarket.getInstance().onStocksUpdate(StockMarketModule.this, corpModule);
             }
-        }, 0, 20 * STOCK_TIME);
+        }, 20 * STOCK_TIME, 20 * STOCK_TIME);
         registerCommand("stockmarket", new StockMarketCommand(this, corpModule));
     }
 

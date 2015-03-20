@@ -16,7 +16,6 @@
 
 package de.static_interface.reallifeplugin.module.payday;
 
-import de.static_interface.reallifeplugin.PayDayTask;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
@@ -31,7 +30,7 @@ public class PaydayModule extends Module {
 
     public static final String NAME = "Payday";
 
-    private PayDayTask payDayTask;
+    private PaydayTask paydayTask;
     private BukkitTask payDayBukkitTask;
 
     public PaydayModule(Plugin plugin, @Nullable Database db) {
@@ -46,8 +45,8 @@ public class PaydayModule extends Module {
         registerListener(new PaydayListener(this));
 
         long delay = getPaydayTime() * 60 * (long) Constants.TICK;
-        payDayTask = new PayDayTask(this, getDatabase());
-        payDayBukkitTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), payDayTask, delay, delay);
+        paydayTask = new PaydayTask(this, getDatabase());
+        payDayBukkitTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), paydayTask, delay, delay);
     }
 
     @Override
@@ -69,7 +68,7 @@ public class PaydayModule extends Module {
         return (double) getValue("Taxesbase");
     }
 
-    public PayDayTask getPayDayTask() {
-        return payDayTask;
+    public PaydayTask getPaydayTask() {
+        return paydayTask;
     }
 }

@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.corporation;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket;
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.corporation.Corporation;
 import de.static_interface.reallifeplugin.corporation.CorporationUtil;

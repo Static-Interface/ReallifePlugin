@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin;
+package de.static_interface.reallifeplugin.config;
 
 import de.static_interface.sinklibrary.api.configuration.Configuration;
 import de.static_interface.sinklibrary.util.StringUtil;
@@ -121,7 +121,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Sign.ChestFull", "&cThe chest is full!");
         addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
         addDefault("Corporation.Sign.SoldWatermark", "&4- &oSold");
-
+        addDefault("Corporation.Sign.IsCeo", "&cCEO or co-CEOs can't sell items!");
         addDefault("StockMarket.NotEnoughStocksLeft", "&cNot enough stocks left!");
         addDefault("StockMarket.ForceFailed", "&4Couldn't update stocks");
 

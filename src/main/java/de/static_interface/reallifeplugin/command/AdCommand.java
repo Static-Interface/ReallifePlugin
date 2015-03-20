@@ -17,7 +17,7 @@
 package de.static_interface.reallifeplugin.command;
 
 
-import static de.static_interface.reallifeplugin.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.sinklibrary.SinkLibrary;

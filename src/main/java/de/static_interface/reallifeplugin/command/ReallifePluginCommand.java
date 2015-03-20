@@ -52,7 +52,7 @@ public class ReallifePluginCommand extends SinkCommand {
                     }
 
                     PaydayModule module = Module.getModule(PaydayModule.NAME, PaydayModule.class);
-                    module.getPayDayTask().run(!skipTimeCheck);
+                    module.getPaydayTask().run(!skipTimeCheck);
                     break;
                 }
             case "module":

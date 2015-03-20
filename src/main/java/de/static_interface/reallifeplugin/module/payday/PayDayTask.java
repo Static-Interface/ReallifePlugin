@@ -14,8 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin;
+package de.static_interface.reallifeplugin.module.payday;
 
+import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.entry.PayDayEntry;
 import de.static_interface.reallifeplugin.entry.TaxesEntry;
@@ -23,7 +24,6 @@ import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.reallifeplugin.model.EntryResult;
 import de.static_interface.reallifeplugin.model.Group;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.reallifeplugin.module.payday.PaydayModule;
 import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.reallifeplugin.stock.Stock;
@@ -41,12 +41,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PayDayTask implements Runnable {
+public class PaydayTask implements Runnable {
 
     private Database db;
     private PaydayModule module;
 
-    public PayDayTask(PaydayModule module, Database db) {
+    public PaydayTask(PaydayModule module, Database db) {
         this.db = db;
         this.module = module;
     }
@@ -68,7 +68,7 @@ public class PayDayTask implements Runnable {
             //Todo
         }
         entries.addAll(event.getEntries());
-        List<Entry> queue = PayDayQueue.getPlayerQueue(player.getUniqueId());
+        List<Entry> queue = PaydayQueue.getPlayerQueue(player.getUniqueId());
         if (queue != null) {
             entries.addAll(queue);
         }

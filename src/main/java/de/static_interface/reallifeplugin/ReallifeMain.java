@@ -19,6 +19,7 @@ package de.static_interface.reallifeplugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import de.static_interface.reallifeplugin.command.AdCommand;
 import de.static_interface.reallifeplugin.command.ReallifePluginCommand;
+import de.static_interface.reallifeplugin.config.Settings;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
 import de.static_interface.reallifeplugin.database.DatabaseType;
@@ -157,7 +158,7 @@ public class ReallifeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        Bukkit.getPluginCommand("reallifeplugin").setExecutor(new ReallifePluginCommand(this));
+        SinkLibrary.getInstance().registerCommand("rp", new ReallifePluginCommand(this));
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 

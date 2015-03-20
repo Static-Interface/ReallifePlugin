@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin;
+package de.static_interface.reallifeplugin.module.payday;
 
 import de.static_interface.reallifeplugin.model.Entry;
 import de.static_interface.sinklibrary.api.annotation.Unstable;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Unstable
-public class PayDayQueue {
+public class PaydayQueue {
     //Todo: Dump data with json(?) when plugin is beeing unloaded, load with onEnable
 
     private static HashMap<UUID, List<Entry>> queue = new HashMap<>();

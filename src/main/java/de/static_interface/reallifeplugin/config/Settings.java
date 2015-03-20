@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin;
+package de.static_interface.reallifeplugin.config;
 
 import de.static_interface.reallifeplugin.model.Group;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
