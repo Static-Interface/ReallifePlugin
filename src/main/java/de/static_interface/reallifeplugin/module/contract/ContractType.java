@@ -16,18 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.module.ModuleCommand;
-import org.apache.commons.cli.ParseException;
-import org.bukkit.command.CommandSender;
-
-public class ContractCommand extends ModuleCommand<ContractModule> {
-
-    public ContractCommand(ContractModule module) {
-        super(module);
-    }
-
-    @Override
-    protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
-        return false;
-    }
+public enum ContractType {
+    PERIODIC,
+    NORMAL
 }

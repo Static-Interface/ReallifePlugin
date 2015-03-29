@@ -16,18 +16,12 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.module.ModuleCommand;
-import org.apache.commons.cli.ParseException;
-import org.bukkit.command.CommandSender;
+public class ContextOption {
 
-public class ContractCommand extends ModuleCommand<ContractModule> {
-
-    public ContractCommand(ContractModule module) {
-        super(module);
-    }
-
-    @Override
-    protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
-        return false;
-    }
+    public static String PLAYER = "player";
+    public static String TARGETS = "targets";
+    public static String NAME = "name";
+    public static String TYPE = "type";
+    public static String EXPIRE = "expire";
+    public static String MONEY_AMOUNTS = "money_amount";
 }
