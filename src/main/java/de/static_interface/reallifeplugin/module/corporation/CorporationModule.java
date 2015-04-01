@@ -17,12 +17,12 @@
 package de.static_interface.reallifeplugin.module.corporation;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.Table;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpUsersTable;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpsTable;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -40,9 +40,9 @@ public class CorporationModule extends Module {
     }
 
     @Override
-    protected Collection<Table> getTables() {
-        List<Table> tables = new ArrayList<>();
-        Table table = new CorpsTable(getDatabase());
+    protected Collection<AbstractTable> getTables() {
+        List<AbstractTable> tables = new ArrayList<>();
+        AbstractTable table = new CorpsTable(getDatabase());
         tables.add(table);
         table = new CorpUsersTable(getDatabase());
         tables.add(table);

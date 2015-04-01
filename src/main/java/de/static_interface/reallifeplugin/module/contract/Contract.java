@@ -16,29 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import javax.annotation.Nullable;
+public class Contract {
 
-public enum ContractType {
-    NORMAL(0),
-    PERIODIC(1);
+    public Contract(int id) {
 
-    private final int id;
-
-    ContractType(int id) {
-        this.id = id;
-    }
-
-    @Nullable
-    public static ContractType getById(int id) {
-        for (ContractType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    public int getId() {
-        return id;
     }
 }

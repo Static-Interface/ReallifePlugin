@@ -14,31 +14,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.corporation.database.row;
+
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-public enum ContractType {
-    NORMAL(0),
-    PERIODIC(1);
-
-    private final int id;
-
-    ContractType(int id) {
-        this.id = id;
-    }
-
+public class CorpUserRow {
+    public Integer id;
     @Nullable
-    public static ContractType getById(int id) {
-        for (ContractType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    public int getId() {
-        return id;
-    }
+    public Integer corpId;
+    public boolean isCoCeo;
+    @Nullable
+    public String rank;
+    public UUID uuid;
 }

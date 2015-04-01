@@ -16,10 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.payday.event;
 
-import de.static_interface.reallifeplugin.model.Entry;
-import de.static_interface.reallifeplugin.model.Group;
 import de.static_interface.reallifeplugin.module.ModuleEvent;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
+import de.static_interface.reallifeplugin.module.payday.model.Entry;
+import de.static_interface.reallifeplugin.module.payday.model.Group;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 

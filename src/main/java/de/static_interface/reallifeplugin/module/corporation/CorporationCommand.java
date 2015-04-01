@@ -19,13 +19,10 @@ package de.static_interface.reallifeplugin.module.corporation;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.corporation.Corporation;
-import de.static_interface.reallifeplugin.corporation.CorporationRanks;
-import de.static_interface.reallifeplugin.corporation.CorporationUtil;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
-import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
@@ -229,11 +226,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 //Todo cancel if ceo_user_id is already a ceo_user_id of another corporation
 
                 String name = args[1];
-                if (name.contains("&")) {
-                    sender.sendMessage(m("Corporation.InvalidName"));
-                    return;
-                }
-
                 String base = args[3];
                 World world;
                 if (user instanceof IngameUser) {
@@ -316,6 +308,10 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return;
                 }
                 Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
                 double amount;
                 try {
                     amount = Double.valueOf(args[2]);
@@ -337,12 +333,34 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 break;
             }
 
+            case "rename": {
+                if (args.length < 3) {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
+                }
+
+                Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
+
+                if (CorporationUtil.renameCorporation(getModule(), user, corporation, args[2])) {
+                    user.sendMessage(m("General.Success"));
+                }
+                break;
+            }
+
             case "take": {
                 if (args.length < 3) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
                 }
                 Corporation corporation = CorporationUtil.getCorporation(getModule(), args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
                 double amount;
                 try {
                     amount = Double.valueOf(args[2]);
@@ -507,6 +525,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         user.sendMessage(ChatColor.GOLD + "/corp <corp>");
         user.sendMessage(ChatColor.GOLD + "/corp help");
         user.sendMessage(ChatColor.GOLD + "/corp leave");
+        user.sendMessage(ChatColor.GOLD + "/corp user <user>");
         user.sendMessage(ChatColor.GOLD + "/corp list");
         user.sendMessage(ChatColor.GOLD + "/corp deposit <amount>");
         user.sendMessage(ChatColor.GOLD + "/corp ceo help");
@@ -524,6 +543,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         user.sendMessage(ChatColor.GOLD + "/corp admin setceo <corp> <player>");
         user.sendMessage(ChatColor.GOLD + "/corp admin give <corp> <amount>");
         user.sendMessage(ChatColor.GOLD + "/corp admin take <corp> <amount>");
+        user.sendMessage(ChatColor.GOLD + "/corp admin rename <oldname> <newname>");
     }
 
     private void sendCeoHelp(SinkUser user) {

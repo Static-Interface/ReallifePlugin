@@ -17,8 +17,8 @@
 package de.static_interface.reallifeplugin.module.stockmarket.event;
 
 import de.static_interface.reallifeplugin.module.ModuleEvent;
+import de.static_interface.reallifeplugin.module.stockmarket.Stock;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
-import de.static_interface.reallifeplugin.stock.Stock;
 import de.static_interface.sinklibrary.util.MathUtil;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;

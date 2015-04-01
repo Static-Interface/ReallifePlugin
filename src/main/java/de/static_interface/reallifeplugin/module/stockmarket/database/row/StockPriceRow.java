@@ -14,31 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
 import javax.annotation.Nullable;
 
-public enum ContractType {
-    NORMAL(0),
-    PERIODIC(1);
+public class StockPriceRow {
 
-    private final int id;
-
-    ContractType(int id) {
-        this.id = id;
-    }
-
+    public Integer id;
     @Nullable
-    public static ContractType getById(int id) {
-        for (ContractType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    public int getId() {
-        return id;
-    }
+    public String cause;
+    public double newPrice;
+    public double oldPrice;
+    public int stockId;
+    public long time;
 }

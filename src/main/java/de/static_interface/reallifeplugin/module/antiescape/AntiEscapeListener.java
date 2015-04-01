@@ -19,8 +19,8 @@ package de.static_interface.reallifeplugin.module.antiescape;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import de.static_interface.reallifeplugin.model.Damage;
 import de.static_interface.reallifeplugin.module.ModuleListener;
+import de.static_interface.reallifeplugin.module.insurance.Damage;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.Debug;

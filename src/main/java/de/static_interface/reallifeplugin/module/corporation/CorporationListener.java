@@ -19,12 +19,10 @@ package de.static_interface.reallifeplugin.module.corporation;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.corporation.Corporation;
-import de.static_interface.reallifeplugin.corporation.CorporationUtil;
-import de.static_interface.reallifeplugin.database.table.impl.corp.CorpTradesTable;
-import de.static_interface.reallifeplugin.database.table.row.corp.CorpTradesRow;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleListener;
+import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.Debug;

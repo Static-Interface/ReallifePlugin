@@ -18,19 +18,17 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.corporation.Corporation;
-import de.static_interface.reallifeplugin.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockUsersTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
-import de.static_interface.reallifeplugin.database.table.row.corp.CorpUserRow;
-import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockRow;
-import de.static_interface.reallifeplugin.database.table.row.stockmarket.StockUserRow;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.reallifeplugin.module.corporation.Corporation;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
-import de.static_interface.reallifeplugin.stock.Stock;
-import de.static_interface.reallifeplugin.stock.StockMarket;
+import de.static_interface.reallifeplugin.module.corporation.CorporationUtil;
+import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
+import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
+import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockUserRow;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;

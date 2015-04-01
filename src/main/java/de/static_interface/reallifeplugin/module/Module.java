@@ -16,8 +16,8 @@
 
 package de.static_interface.reallifeplugin.module;
 
+import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.Table;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.plugin.Plugin;
@@ -41,7 +41,7 @@ public abstract class Module<T extends Plugin> {
     private final Database db;
     private final Map<String, ModuleCommand> commands = new HashMap<>();
 
-    private Collection<Table> requiredTables;
+    private Collection<AbstractTable> requiredTables;
     private boolean enabled;
     private String modulePrefix;
 
@@ -71,7 +71,7 @@ public abstract class Module<T extends Plugin> {
     }
 
     @Nullable
-    public static <E extends Table> E getTable(Module module, Class<E> classOfE) {
+    public static <E extends AbstractTable> E getTable(Module module, Class<E> classOfE) {
         if (module.requiredTables.size() == 0) {
             throw new IllegalStateException("This module doesn't have any tables");
         }
@@ -111,12 +111,12 @@ public abstract class Module<T extends Plugin> {
     }
 
     @Nullable
-    public Table getTable(String name) {
+    public AbstractTable getTable(String name) {
         if (requiredTables.size() == 0) {
             throw new IllegalStateException("This module doesn't have any tables");
         }
 
-        for (Table table : requiredTables) {
+        for (AbstractTable table : requiredTables) {
             if (table.getName().equals(name)) {
                 return table;
             }
@@ -164,7 +164,7 @@ public abstract class Module<T extends Plugin> {
             }
 
             try {
-                for (Table table : requiredTables) {
+                for (AbstractTable table : requiredTables) {
                     if (table != null && !table.exists()) {
                         table.create();
                     }
@@ -195,7 +195,7 @@ public abstract class Module<T extends Plugin> {
         enabled = false;
     }
 
-    protected Collection<Table> getRequiredTables() {
+    protected Collection<AbstractTable> getRequiredTables() {
         return requiredTables;
     }
 
@@ -208,7 +208,7 @@ public abstract class Module<T extends Plugin> {
     }
 
     @Nullable
-    protected Collection<Table> getTables() {
+    protected Collection<AbstractTable> getTables() {
         return new ArrayList<>();
     }
 

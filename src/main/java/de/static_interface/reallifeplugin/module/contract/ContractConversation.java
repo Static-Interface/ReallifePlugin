@@ -18,12 +18,12 @@ package de.static_interface.reallifeplugin.module.contract;
 
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.MessagePrompt;
+import org.bukkit.conversations.NumericPrompt;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.StringPrompt;
 import org.bukkit.entity.Player;
@@ -47,19 +47,17 @@ public class ContractConversation {
         ConversationFactory factory = new ConversationFactory(plugin).withModality(true)
                 // .withPrefix(new Prefix())
                 .withFirstPrompt(new Welcome())
-                .withEscapeSequence("/quit")
-                .withTimeout(60)
-                .thatExcludesNonPlayersWithMessage("You must be in game!");
+                .withEscapeSequence("quit");
         Conversation conv = factory.buildConversation(player);
-        conv.getContext().setSessionData(ContextOption.PLAYER, player.getUniqueId().toString());
+        conv.getContext().setSessionData(ContractOption.PLAYER, player.getUniqueId().toString());
         Map<String, Integer> moneyAmount = new HashMap<>();
-        conv.getContext().setSessionData(ContextOption.TARGETS, new ArrayList<>());
-        conv.getContext().setSessionData(ContextOption.MONEY_AMOUNTS, moneyAmount);
+        conv.getContext().setSessionData(ContractOption.TARGETS, new ArrayList<>());
+        conv.getContext().setSessionData(ContractOption.MONEY_AMOUNTS, moneyAmount);
         conv.begin();
     }
 
     public static Player getPlayer(ConversationContext context) {
-        return Bukkit.getPlayer(UUID.fromString((String) context.getSessionData(ContextOption.PLAYER)));
+        return (Player) context.getForWhom();
     }
 
     private static class Welcome extends MessagePrompt {
@@ -67,10 +65,10 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&6-------------------------------\n&" +
-                                                          "&8>&fWillkommen beim &bVertragsetup&f!\n" +
-                                                          "&8>&7Dieses Setup wird dich beim erstellen eines Vertrages begleiten\n" +
-                                                          "&8>&7Mit &b/quit&7 kannst du abbrechen.");
+                                                          "&6-------------------------------\n" +
+                                                          "&8>&fWillkommen beim &6Vertragsetup&f!\n" +
+                                                          "&8>&7Dieses Setup wird dich beim erstellen eines Vertrages begleiten.\n" +
+                                                          "&8>&7Mit &6&lquit&r&7 im Chat kannst du abbrechen.");
         }
 
         @Override
@@ -79,12 +77,33 @@ public class ContractConversation {
         }
     }
 
+    private static class ErrorPrompt extends MessagePrompt {
+
+        private String message;
+        private Prompt nextPrompt;
+
+        public ErrorPrompt(Prompt nextPrompt, String message) {
+            this.message = message;
+            this.nextPrompt = nextPrompt;
+        }
+
+        @Override
+        protected Prompt getNextPrompt(ConversationContext context) {
+            return nextPrompt;
+        }
+
+        @Override
+        public String getPromptText(ConversationContext context) {
+            return ChatColor.translateAlternateColorCodes('&', "&c>&4" + message);
+        }
+    }
+
     private static class NamePrompt extends StringPrompt {
 
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte schreibe den Namen des Vertrags (min 5 Zeichen)!");
+                                                          "&8>&7>&6>&7Wie soll der Vertrag heißen? (Min. 5 Zeichen)!");
         }
 
         @Override
@@ -94,7 +113,10 @@ public class ContractConversation {
                 return this;
             }
 
-            context.setSessionData(ContextOption.NAME, input.replace(" ", "_"));
+            input = input.replace(" ", "_");
+            //Todo: check if name already exists
+
+            context.setSessionData(ContractOption.NAME, input);
             return new AddUserPrompt();
         }
     }
@@ -104,7 +126,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte schreibe den Namen der Personen, die du hinzufügen willst" +
+                                                          "&8>&7>&6>&7Welche Personen willst du hinzufügen ? (Getrennt mit einem Komma) \n" +
                                                           "&8>&7Beispiel: SpielerA, SpielerB, SpielerC");
         }
 
@@ -116,18 +138,20 @@ public class ContractConversation {
 
             String[] rawPlayers = input.split(",");
 
-            List<String> players = (List<String>) context.getSessionData(ContextOption.TARGETS);
+            List<String> players = (List<String>) context.getSessionData(ContractOption.TARGETS);
             for (String s : rawPlayers) {
                 s = s.trim();
                 IngameUser user = SinkLibrary.getInstance().getIngameUser(s);
+                if (user.getName().equalsIgnoreCase(getPlayer(context).getName())) {
+                    return new ErrorPrompt(this, "Du kannst dich nicht selbst hinzufuegen");
+                }
                 if (!user.hasPlayedBefore()) {
-                    getPlayer(context).sendMessage("&c> &4Unbekannter Spieler: &c" + s);
-                    return this;
+                    return new ErrorPrompt(this, "Unbekannter Spieler: &c" + s);
                 }
                 players.add(user.getUniqueId().toString());
             }
 
-            context.setSessionData(ContextOption.TARGETS, players);
+            context.setSessionData(ContractOption.TARGETS, players);
             return new AddMoreUsersPrompt();
         }
     }
@@ -137,21 +161,20 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Moechtest du mehr Spieler hinzufuegen? (&bJa&7/&bNein&7)");
+                                                          "&8>&7>&6>&7Moechtest du weitere Spieler hinzufuegen? &6[J]a&7/&6[N]ein");
         }
 
         @Override
         public Prompt acceptInput(ConversationContext context, String input) {
             input = input.trim();
 
-            if (input.equalsIgnoreCase("ja")) {
+            if (input.equalsIgnoreCase("ja") || input.equalsIgnoreCase("j")) {
                 return new AddUserPrompt();
-            } else if (input.equalsIgnoreCase("nein")) {
+            } else if (input.equalsIgnoreCase("nein") || input.equalsIgnoreCase("n")) {
                 return new TypePrompt();
             }
 
-            getPlayer(context).sendMessage("&c> &4Ungueltige Antwort: &c" + input);
-            return this;
+            return new ErrorPrompt(this, "Ungueltige Option: &c" + input);
         }
     }
 
@@ -160,10 +183,10 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte wählen einen Vertragstyp:&f!\n" +
-                                                          "&8>&7>&6> &bPERIODIC &7- Periodischer Vetrag, mit dem zB wöchentlich Geld abhoben wird (zB fuer GS Vermietungen)\n"
+                                                          "&8>&7Bitte wählen einen Vertragstyp:\n" +
+                                                          "&8>&7>&6> &6PERIODIC &7- Periodischer Vetrag, mit dem zB wöchentlich Geld abheben kann (zB fuer GS Vermietungen)\n"
                                                           +
-                                                          "&8>&7>&6> &bDEFAULT &7- Normaler Vertrag, mit dem zB ein Grundstück verkauft werden kann");
+                                                          "&8>&7>&6> &6NORMAL &7- Normaler Vertrag, mit dem man zB ein Grundstück verkaufen kann");
         }
 
         @Override
@@ -172,11 +195,10 @@ public class ContractConversation {
 
             ContractType type = ContractType.valueOf(input.toUpperCase());
             if (type == null) {
-                getPlayer(context).sendMessage("&c> &4Ungueltiger Typ: &c" + input);
-                return this;
+                return new ErrorPrompt(this, "Ungueltiger Typ: &c" + input);
             }
 
-            context.setSessionData(ContextOption.TYPE, input.toUpperCase());
+            context.setSessionData(ContractOption.TYPE, input.toUpperCase());
             return new ExpirePrompt();
         }
     }
@@ -186,8 +208,8 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte wähle das Datum und die Uhrzeit fuer den Ablauf des Vertrages:&f!\n" +
-                                                          "&8>&7Beispiel: &b25.08.2015 20:00");
+                                                          "&8>&7>&6>&7Wann soll der Vertrag ablaufen?:\n" +
+                                                          "&8>&7Beispiel: &625.08.2015 20:00 &7(<-- dieses Format nutzen)");
         }
 
         @Override
@@ -201,11 +223,10 @@ public class ContractConversation {
             try {
                 new SimpleDateFormat(DATE_PATTERN, Locale.GERMAN).parse(input);
             } catch (Exception e) {
-                getPlayer(context).sendMessage("&c> &4Ungueltiges Datum: &c" + input);
-                return this;
+                return new ErrorPrompt(this, "Ungueltiges Datum: &c" + input);
             }
 
-            context.setSessionData(ContextOption.EXPIRE, input);
+            context.setSessionData(ContractOption.EXPIRE, input);
             return new EventPrompt();
         }
     }
@@ -215,24 +236,23 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte wähle einen Eventtyp:&f!\n" +
-                                                          "&8>&7>&6> &bMONEY &7- Geld abheben\n" +
-                                                          "&8>&7>&6> &bDEFAULT &7- Nichts tun");
+                                                          "&8>&7Wähle einen Eventtyp (tritt nach Ablauf des Vertrages oder bei peridoschen Vertraegen nach Ende jeder der Periode ein):\n"
+                                                          +
+                                                          "&8>&7>&6> &6MONEY &7- Geld abheben\n" +
+                                                          "&8>&7>&6> &6DEFAULT &7- Nichts tun");
         }
 
         @Override
         public Prompt acceptInput(ConversationContext context, String input) {
             ContractEventType eventType = ContractEventType.valueOf(input.toUpperCase());
-            ContractType contractType = ContractType.valueOf((String) context.getSessionData(ContextOption.TYPE));
+            ContractType contractType = ContractType.valueOf((String) context.getSessionData(ContractOption.TYPE));
 
             if (contractType == ContractType.PERIODIC && eventType == ContractEventType.DEFAULT) {
-                getPlayer(context).sendMessage("&c> &4Periodische Verträge können nicht DEFAULT nutzen");
-                return this;
+                return new ErrorPrompt(this, "Periodische Verträge können nicht DEFAULT-Events nutzen");
             }
 
             if (eventType == null) {
-                getPlayer(context).sendMessage("&c> &4Ungueltiger Typ: &c" + input);
-                return this;
+                return new ErrorPrompt(this, "Ungueltiger Typ: &c" + input);
             }
 
             switch (contractType) {
@@ -245,7 +265,7 @@ public class ContractConversation {
                             return new MoneyPrompt();
                         case DEFAULT:
                         default:
-                            return new PlaceholderPrompt();
+                            return new QuitPrompt();
                     }
             }
         }
@@ -256,9 +276,9 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte wähle die Zeitspanne, in der das Event eintreten soll:!\n" +
-                                                          "&8>&7Beispiel1: &b24d 15h &7(alle 24 Tage und 15 Stunden)\n" +
-                                                          "&8>&7Beispiel2: &b13h 30m &7(alle 13 Stunden und 30 Minuten)");
+                                                          "&8>&7>&6>&7Wann soll das Event (zB Abzug des Geldes bei Mieten) stattfinden?:\n" +
+                                                          "&8>&7Beispiel1: &624d 15h &7(alle 24 Tage und 15 Stunden)\n" +
+                                                          "&8>&7Beispiel2: &613h 30m &7(alle 13 Stunden und 30 Minuten)");
         }
 
         @Override
@@ -268,18 +288,20 @@ public class ContractConversation {
                 return this;
             }
 
+            //TODO
+
             ContractEventType eventType = ContractEventType.valueOf(input.toUpperCase());
             switch (eventType) {
                 case MONEY:
                     return new MoneyPrompt();
                 case DEFAULT:
                 default:
-                    return new PlaceholderPrompt();
+                    return new QuitPrompt();
             }
         }
     }
 
-    private static class MoneyPrompt extends StringPrompt {
+    private static class MoneyPrompt extends NumericPrompt {
 
         private int index;
 
@@ -293,50 +315,44 @@ public class ContractConversation {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContextOption.TARGETS)).get(index));
+            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.TARGETS)).get(index));
             IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
 
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte gib ein, wie viel Geld von " + user.getDisplayName()
-                                                          + " abgezogen oder hinzugefügt werden soll:!\n" +
-                                                          "&8>&7&6Beispiel: &b500 &7oder auch &b-500" +
-                                                          "&8>&7&6Das Geld wird dem Konto des Vertragserstellers hinzugefügt oder davon entfernt.");
+                                                          "&8>&7>&6>&Wie viel Geld soll von " + user.getDisplayName()
+                                                          + " &r&7abgezogen oder hinzugefügt werden?\n" +
+                                                          "&8>&7&6Beispiel: &6500 &7oder auch &6-500 &7(oder &60&7 für keine Transaktionen)" +
+                                                          "&8>&7Das Geld wird dem Konto des Vertragserstellers hinzugefügt oder davon entfernt.");
         }
 
         @Override
-        public Prompt acceptInput(ConversationContext context, String input) {
-            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContextOption.TARGETS)).get(index));
+        protected Prompt acceptValidatedInput(ConversationContext context, Number number) {
+            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.TARGETS)).get(index));
             IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
-            int amount;
-            try {
-                amount = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                getPlayer(context).sendMessage("&c> &4Ungueltige Zahl: &c" + input);
-                return this;
-            }
 
-            Map<String, Integer> money_amount = (Map<String, Integer>) context.getSessionData(ContextOption.MONEY_AMOUNTS);
-            money_amount.put(user.getUniqueId().toString(), amount);
-            context.setSessionData(ContextOption.MONEY_AMOUNTS, money_amount);
+            Map<String, Integer> money_amount = (Map<String, Integer>) context.getSessionData(ContractOption.MONEY_AMOUNTS);
+            money_amount.put(user.getUniqueId().toString(), number.intValue());
+            context.setSessionData(ContractOption.MONEY_AMOUNTS, money_amount);
 
             index++;
-            if (index >= ((List<String>) context.getSessionData(ContextOption.TARGETS)).size()) {
-                return new MoneyPrompt(index);
+            if (index >= ((List<String>) context.getSessionData(ContractOption.TARGETS)).size()) {
+                return new QuitPrompt();
             }
-            return new PlaceholderPrompt();
+            return new MoneyPrompt(index);
         }
     }
 
-    private static class PlaceholderPrompt extends StringPrompt {
+    private static class QuitPrompt extends StringPrompt {
 
         @Override
-        public String getPromptText(ConversationContext conversationContext) {
-            return null;
+        public String getPromptText(ConversationContext context) {
+            return ChatColor.translateAlternateColorCodes('&', "&2>&aDer Vertrag \"&6" + ((String) context.getSessionData(ContractOption.NAME))
+                    .replace("_", " ") + "&r&a\" wird erstellt, warte auf Bestaetigung der Vertragspartner (&6/caccept&7)!");
         }
 
         @Override
         public Prompt acceptInput(ConversationContext conversationContext, String s) {
-            return null;
+            return END_OF_CONVERSATION;
         }
     }
 }

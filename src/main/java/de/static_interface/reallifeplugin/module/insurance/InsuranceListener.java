@@ -16,7 +16,6 @@
 
 package de.static_interface.reallifeplugin.module.insurance;
 
-import de.static_interface.reallifeplugin.entry.InsuranceEntry;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.sinklibrary.SinkLibrary;

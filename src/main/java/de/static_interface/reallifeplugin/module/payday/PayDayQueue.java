@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.payday;
 
-import de.static_interface.reallifeplugin.model.Entry;
+import de.static_interface.reallifeplugin.module.payday.model.Entry;
 import de.static_interface.sinklibrary.api.annotation.Unstable;
 
 import java.util.ArrayList;

@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.config;
 
-import de.static_interface.reallifeplugin.model.Group;
+import de.static_interface.reallifeplugin.module.payday.model.Group;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.plugin.Plugin;
 

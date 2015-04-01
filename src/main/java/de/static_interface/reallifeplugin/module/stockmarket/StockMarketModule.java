@@ -17,15 +17,14 @@
 package de.static_interface.reallifeplugin.module.stockmarket;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.table.Table;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockPricesTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockTradesTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StockUsersTable;
-import de.static_interface.reallifeplugin.database.table.impl.stockmarket.StocksTable;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
-import de.static_interface.reallifeplugin.stock.StockMarket;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockPricesTable;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockTradesTable;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -46,9 +45,9 @@ public class StockMarketModule extends Module<ReallifeMain> {
     }
 
     @Override
-    protected Collection<Table> getTables() {
-        List<Table> tables = new ArrayList<>();
-        Table table = new StocksTable(getDatabase());
+    protected Collection<AbstractTable> getTables() {
+        List<AbstractTable> tables = new ArrayList<>();
+        AbstractTable table = new StocksTable(getDatabase());
         tables.add(table);
         table = new StockPricesTable(getDatabase());
         tables.add(table);

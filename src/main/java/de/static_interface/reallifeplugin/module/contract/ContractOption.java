@@ -16,29 +16,12 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import javax.annotation.Nullable;
+public class ContractOption {
 
-public enum ContractType {
-    NORMAL(0),
-    PERIODIC(1);
-
-    private final int id;
-
-    ContractType(int id) {
-        this.id = id;
-    }
-
-    @Nullable
-    public static ContractType getById(int id) {
-        for (ContractType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    public int getId() {
-        return id;
-    }
+    public static String PLAYER = "player";
+    public static String TARGETS = "targets";
+    public static String NAME = "name";
+    public static String TYPE = "type";
+    public static String EXPIRE = "expire";
+    public static String MONEY_AMOUNTS = "money_amount";
 }
