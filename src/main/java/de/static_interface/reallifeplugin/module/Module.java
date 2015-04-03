@@ -192,6 +192,8 @@ public abstract class Module<T extends Plugin> {
         //    SinkLibrary.getInstance().unregisterCommand(cmd, getPlugin());
         //}
 
+        onDisable();
+
         enabled = false;
     }
 
