@@ -17,9 +17,15 @@
 package de.static_interface.reallifeplugin.module.contract;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractTable;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ContractModule extends Module {
 
@@ -33,4 +39,13 @@ public class ContractModule extends Module {
     protected void onEnable() {
         registerCommand("contract", new ContractCommand(this));
     }
+
+    @Override
+    protected Collection<AbstractTable> getTables() {
+        List<AbstractTable> tables = new ArrayList<>();
+        AbstractTable table = new ContractTable(getDatabase());
+        tables.add(table);
+        return tables;
+    }
+
 }

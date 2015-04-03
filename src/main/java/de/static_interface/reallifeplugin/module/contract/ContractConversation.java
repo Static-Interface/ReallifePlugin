@@ -255,6 +255,8 @@ public class ContractConversation {
                 return new ErrorPrompt(this, "Ungueltiger Typ: &c" + input);
             }
 
+            context.setSessionData(ContractOption.EVENT, eventType.toString());
+
             switch (contractType) {
                 case PERIODIC:
                     return new PeriodicPrompt();
@@ -288,9 +290,9 @@ public class ContractConversation {
                 return this;
             }
 
-            //TODO
+            //TODO validate
 
-            ContractEventType eventType = ContractEventType.valueOf(input.toUpperCase());
+            ContractEventType eventType = ContractEventType.valueOf((String) context.getSessionData(ContractOption.EVENT));
             switch (eventType) {
                 case MONEY:
                     return new MoneyPrompt();

@@ -18,10 +18,11 @@ package de.static_interface.reallifeplugin.module.contract;
 
 public class ContractOption {
 
-    public static String PLAYER = "player";
-    public static String TARGETS = "targets";
-    public static String NAME = "name";
-    public static String TYPE = "type";
-    public static String EXPIRE = "expire";
-    public static String MONEY_AMOUNTS = "money_amount";
+    public static final String PLAYER = "player";
+    public static final String TARGETS = "targets";
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
+    public static final String EXPIRE = "expire";
+    public static final String EVENT = "event";
+    public static final String MONEY_AMOUNTS = "money_amount";
 }
