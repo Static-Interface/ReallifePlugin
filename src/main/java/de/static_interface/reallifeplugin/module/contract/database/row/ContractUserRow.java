@@ -16,23 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import de.static_interface.reallifeplugin.module.contract.ContractEvent;
-import de.static_interface.reallifeplugin.module.contract.ContractType;
+import java.util.UUID;
 
-import java.util.List;
+public class ContractUserRow {
 
-import javax.annotation.Nullable;
-
-public class ContractRow {
     public Integer id;
-    public String name;
-    public int creator;
-    public String content;
-    public ContractType type;
-    public List<ContractEvent> events;
-    public List<Integer> userIds;
-    @Nullable
-    public Long period;
-    public long creationTime;
-    public long expireTime;
+    public UUID uuid;
 }

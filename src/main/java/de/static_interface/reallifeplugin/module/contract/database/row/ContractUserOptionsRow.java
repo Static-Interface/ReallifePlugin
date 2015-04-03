@@ -14,31 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.contract.database.row;
 
 import javax.annotation.Nullable;
 
-public enum ContractEventType {
-    DEFAULT(0),
-    MONEY(1);
+public class ContractUserOptionsRow {
 
-    private final int id;
-
-    ContractEventType(int id) {
-        this.id = id;
-    }
-
+    public Integer id;
+    public int userId;
+    public int contractId;
     @Nullable
-    public static ContractEventType getById(int id) {
-        for (ContractEventType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    public int getId() {
-        return id;
-    }
+    public Double money;
+    public boolean isCreator;
 }

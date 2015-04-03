@@ -18,17 +18,21 @@ package de.static_interface.reallifeplugin.module.contract.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.reallifeplugin.module.contract.ContractEvent;
+import de.static_interface.reallifeplugin.module.contract.ContractType;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ContractTable extends AbstractTable<ContractRow> {
+public class ContractsTable extends AbstractTable<ContractRow> {
 
-    public static final String TABLE_NAME = "contracts_queue";
+    public static final String TABLE_NAME = "contracts";
 
-    public ContractTable(Database db) {
+    public ContractsTable(Database db) {
         super(TABLE_NAME, db);
     }
 
@@ -42,12 +46,11 @@ public class ContractTable extends AbstractTable<ContractRow> {
                         "CREATE TABLE IF NOT EXISTS " + getName() + " ("
                         + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                         + "name VARCHAR(255) NOT NULL,"
-                        + "creator VARCHAR(36) NOT NULL,"
+                        + "creator_id VARCHAR(36) NOT NULL,"
                         + "content TEXT NOT NULL,"
                         + "type INT NOT NULL,"
                         + "events VARCHAR(255) NOT NULL,"
-                        + "users TEXT NOT NULL,"
-                        + "money_amounts TEXT,"
+                        + "user_ids TEXT NOT NULL,"
                         + "period BIGINT,"
                         + "creation_time BIGINT NOT NULL,"
                         + "expire_time BIGINT NOT NULL"
@@ -60,12 +63,11 @@ public class ContractTable extends AbstractTable<ContractRow> {
                         "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
                         + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                         + "`name` VARCHAR(255) NOT NULL,"
-                        + "`creator` VARCHAR(255) NOT NULL,"
+                        + "`creator_id` VARCHAR(255) NOT NULL,"
                         + "`content` TEXT NOT NULL,"
                         + "`type` INT NOT NULL,"
                         + "`events` VARCHAR(255) NOT NULL,"
-                        + "`users` TEXT NOT NULL,"
-                        + "`money_amounts` TEXT,"
+                        + "`user_ids` TEXT NOT NULL,"
                         + "`period` BIGINT,"
                         + "`creation_time` BIGINT NOT NULL,"
                         + "`expire_time` BIGINT NOT NULL"
@@ -84,9 +86,36 @@ public class ContractTable extends AbstractTable<ContractRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.name, row.creator, row.content, row.type, row.events, row.users, row.money_amounts, row.period, row.creation_time,
-                      row.expire_time);
+        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+        String events = "";
+        for (ContractEvent event : row.events) {
+            if (event == null) {
+                continue;
+            }
+            if (events.equals("")) {
+                events = "" + event.getId();
+                continue;
+            }
+
+            events += ", " + event.getId();
+        }
+
+        String users = "";
+        for (Integer user : row.userIds) {
+            if (user == null) {
+                continue;
+            }
+            if (users.equals("")) {
+                users = "" + user;
+                continue;
+            }
+
+            users += ", " + user;
+        }
+
+        executeUpdate(sql, row.name, row.creator, row.content, row.type, events, users, row.period, row.creationTime,
+                      row.expireTime);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 
@@ -109,26 +138,32 @@ public class ContractTable extends AbstractTable<ContractRow> {
             if (hasColumn(rs, "name")) {
                 row.name = rs.getString("name");
             }
-            if (hasColumn(rs, "creator")) {
-                row.creator = rs.getString("creator");
+            if (hasColumn(rs, "creator_id")) {
+                row.creator = rs.getInt("creator_id");
             }
             if (hasColumn(rs, "content")) {
                 row.content = rs.getString("content");
             }
             if (hasColumn(rs, "type")) {
-                row.type = rs.getInt("type");
+                row.type = ContractType.getById(rs.getInt("type"));
             }
             if (hasColumn(rs, "events")) {
-                row.events = rs.getString("events");
-            }
-            if (hasColumn(rs, "users")) {
-                row.users = rs.getString("users");
-            }
-            if (hasColumn(rs, "money_amounts")) {
-                row.money_amounts = rs.getString("money_amounts");
-                if (rs.wasNull()) {
-                    row.money_amounts = null;
+                String[] rawStrings = rs.getString("events").split(",");
+                List<ContractEvent> events = new ArrayList<>();
+                for (String s : rawStrings) {
+                    s = s.trim();
+                    events.add(ContractEvent.getById(Integer.valueOf(s)));
                 }
+                row.events = events;
+            }
+            if (hasColumn(rs, "user_ids")) {
+                String[] rawStrings = rs.getString("user_ids").split(",");
+                List<Integer> userIds = new ArrayList<>();
+                for (String s : rawStrings) {
+                    s = s.trim();
+                    userIds.add(Integer.valueOf(s));
+                }
+                row.userIds = userIds;
             }
             if (hasColumn(rs, "period")) {
                 row.period = rs.getLong("period");
@@ -137,10 +172,10 @@ public class ContractTable extends AbstractTable<ContractRow> {
                 }
             }
             if (hasColumn(rs, "creation_time")) {
-                row.creation_time = rs.getLong("creation_time");
+                row.creationTime = rs.getLong("creation_time");
             }
             if (hasColumn(rs, "expire_time")) {
-                row.expire_time = rs.getLong("expire_time");
+                row.expireTime = rs.getLong("expire_time");
             }
             rows[i] = row;
             i++;

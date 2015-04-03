@@ -20,7 +20,9 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.reallifeplugin.module.contract.database.table.ContractTable;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractUserOptionsTable;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -43,8 +45,9 @@ public class ContractModule extends Module {
     @Override
     protected Collection<AbstractTable> getTables() {
         List<AbstractTable> tables = new ArrayList<>();
-        AbstractTable table = new ContractTable(getDatabase());
-        tables.add(table);
+        tables.add(new ContractsTable(getDatabase()));
+        tables.add(new ContractUsersTable(getDatabase()));
+        tables.add(new ContractUserOptionsTable(getDatabase()));
         return tables;
     }
 

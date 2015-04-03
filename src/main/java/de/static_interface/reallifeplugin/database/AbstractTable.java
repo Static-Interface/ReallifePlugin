@@ -45,6 +45,15 @@ public abstract class AbstractTable<T> {
 
     public abstract ResultSet serialize(T row) throws SQLException;
 
+    public ResultSet[] serialize(T[] rows) throws SQLException {
+        ResultSet[] result  = new ResultSet[rows.length];
+        for(int i = 0; i < rows.length; i++) {
+            result[i] = serialize(rows[i]);
+        }
+
+        return result;
+    }
+
     public abstract T[] deserialize(ResultSet rs) throws SQLException;
 
     public T[] get(String query, Object... paramObjects) throws SQLException {

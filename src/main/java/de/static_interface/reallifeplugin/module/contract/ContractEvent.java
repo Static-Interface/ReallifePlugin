@@ -14,25 +14,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract.database.row;
-
-import de.static_interface.reallifeplugin.module.contract.ContractEvent;
-import de.static_interface.reallifeplugin.module.contract.ContractType;
-
-import java.util.List;
+package de.static_interface.reallifeplugin.module.contract;
 
 import javax.annotation.Nullable;
 
-public class ContractRow {
-    public Integer id;
-    public String name;
-    public int creator;
-    public String content;
-    public ContractType type;
-    public List<ContractEvent> events;
-    public List<Integer> userIds;
+public enum ContractEvent {
+    DEFAULT(0),
+    MONEY(1);
+
+    private final int id;
+
+    ContractEvent(int id) {
+        this.id = id;
+    }
+
     @Nullable
-    public Long period;
-    public long creationTime;
-    public long expireTime;
+    public static ContractEvent getById(int id) {
+        for (ContractEvent type : values()) {
+            if (type.getId() == id) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public int getId() {
+        return id;
+    }
 }
