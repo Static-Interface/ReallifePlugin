@@ -18,19 +18,19 @@ package de.static_interface.reallifeplugin.module.contract;
 
 import javax.annotation.Nullable;
 
-public enum ContractEvent {
+public enum ContractEventType {
     DEFAULT(0),
     MONEY(1);
 
     private final int id;
 
-    ContractEvent(int id) {
+    ContractEventType(int id) {
         this.id = id;
     }
 
     @Nullable
-    public static ContractEvent getById(int id) {
-        for (ContractEvent type : values()) {
+    public static ContractEventType getById(int id) {
+        for (ContractEventType type : values()) {
             if (type.getId() == id) {
                 return type;
             }

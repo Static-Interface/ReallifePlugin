@@ -244,10 +244,10 @@ public class ContractConversation {
 
         @Override
         public Prompt acceptInput(ConversationContext context, String input) {
-            ContractEvent eventType = ContractEvent.valueOf(input.toUpperCase());
+            ContractEventType eventType = ContractEventType.valueOf(input.toUpperCase());
             ContractType contractType = ContractType.valueOf((String) context.getSessionData(ContractOption.TYPE));
 
-            if (contractType == ContractType.PERIODIC && eventType == ContractEvent.DEFAULT) {
+            if (contractType == ContractType.PERIODIC && eventType == ContractEventType.DEFAULT) {
                 return new ErrorPrompt(this, "Periodische Verträge können nicht DEFAULT-Events nutzen");
             }
 
@@ -292,7 +292,7 @@ public class ContractConversation {
 
             //TODO validate
 
-            ContractEvent eventType = ContractEvent.valueOf((String) context.getSessionData(ContractOption.EVENT));
+            ContractEventType eventType = ContractEventType.valueOf((String) context.getSessionData(ContractOption.EVENT));
             switch (eventType) {
                 case MONEY:
                     return new MoneyPrompt();

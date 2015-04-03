@@ -18,7 +18,7 @@ package de.static_interface.reallifeplugin.module.contract.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.module.contract.ContractEvent;
+import de.static_interface.reallifeplugin.module.contract.ContractEventType;
 import de.static_interface.reallifeplugin.module.contract.ContractType;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 
@@ -89,7 +89,7 @@ public class ContractsTable extends AbstractTable<ContractRow> {
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
         String events = "";
-        for (ContractEvent event : row.events) {
+        for (ContractEventType event : row.events) {
             if (event == null) {
                 continue;
             }
@@ -149,10 +149,10 @@ public class ContractsTable extends AbstractTable<ContractRow> {
             }
             if (hasColumn(rs, "events")) {
                 String[] rawStrings = rs.getString("events").split(",");
-                List<ContractEvent> events = new ArrayList<>();
+                List<ContractEventType> events = new ArrayList<>();
                 for (String s : rawStrings) {
                     s = s.trim();
-                    events.add(ContractEvent.getById(Integer.valueOf(s)));
+                    events.add(ContractEventType.getById(Integer.valueOf(s)));
                 }
                 row.events = events;
             }

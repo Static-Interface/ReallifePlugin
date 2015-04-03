@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import de.static_interface.reallifeplugin.module.contract.ContractEvent;
+import de.static_interface.reallifeplugin.module.contract.ContractEventType;
 import de.static_interface.reallifeplugin.module.contract.ContractType;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class ContractRow {
     public int creator;
     public String content;
     public ContractType type;
-    public List<ContractEvent> events;
+    public List<ContractEventType> events;
     public List<Integer> userIds;
     @Nullable
     public Long period;
