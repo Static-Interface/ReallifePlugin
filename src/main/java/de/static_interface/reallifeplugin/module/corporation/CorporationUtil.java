@@ -430,8 +430,9 @@ public class CorporationUtil {
         }
 
         try {
-            Module.getTable(module, CorpsTable.class).executeQuery("UPDATE `{TABLE}` SET `corp_name` = '?' WHERE id = ?", newName, corp.getId());
+            Module.getTable(module, CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_name` = ? WHERE id = ?", newName, corp.getId());
         } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
 
