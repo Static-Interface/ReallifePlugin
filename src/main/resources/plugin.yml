@@ -5,6 +5,7 @@ author: Trojaner
 website: http://static-interface.de
 main: de.static_interface.reallifeplugin.ReallifeMain
 depend: [SinkLibrary, WorldGuard]
+soft-depend: [AdventuriaPlugin, PermissionsEx]
 
 commands:
   rp:
@@ -46,6 +47,9 @@ commands:
     description: Stockmarkets
     aliases: stockmarket
     permission: reallifeplugin.stockmarket
+  level:
+    description: Level command
+    permission: reallifeplugin.levelcommand
 
 permissions:
   reallifeplugin.command:
@@ -61,4 +65,6 @@ permissions:
   reallifeplugin.stockmarket:
      default: true
   reallifeplugin.contract:
+     default: true
+  permission: reallifeplugin.levelcommand:
      default: true

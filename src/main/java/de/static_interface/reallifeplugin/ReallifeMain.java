@@ -30,6 +30,7 @@ import de.static_interface.reallifeplugin.module.antiescape.AntiEscapeModule;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.insurance.InsuranceModule;
+import de.static_interface.reallifeplugin.module.level.LevelModule;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.SinkLibrary;
@@ -105,6 +106,7 @@ public class ReallifeMain extends JavaPlugin {
         new InsuranceModule(this).enable();
         new CorporationModule(this, db).enable();
         new StockMarketModule(this, db).enable();
+        new LevelModule(this, db).enable();
 
         registerCommands();
 

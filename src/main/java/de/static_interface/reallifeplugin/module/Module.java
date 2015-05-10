@@ -20,6 +20,7 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -68,6 +69,10 @@ public abstract class Module<T extends Plugin> {
         this.config = config;
         modules.add(this);
         registered = true;
+    }
+
+    public static boolean isPluginAvailable(String name) {
+        return Bukkit.getPluginManager().getPlugin(name) != null;
     }
 
     @Nullable
