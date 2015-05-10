@@ -27,17 +27,16 @@ import de.static_interface.reallifeplugin.module.contract.command.ContractComman
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUserOptionsTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ContractModule extends Module {
+public class ContractModule extends Module<ReallifeMain> {
 
     public static final String NAME = "Contract";
 
-    public ContractModule(Plugin plugin, Database db) {
+    public ContractModule(ReallifeMain plugin, Database db) {
         super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
     }
 

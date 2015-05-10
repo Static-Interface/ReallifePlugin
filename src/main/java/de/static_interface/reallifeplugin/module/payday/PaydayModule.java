@@ -21,19 +21,18 @@ import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.sinklibrary.Constants;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nullable;
 
-public class PaydayModule extends Module {
+public class PaydayModule extends Module<ReallifeMain> {
 
     public static final String NAME = "Payday";
 
     private PaydayTask paydayTask;
     private BukkitTask payDayBukkitTask;
 
-    public PaydayModule(Plugin plugin, @Nullable Database db) {
+    public PaydayModule(ReallifeMain plugin, @Nullable Database db) {
         super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
     }
 

@@ -18,13 +18,12 @@ package de.static_interface.reallifeplugin.module.antiescape;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
-import org.bukkit.plugin.Plugin;
 
-public class AntiEscapeModule extends Module {
+public class AntiEscapeModule extends Module<ReallifeMain> {
 
     public static final String NAME = "AntiEscape";
 
-    public AntiEscapeModule(Plugin plugin) {
+    public AntiEscapeModule(ReallifeMain plugin) {
         super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, true);
     }
 

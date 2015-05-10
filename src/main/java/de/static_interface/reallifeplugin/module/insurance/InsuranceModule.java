@@ -19,13 +19,12 @@ package de.static_interface.reallifeplugin.module.insurance;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
-import org.bukkit.plugin.Plugin;
 
-public class InsuranceModule extends Module {
+public class InsuranceModule extends Module<ReallifeMain> {
 
     public static final String NAME = "Insurance";
 
-    public InsuranceModule(Plugin plugin) {
+    public InsuranceModule(ReallifeMain plugin) {
         super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, true);
     }
 

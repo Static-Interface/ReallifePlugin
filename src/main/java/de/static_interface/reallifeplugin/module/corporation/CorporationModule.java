@@ -23,7 +23,6 @@ import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,11 +30,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class CorporationModule extends Module {
+public class CorporationModule extends Module<ReallifeMain> {
 
     public static final String NAME = "Corporations";
 
-    public CorporationModule(Plugin plugin, @Nullable Database db) {
+    public CorporationModule(ReallifeMain plugin, @Nullable Database db) {
         super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
     }
 
