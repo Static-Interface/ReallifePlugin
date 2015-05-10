@@ -29,6 +29,19 @@ commands:
     description: Contract command
     permission: reallifeplugin.contract
     usage: "/<command> <subcommand>"
+    aliases: c
+  ccancel:
+    description: Cancel contract creation
+    permission: reallifeplugin.contract
+    aliases: contractcancel
+  caccept:
+    description: Accept contract
+    permission: reallifeplugin.contract
+    aliases: contractaccept
+  cdeny:
+    description: Deny contract
+    permission: reallifeplugin.contract
+    aliases: contractdeny
   sm:
     description: Stockmarkets
     aliases: stockmarket

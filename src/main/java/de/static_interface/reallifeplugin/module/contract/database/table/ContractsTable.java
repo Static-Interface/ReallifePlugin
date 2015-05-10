@@ -18,8 +18,8 @@ package de.static_interface.reallifeplugin.module.contract.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.module.contract.ContractEventType;
-import de.static_interface.reallifeplugin.module.contract.ContractType;
+import de.static_interface.reallifeplugin.module.contract.conversation.ContractEventType;
+import de.static_interface.reallifeplugin.module.contract.conversation.ContractType;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 
 import java.sql.PreparedStatement;

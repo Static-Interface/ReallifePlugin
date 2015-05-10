@@ -14,15 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.contract.conversation;
 
 public class ContractOption {
 
-    public static final String PLAYER = "player";
-    public static final String TARGETS = "targets";
+    public static final String CREATOR = "creator";
+    public static final String USERS = "targets";
     public static final String NAME = "name";
     public static final String TYPE = "type";
-    public static final String EXPIRE = "expire";
-    public static final String EVENT = "event";
+    public static final String EXPIRE = "expire_date";
+    public static final String EVENTS = "events";
     public static final String MONEY_AMOUNTS = "money_amount";
+    public static final String PERIOD = "period";
 }

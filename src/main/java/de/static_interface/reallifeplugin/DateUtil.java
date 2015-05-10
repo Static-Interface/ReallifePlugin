@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.sinkbans;
+package de.static_interface.reallifeplugin;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;

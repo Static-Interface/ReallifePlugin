@@ -42,7 +42,7 @@ public class PaydayModule extends Module {
         addDefaultValue("Time", 60, "Time in minutes");
         addDefaultValue("MinOnlineTime", 30);
         addDefaultValue("Taxesbase", 0.1);
-        registerListener(new PaydayListener(this));
+        registerModuleListener(new PaydayListener(this));
 
         long delay = getPaydayTime() * 60 * (long) Constants.TICK;
         paydayTask = new PaydayTask(this, getDatabase());

@@ -402,7 +402,7 @@ public class CorporationUtil {
     }
 
     public static Collection<Corporation> getCorporations(CorporationModule module) {
-        if (!Module.isEnabled(CorporationModule.NAME) || module.getDatabase() == null) {
+        if (!Module.isEnabled(CorporationModule.NAME) || module == null || module.getDatabase() == null) {
             return new ArrayList<>();
         }
 

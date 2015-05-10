@@ -32,11 +32,11 @@ public class ModuleListener<T extends Module> implements Listener {
     }
 
     @Nullable
-    public Database getDatabase() {
+    public final Database getDatabase() {
         return module.getDatabase();
     }
 
-    public void register() {
+    public final void register() {
         if (!module.isEnabled()) {
             return;
         }
@@ -44,11 +44,11 @@ public class ModuleListener<T extends Module> implements Listener {
         Bukkit.getPluginManager().registerEvents(this, module.getPlugin());
     }
 
-    public T getModule() {
+    public final T getModule() {
         return module;
     }
 
-    public void unregister() {
+    public final void unregister() {
         HandlerList.unregisterAll(this);
     }
 }

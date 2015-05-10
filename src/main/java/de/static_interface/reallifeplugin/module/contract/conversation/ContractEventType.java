@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.contract.conversation;
 
 import javax.annotation.Nullable;
 

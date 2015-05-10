@@ -16,8 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import de.static_interface.reallifeplugin.module.contract.ContractEventType;
-import de.static_interface.reallifeplugin.module.contract.ContractType;
+import de.static_interface.reallifeplugin.module.contract.conversation.ContractEventType;
+import de.static_interface.reallifeplugin.module.contract.conversation.ContractType;
 
 import java.util.List;
 

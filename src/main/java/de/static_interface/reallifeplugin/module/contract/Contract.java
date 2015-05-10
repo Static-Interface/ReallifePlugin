@@ -16,9 +16,65 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
+import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
+import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserRow;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.user.IngameUser;
+
+import java.sql.SQLException;
+import java.util.UUID;
+
 public class Contract {
 
-    public Contract(int id) {
+    private final int id;
+    private final ContractModule module;
 
+    public Contract(ContractModule module, int id) {
+        this.id = id;
+        this.module = module;
+    }
+
+    public static IngameUser getUserFromUserId(ContractModule module, int id) {
+        UUID uuid;
+        try {
+            uuid = Module.getTable(module, ContractUsersTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = ?", id)[0].uuid;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return SinkLibrary.getInstance().getIngameUser(uuid);
+    }
+
+    public static int getIdFromIngameUser(ContractModule module, IngameUser user) {
+        ContractUserRow row;
+        try {
+            row = Module.getTable(module, ContractUsersTable.class).get("SELECT FROM `{TABLE}` WHERE `uuid` = ?", user.getUniqueId().toString())[0];
+            if (row == null) {
+                throw new NullPointerException("row equals null");
+            }
+        } catch (Exception e) {
+            row = new ContractUserRow();
+            row.uuid = user.getUniqueId();
+            try {
+                row = Module.getTable(module, ContractUsersTable.class).insert(row);
+            } catch (SQLException e1) {
+                throw new RuntimeException(e1);
+            }
+        }
+        return row.id;
+    }
+
+    private ContractRow getBase() {
+        try {
+            return Module.getTable(getModule(), ContractsTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = " + id)[0];
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ContractModule getModule() {
+        return module;
     }
 }

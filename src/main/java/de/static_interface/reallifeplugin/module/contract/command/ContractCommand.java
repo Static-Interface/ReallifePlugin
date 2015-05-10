@@ -14,31 +14,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.contract.command;
 
-import javax.annotation.Nullable;
+import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.reallifeplugin.module.contract.ContractModule;
+import org.apache.commons.cli.ParseException;
+import org.bukkit.command.CommandSender;
 
-public enum ContractType {
-    NORMAL(0),
-    PERIODIC(1);
+public class ContractCommand extends ModuleCommand<ContractModule> {
 
-    private final int id;
-
-    ContractType(int id) {
-        this.id = id;
+    public ContractCommand(ContractModule module) {
+        super(module);
     }
 
-    @Nullable
-    public static ContractType getById(int id) {
-        for (ContractType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
 
-    public int getId() {
-        return id;
+    //todo: check if already has a pending contract
+    @Override
+    protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+        return false;
     }
 }

@@ -53,7 +53,7 @@ public class CorporationModule extends Module {
 
     @Override
     protected void onEnable() {
-        registerListener(new CorporationListener(this));
-        registerCommand("corporation", new CorporationCommand(this));
+        registerModuleListener(new CorporationListener(this));
+        registerModuleCommand("corporation", new CorporationCommand(this));
     }
 }

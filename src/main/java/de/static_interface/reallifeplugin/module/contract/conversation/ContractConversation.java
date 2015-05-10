@@ -14,8 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.contract.conversation;
 
+import de.static_interface.reallifeplugin.DateUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.ChatColor;
@@ -49,9 +50,9 @@ public class ContractConversation {
                 .withFirstPrompt(new Welcome())
                 .withEscapeSequence("quit");
         Conversation conv = factory.buildConversation(player);
-        conv.getContext().setSessionData(ContractOption.PLAYER, player.getUniqueId().toString());
+        conv.getContext().setSessionData(ContractOption.CREATOR, player.getUniqueId().toString());
         Map<String, Integer> moneyAmount = new HashMap<>();
-        conv.getContext().setSessionData(ContractOption.TARGETS, new ArrayList<>());
+        conv.getContext().setSessionData(ContractOption.USERS, new ArrayList<>());
         conv.getContext().setSessionData(ContractOption.MONEY_AMOUNTS, moneyAmount);
         conv.begin();
     }
@@ -138,7 +139,7 @@ public class ContractConversation {
 
             String[] rawPlayers = input.split(",");
 
-            List<String> players = (List<String>) context.getSessionData(ContractOption.TARGETS);
+            List<String> players = (List<String>) context.getSessionData(ContractOption.USERS);
             for (String s : rawPlayers) {
                 s = s.trim();
                 IngameUser user = SinkLibrary.getInstance().getIngameUser(s);
@@ -151,7 +152,7 @@ public class ContractConversation {
                 players.add(user.getUniqueId().toString());
             }
 
-            context.setSessionData(ContractOption.TARGETS, players);
+            context.setSessionData(ContractOption.USERS, players);
             return new AddMoreUsersPrompt();
         }
     }
@@ -255,7 +256,7 @@ public class ContractConversation {
                 return new ErrorPrompt(this, "Ungueltiger Typ: &c" + input);
             }
 
-            context.setSessionData(ContractOption.EVENT, eventType.toString());
+            context.setSessionData(ContractOption.EVENTS, eventType.toString());
 
             switch (contractType) {
                 case PERIODIC:
@@ -290,9 +291,15 @@ public class ContractConversation {
                 return this;
             }
 
-            //TODO validate
+            long period;
+            try {
+                period = DateUtil.parseDateDiff(input, true) - System.currentTimeMillis();
+            } catch (Exception e) {
+                return new ErrorPrompt(this, "Ungueltiges Zeitformat: " + input);
+            }
+            context.setSessionData(ContractOption.PERIOD, period);
 
-            ContractEventType eventType = ContractEventType.valueOf((String) context.getSessionData(ContractOption.EVENT));
+            ContractEventType eventType = ContractEventType.valueOf((String) context.getSessionData(ContractOption.EVENTS));
             switch (eventType) {
                 case MONEY:
                     return new MoneyPrompt();
@@ -317,19 +324,19 @@ public class ContractConversation {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.TARGETS)).get(index));
+            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.USERS)).get(index));
             IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
 
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&Wie viel Geld soll von " + user.getDisplayName()
-                                                          + " &r&7abgezogen oder hinzugefügt werden?\n" +
+                                                          "&8>&7>&6>&Wie viel Geld soll von " + user.getDisplayName() +
+                                                          " &r&7abgezogen oder hinzugefügt werden?\n" +
                                                           "&8>&7&6Beispiel: &6500 &7oder auch &6-500 &7(oder &60&7 für keine Transaktionen)" +
                                                           "&8>&7Das Geld wird dem Konto des Vertragserstellers hinzugefügt oder davon entfernt.");
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, Number number) {
-            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.TARGETS)).get(index));
+            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.USERS)).get(index));
             IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
 
             Map<String, Integer> money_amount = (Map<String, Integer>) context.getSessionData(ContractOption.MONEY_AMOUNTS);
@@ -337,7 +344,7 @@ public class ContractConversation {
             context.setSessionData(ContractOption.MONEY_AMOUNTS, money_amount);
 
             index++;
-            if (index >= ((List<String>) context.getSessionData(ContractOption.TARGETS)).size()) {
+            if (index >= ((List<String>) context.getSessionData(ContractOption.USERS)).size()) {
                 return new QuitPrompt();
             }
             return new MoneyPrompt(index);

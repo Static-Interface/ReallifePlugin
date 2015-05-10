@@ -86,6 +86,16 @@ public abstract class Module<T extends Plugin> {
     }
 
     @Nullable
+    public static <E extends Module> E getModule(Class<E> classOfE) {
+        for (Module module : modules) {
+            if (module.getClass().equals(classOfE)) {
+                return (E) module;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     public static Module getModule(String name) {
         name = name.trim().replace(" ", "_");
 
@@ -110,26 +120,11 @@ public abstract class Module<T extends Plugin> {
         return Collections.unmodifiableCollection(modules);
     }
 
-    @Nullable
-    public AbstractTable getTable(String name) {
-        if (requiredTables.size() == 0) {
-            throw new IllegalStateException("This module doesn't have any tables");
-        }
-
-        for (AbstractTable table : requiredTables) {
-            if (table.getName().equals(name)) {
-                return table;
-            }
-        }
-
-        return null;
-    }
-
-    public final Collection<ModuleListener> getListenesr() {
+    public final Collection<ModuleListener> getModuleListenesr() {
         return Collections.unmodifiableCollection(listeners);
     }
 
-    public final Map<String, ModuleCommand> getCommands() {
+    public final Map<String, ModuleCommand> getModuleCommands() {
         return Collections.unmodifiableMap(commands);
     }
 
@@ -214,7 +209,7 @@ public abstract class Module<T extends Plugin> {
         return new ArrayList<>();
     }
 
-    protected final void registerListener(ModuleListener listener) {
+    protected final void registerModuleListener(ModuleListener listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
             if (enabled) {
@@ -223,7 +218,7 @@ public abstract class Module<T extends Plugin> {
         }
     }
 
-    protected final void registerCommand(String name, ModuleCommand command) {
+    protected final void registerModuleCommand(String name, ModuleCommand command) {
         if (!commands.keySet().contains(name) && enabled) {
             commands.put(name, command);
             if (enabled) {

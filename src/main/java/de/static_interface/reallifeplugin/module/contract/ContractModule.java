@@ -20,6 +20,10 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.contract.command.CAcceptCommand;
+import de.static_interface.reallifeplugin.module.contract.command.CCancelCommand;
+import de.static_interface.reallifeplugin.module.contract.command.CDenyCommand;
+import de.static_interface.reallifeplugin.module.contract.command.ContractCommand;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUserOptionsTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
@@ -39,7 +43,11 @@ public class ContractModule extends Module {
 
     @Override
     protected void onEnable() {
-        registerCommand("contract", new ContractCommand(this));
+        addDefaultValue("creationcost", 500);
+        registerModuleCommand("contract", new ContractCommand(this));
+        registerModuleCommand("ccancel", new CCancelCommand(this));
+        registerModuleCommand("caccept", new CAcceptCommand(this));
+        registerModuleCommand("cdeny", new CDenyCommand(this));
     }
 
     @Override

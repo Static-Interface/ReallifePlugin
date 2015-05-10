@@ -39,8 +39,8 @@ public class InsuranceModule extends Module {
 
         //Todo: add whitelist/blacklist regions for insurances
         addDefaultValue("Account", "Insurances");
-        registerListener(new InsuranceListener(this));
-        registerCommand("insurance", new InsuranceCommand(this));
+        registerModuleListener(new InsuranceListener(this));
+        registerModuleCommand("insurance", new InsuranceCommand(this));
     }
 
     public String getInsuranceAccount() {

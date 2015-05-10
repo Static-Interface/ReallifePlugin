@@ -283,12 +283,6 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         if (stack == null && soldItemStack != null) {
             return soldItemStack;
         }
-
-        if (stack != null) {
-            getModule().getPlugin().getLogger()
-                    .info("getItem: " + stack.getType() + ", stack amount: " + stack.getAmount() + ", stackamount: " + stackamount);
-
-        }
         return stack;
     }
 

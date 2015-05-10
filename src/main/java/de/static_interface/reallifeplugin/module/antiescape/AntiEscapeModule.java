@@ -31,7 +31,7 @@ public class AntiEscapeModule extends Module {
     @Override
     protected void onEnable() {
         addDefaultValue("AutoBanTime", 5);
-        registerListener(new AntiEscapeListener(this));
+        registerModuleListener(new AntiEscapeListener(this));
     }
 
     public int getAntiEscapeBanTime() {
