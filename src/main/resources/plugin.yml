@@ -66,5 +66,5 @@ permissions:
      default: true
   reallifeplugin.contract:
      default: true
-  permission: reallifeplugin.levelcommand:
+  reallifeplugin.levelcommand:
      default: true

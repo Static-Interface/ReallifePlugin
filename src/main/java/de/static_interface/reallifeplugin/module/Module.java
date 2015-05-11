@@ -45,12 +45,12 @@ public abstract class Module<T extends Plugin> {
     private Collection<AbstractTable> requiredTables;
     private boolean enabled;
     private String modulePrefix;
-
+    private boolean isStandAloneConfig;
     @SuppressWarnings("FieldCanBeLocal")
     private boolean registered = false;
 
     public Module(T plugin, Configuration config,
-                  @Nullable Database db, String name, boolean useConfigPrefix) {
+                  @Nullable Database db, String name, boolean isStandAloneConfig) {
         if (Module.getModule(name) != null && !registered) {
             throw new IllegalStateException("A module with the name \"" + name + "\" is already registered");
         }
@@ -58,7 +58,8 @@ public abstract class Module<T extends Plugin> {
         if (name.contains(".") || name.contains(" ")) {
             throw new IllegalArgumentException("Illegal name characters");
         }
-        modulePrefix = useConfigPrefix ? "Module." + name + "." : "";
+        this.isStandAloneConfig = isStandAloneConfig;
+        modulePrefix = isStandAloneConfig ? "" : "Module." + name + ".";
         this.db = db;
         this.name = name;
         this.plugin = plugin;
@@ -137,6 +138,10 @@ public abstract class Module<T extends Plugin> {
         return getConfig().get(modulePrefix + path);
     }
 
+    public final Object getValue(String path, Object defaultValue) {
+        return getConfig().get(modulePrefix + path, defaultValue);
+    }
+
     public final void setValue(String path, Object value) {
         getConfig().set(modulePrefix + path, value);
     }
@@ -151,6 +156,9 @@ public abstract class Module<T extends Plugin> {
 
     public final void enable() {
         getPlugin().getLogger().info("[" + getName() + "-Module]: Enabling...");
+        if (isStandAloneConfig) {
+            getConfig().init();
+        }
         addDefaultValue("Enabled", false);
 
         if (getValue("Enabled") != Boolean.TRUE) {

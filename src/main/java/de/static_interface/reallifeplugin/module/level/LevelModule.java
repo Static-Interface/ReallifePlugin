@@ -19,7 +19,10 @@ package de.static_interface.reallifeplugin.module.level;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.level.hook.PermissionsVaultHook;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.ServicePriority;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,14 +34,14 @@ public class LevelModule extends Module<ReallifeMain> {
 
     public static final String NAME = "Level";
     private List<Level> levelList;
-
+    private PermissionsVaultHook permissionsHook;
     public LevelModule(ReallifeMain plugin, @Nullable Database db) {
         super(plugin, new Configuration(new File(plugin.getDataFolder(), "levelmodule.yml")) {
             @Override
             public void onCreate() {
                 //Example Level 1
                 set("level.1.name", "Level 1");
-                if (isPluginAvailable("PermissionsEx")) {
+                if (isPluginAvailable("Vault")) {
                     List<String> unblockedCmds = new ArrayList<>();
                     unblockedCmds.add("cmd1");
                     unblockedCmds.add("cmd2");
@@ -60,7 +63,7 @@ public class LevelModule extends Module<ReallifeMain> {
 
                 //Example Level 2
                 set("level.2.name", "Level 2");
-                if (isPluginAvailable("PermissionsEx")) {
+                if (isPluginAvailable("Vault")) {
                     List<String> unblockedCmds = new ArrayList<>();
                     unblockedCmds.add("cmd3");
                     unblockedCmds.add("cmd4");
@@ -85,12 +88,22 @@ public class LevelModule extends Module<ReallifeMain> {
             public void addDefaults() {
                 addDefault("baseLevelName", "Level 0");
             }
-        }, db, NAME, false);
+        }, db, NAME, true);
         levelList = new ArrayList<>();
     }
 
     @Override
     public void onEnable() {
+        permissionsHook = new PermissionsVaultHook();
+
+        if (isPluginAvailable("Vault")) {
+            getPlugin().getLogger().info("[LevelModule-PermissionsHook] Hooking into Vault");
+            Bukkit.getServicesManager()
+                    .register(net.milkbowl.vault.permission.Permission.class, permissionsHook, getPlugin(), ServicePriority.Highest);
+        } else {
+            getPlugin().getLogger().info("[LevelModule-PermissionsHook] Vault not found, not hooking into permissions");
+        }
+
         String baseLevelName = getValue("baseLevelName").toString();
         Level level = new Level(0, baseLevelName, new LevelCondition()); //base level (level 0)
         levelList.add(level);
@@ -101,14 +114,14 @@ public class LevelModule extends Module<ReallifeMain> {
             int requiredPosts = 0;
             int requiredActivityPoints = 0;
             if (isPluginAvailable("AdventuriaPlugin")) {
-                requiredLikes = Integer.valueOf(getValue("level." + key + ".condition.likes").toString());
-                requiredPosts = Integer.valueOf(getValue("level." + key + ".condition.posts").toString());
-                requiredActivityPoints = Integer.valueOf(getValue("level." + key + ".activitypoints").toString());
+                requiredLikes = Integer.valueOf(getValue("level." + key + ".condition.likes", 0).toString());
+                requiredPosts = Integer.valueOf(getValue("level." + key + ".condition.posts", 0).toString());
+                requiredActivityPoints = Integer.valueOf(getValue("level." + key + ".condition.activitypoints", 0).toString());
             }
 
-            int requiredTime = Integer.valueOf(getValue("level." + key + ".condition.time").toString());
-            int cost = Integer.valueOf(getValue("level." + key + ".condition.cost").toString());
-            String requiredPermission = getValue("level." + key + ".condition.permission").toString();
+            int requiredTime = Integer.valueOf(getValue("level." + key + ".condition.time", 0).toString());
+            int cost = Integer.valueOf(getValue("level." + key + ".condition.cost", 0).toString());
+            String requiredPermission = getValue("level." + key + ".condition.permission", "none").toString();
 
             LevelCondition levelCondition = new LevelCondition()
                     .setRequiredLikes(requiredLikes)
@@ -120,7 +133,7 @@ public class LevelModule extends Module<ReallifeMain> {
 
             List<String> cmds = getConfig().getYamlConfiguration().getStringList("level." + key + ".unblockedCommands");
             List<String> permissions = getConfig().getYamlConfiguration().getStringList("level." + key + ".unblockedPermissions");
-            String name = getValue("level." + key + ".name").toString();
+            String name = getValue("level." + key + ".name", "Level " + key).toString();
             level = new Level(i, name, levelCondition);
             level.setCommands(cmds);
             level.setPermissions(permissions);
@@ -136,5 +149,6 @@ public class LevelModule extends Module<ReallifeMain> {
     public void onDisable() {
         levelList.clear();
         Level.Cache.clearCache();
+        Bukkit.getServer().getServicesManager().unregister(permissionsHook);
     }
 }

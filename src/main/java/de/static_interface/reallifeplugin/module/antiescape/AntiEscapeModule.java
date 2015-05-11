@@ -24,7 +24,7 @@ public class AntiEscapeModule extends Module<ReallifeMain> {
     public static final String NAME = "AntiEscape";
 
     public AntiEscapeModule(ReallifeMain plugin) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, true);
+        super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, false);
     }
 
     @Override

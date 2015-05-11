@@ -37,7 +37,7 @@ public class ContractModule extends Module<ReallifeMain> {
     public static final String NAME = "Contract";
 
     public ContractModule(ReallifeMain plugin, Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, false);
     }
 
     @Override

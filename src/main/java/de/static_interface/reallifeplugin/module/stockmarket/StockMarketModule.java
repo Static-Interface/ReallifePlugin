@@ -41,7 +41,7 @@ public class StockMarketModule extends Module<ReallifeMain> {
     private BukkitTask stocksTask;
 
     public StockMarketModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, false);
     }
 
     @Override

@@ -35,7 +35,7 @@ public class CorporationModule extends Module<ReallifeMain> {
     public static final String NAME = "Corporations";
 
     public CorporationModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, false);
     }
 
     @Override

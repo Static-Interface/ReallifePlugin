@@ -33,7 +33,7 @@ public class PaydayModule extends Module<ReallifeMain> {
     private BukkitTask payDayBukkitTask;
 
     public PaydayModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, true);
+        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, false);
     }
 
     @Override

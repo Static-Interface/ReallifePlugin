@@ -25,7 +25,7 @@ public class InsuranceModule extends Module<ReallifeMain> {
     public static final String NAME = "Insurance";
 
     public InsuranceModule(ReallifeMain plugin) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, true);
+        super(plugin, ReallifeMain.getInstance().getSettings(), null, NAME, false);
     }
 
     @Override

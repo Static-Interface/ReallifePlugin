@@ -17,14 +17,18 @@
 package de.static_interface.reallifeplugin.module.level;
 
 import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
+import de.static_interface.sinklibrary.user.IngameUser;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class LevelCommand extends ModuleCommand<LevelModule> {
 
     public LevelCommand(LevelModule module) {
         super(module);
+        getCommandOptions().setPlayerOnly(true);
     }
 
     @Override
@@ -33,11 +37,20 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
             throw new NotEnoughArgumentsException();
         }
 
+        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+        Level userLevel = Level.getLevel(user);
         switch (args[0]) {
             case "info":
+                user.sendMessage("&4Your current level: &c" + userLevel.getLevelName());
                 break;
 
             case "next":
+                Level nextLevel = Level.Cache.getLevel(userLevel.getLevelId() + 1);
+                if (nextLevel != null) {
+                    user.sendMessage("&Next level: " + nextLevel.getLevelId());
+                } else {
+                    user.sendMessage("&4Max level reached!");
+                }
                 break;
 
             case "accept":
