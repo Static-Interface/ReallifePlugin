@@ -19,9 +19,12 @@ package de.static_interface.reallifeplugin.module.level;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.reallifeplugin.module.level.hook.PermissionsVaultHook;
+import de.static_interface.reallifeplugin.module.level.hook.VaultPermissionsHook;
+import de.static_interface.reallifeplugin.module.level.listener.LevelCommandListener;
+import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 
 import java.io.File;
@@ -34,24 +37,23 @@ public class LevelModule extends Module<ReallifeMain> {
 
     public static final String NAME = "Level";
     private List<Level> levelList;
-    private PermissionsVaultHook permissionsHook;
+    private VaultPermissionsHook permissionsHook;
+
     public LevelModule(ReallifeMain plugin, @Nullable Database db) {
         super(plugin, new Configuration(new File(plugin.getDataFolder(), "levelmodule.yml")) {
             @Override
             public void onCreate() {
                 //Example Level 1
                 set("level.1.name", "Level 1");
-                if (isPluginAvailable("Vault")) {
-                    List<String> unblockedCmds = new ArrayList<>();
-                    unblockedCmds.add("cmd1");
-                    unblockedCmds.add("cmd2");
-                    set("level.1.unblockedCommands", unblockedCmds);
+                List<String> unblockedCmds = new ArrayList<>();
+                unblockedCmds.add("cmd1");
+                unblockedCmds.add("cmd2");
+                set("level.1.unblockedCommands", unblockedCmds);
 
-                    List<String> permissions = new ArrayList<>();
-                    permissions.add("plugin.permission1");
-                    permissions.add("plugin.permission2");
-                    set("level.1.unblockedPermissions", permissions);
-                }
+                List<String> permissions = new ArrayList<>();
+                permissions.add("plugin.permission1");
+                permissions.add("plugin.permission2");
+                set("level.1.unblockedPermissions", permissions);
                 if (isPluginAvailable("AdventuriaPlugin")) {
                     set("level.1.condition.likes", 0);
                     set("level.1.condition.posts", 0);
@@ -63,17 +65,15 @@ public class LevelModule extends Module<ReallifeMain> {
 
                 //Example Level 2
                 set("level.2.name", "Level 2");
-                if (isPluginAvailable("Vault")) {
-                    List<String> unblockedCmds = new ArrayList<>();
-                    unblockedCmds.add("cmd3");
-                    unblockedCmds.add("cmd4");
-                    set("level.2.unblockedCommands", unblockedCmds);
+                unblockedCmds = new ArrayList<>();
+                unblockedCmds.add("cmd3");
+                unblockedCmds.add("cmd4");
+                set("level.2.unblockedCommands", unblockedCmds);
 
-                    List<String> permissions = new ArrayList<>();
-                    permissions.add("plugin.permission3");
-                    permissions.add("plugin.permission4");
-                    set("level.2.unblockedPermissions", permissions);
-                }
+                permissions = new ArrayList<>();
+                permissions.add("plugin.permission3");
+                permissions.add("plugin.permission4");
+                set("level.2.unblockedPermissions", permissions);
                 if (isPluginAvailable("AdventuriaPlugin")) {
                     set("level.2.condition.likes", 0);
                     set("level.2.condition.posts", 0);
@@ -94,14 +94,14 @@ public class LevelModule extends Module<ReallifeMain> {
 
     @Override
     public void onEnable() {
-        permissionsHook = new PermissionsVaultHook();
+        permissionsHook = new VaultPermissionsHook();
 
         if (isPluginAvailable("Vault")) {
             getPlugin().getLogger().info("[LevelModule-PermissionsHook] Hooking into Vault");
             Bukkit.getServicesManager()
                     .register(net.milkbowl.vault.permission.Permission.class, permissionsHook, getPlugin(), ServicePriority.Highest);
         } else {
-            getPlugin().getLogger().info("[LevelModule-PermissionsHook] Vault not found, not hooking into permissions");
+            getPlugin().getLogger().info("[LevelModule-PermissionsHook] Vault not found, not hooking into vault");
         }
 
         String baseLevelName = getValue("baseLevelName").toString();
@@ -143,12 +143,18 @@ public class LevelModule extends Module<ReallifeMain> {
 
         registerModuleCommand("level", new LevelCommand(this));
         registerModuleListener(new LevelCommandListener(this));
+        registerModuleListener(new PlayerJoinListener(this));
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            PlayerJoinListener.updateAttachment(p, getPlugin());
+        }
     }
 
     @Override
     public void onDisable() {
         levelList.clear();
         Level.Cache.clearCache();
-        Bukkit.getServer().getServicesManager().unregister(permissionsHook);
+        if(permissionsHook != null)
+            Bukkit.getServer().getServicesManager().unregister(permissionsHook);
+        PlayerJoinListener.clearAttachments();
     }
 }

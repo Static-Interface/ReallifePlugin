@@ -17,16 +17,15 @@
 package de.static_interface.reallifeplugin.module.level.hook;
 
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.reallifeplugin.module.level.Level;
 import de.static_interface.reallifeplugin.module.level.LevelModule;
+import de.static_interface.reallifeplugin.module.level.LevelPermissionUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-public class PermissionsVaultHook extends Permission {
+public class VaultPermissionsHook extends Permission {
 
     @Override
     public String getName() {
@@ -60,20 +59,7 @@ public class PermissionsVaultHook extends Permission {
         }
 
         IngameUser user = SinkLibrary.getInstance().getIngameUser(playerName);
-        Level level = Level.getLevel(user);
-        Level permLevel = Level.Cache.getPermissionLevel(permission);
-
-        boolean value;
-
-        if (permission.equals("Debug")) {
-            value = false;
-        } else {
-            value = level.getLevelId() >= permLevel.getLevelId();
-        }
-
-        Bukkit.getLogger().info("playerHas DEBUG: player: " + user.getName() + ", permission: " + permission + ", value: " + value);
-
-        return value;
+        return LevelPermissionUtil.hasPermission(user, permission);
     }
 
     @Override

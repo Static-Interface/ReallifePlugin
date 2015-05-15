@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.module.level;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
 import de.static_interface.sinklibrary.user.IngameUser;
 
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ public class Level {
 
     public static void setLevel(IngameUser user, Level level) {
         user.getConfiguration().set("Level.Id", level.getLevelId());
+        PlayerJoinListener.updateAttachment(user.getPlayer(), ReallifeMain.getInstance());
     }
 
     public String getLevelName() {

@@ -14,11 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.level;
+package de.static_interface.reallifeplugin.module.level.listener;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.module.ModuleListener;
+import de.static_interface.reallifeplugin.module.level.Level;
+import de.static_interface.reallifeplugin.module.level.LevelModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.event.EventHandler;
