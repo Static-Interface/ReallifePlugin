@@ -16,9 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.level;
 
-import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
-import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.reallifeplugin.module.level.condition.LevelConditions;
+import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,14 +28,14 @@ import javax.annotation.Nullable;
 
 public class Level {
 
-    private LevelCondition levelCondition;
+    private LevelConditions levelConditions;
     private List<String> commands;
     private List<String> permissions;
     private int levelId;
     private String name;
 
-    public Level(int levelId, String name, @Nonnull LevelCondition levelCondition) {
-        this.levelCondition = levelCondition;
+    public Level(int levelId, String name, @Nonnull LevelConditions levelConditions) {
+        this.levelConditions = levelConditions;
         this.commands = new ArrayList<>();
         this.permissions = new ArrayList<>();
         this.levelId = levelId;
@@ -44,35 +43,12 @@ public class Level {
         Level.Cache.setLevel(levelId, this);
     }
 
-    public static Level getLevel(IngameUser user) {
-        Level baseLevel = Level.Cache.getLevel(0);
-        Object t = user.getConfiguration().get("Level.Id");
-        if (t == null) {
-            return baseLevel;
-        }
-
-        try {
-            return Cache.getLevel(Integer.parseInt(t.toString()));
-        } catch (NumberFormatException e) {
-            ReallifeMain.getInstance().getLogger()
-                    .severe("Couldn't get level for user: " + user.getName() + ": couldn't parse level: " + t.toString() + "; defaulting to zero");
-            e.printStackTrace();
-            setLevel(user, baseLevel);
-            return baseLevel;
-        }
-    }
-
-    public static void setLevel(IngameUser user, Level level) {
-        user.getConfiguration().set("Level.Id", level.getLevelId());
-        PlayerJoinListener.updateAttachment(user.getPlayer(), ReallifeMain.getInstance());
-    }
-
     public String getLevelName() {
         return name;
     }
 
-    public LevelCondition getLevelCondition() {
-        return levelCondition;
+    public LevelConditions getLevelConditions() {
+        return levelConditions;
     }
 
     public List<String> getCommands() {
@@ -117,6 +93,12 @@ public class Level {
         public static void addCommand(Level level, String command) {
             if (command == null) {
                 return;
+            }
+            for (String alias : Bukkit.getCommandAliases().get(command)) {
+                if (commands.containsKey(command)) {
+                    continue;
+                }
+                commands.put(alias, level.getLevelId());
             }
             commands.put(command, level.getLevelId());
         }

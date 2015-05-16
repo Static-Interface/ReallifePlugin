@@ -14,23 +14,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.level;
-
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+package de.static_interface.reallifeplugin.module.level.condition;
 
 import de.static_interface.sinklibrary.user.IngameUser;
 
-public class LevelPermissionUtil {
+//Todo: Currently not used, this will replace the hardcoded stuff and provide an API for other plugins
+public interface LevelCondition {
 
-    public static boolean hasPermission(IngameUser user, String permission) {
-        Level level = LevelUtil.getLevel(user);
-        Level permLevel = Level.Cache.getPermissionLevel(permission);
+    String getName();
 
-        if (level.getLevelId() >= permLevel.getLevelId()) {
-            return true;
-        }
+    String getId();
 
-        user.sendMessage(m("Level.NotEnoughLevel", level.getLevelName(), permLevel.getLevelName()));
-        return false;
-    }
+    String getConfigSection();
+
+    boolean isActive(IngameUser user);
+
+    boolean canLevelUp(IngameUser user);
+
+    Object getValue();
+
+    String getReadableValue();
+
+    String getValueLeft();
+
+    double getPercentDone();
+
+    void onLevelUp(IngameUser user);
 }

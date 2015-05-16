@@ -14,9 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.level;
+package de.static_interface.reallifeplugin.module.level.condition;
 
-public class LevelCondition {
+public class LevelConditions {
 
     private int requiredLikes = 0;
     private int requiredPosts = 0;
@@ -29,7 +29,7 @@ public class LevelCondition {
         return requiredLikes;
     }
 
-    public LevelCondition setRequiredLikes(int requiredLikes) {
+    public LevelConditions setRequiredLikes(int requiredLikes) {
         this.requiredLikes = requiredLikes;
         return this;
     }
@@ -38,7 +38,7 @@ public class LevelCondition {
         return requiredPosts;
     }
 
-    public LevelCondition setRequiredPosts(int requiredPosts) {
+    public LevelConditions setRequiredPosts(int requiredPosts) {
         this.requiredPosts = requiredPosts;
         return this;
     }
@@ -47,7 +47,7 @@ public class LevelCondition {
         return requiredActivityPoints;
     }
 
-    public LevelCondition setRequiredActivityPoints(int requiredActivityPoints) {
+    public LevelConditions setRequiredActivityPoints(int requiredActivityPoints) {
         this.requiredActivityPoints = requiredActivityPoints;
         return this;
     }
@@ -56,7 +56,7 @@ public class LevelCondition {
         return requiredTime;
     }
 
-    public LevelCondition setRequiredTime(int requiredTime) {
+    public LevelConditions setRequiredTime(int requiredTime) {
         this.requiredTime = requiredTime;
         return this;
     }
@@ -65,7 +65,7 @@ public class LevelCondition {
         return cost;
     }
 
-    public LevelCondition setCost(int cost) {
+    public LevelConditions setCost(int cost) {
         this.cost = cost;
         return this;
     }
@@ -74,7 +74,7 @@ public class LevelCondition {
         return requiredPermission;
     }
 
-    public LevelCondition setRequiredPermission(String requiredPermission) {
+    public LevelConditions setRequiredPermission(String requiredPermission) {
         if (requiredPermission != null) {
             requiredPermission = requiredPermission.trim();
             if (requiredPermission.equals("") || requiredPermission.equals("none")) {

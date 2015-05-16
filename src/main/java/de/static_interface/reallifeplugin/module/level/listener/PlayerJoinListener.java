@@ -17,101 +17,28 @@
 package de.static_interface.reallifeplugin.module.level.listener;
 
 import de.static_interface.reallifeplugin.module.ModuleListener;
-import de.static_interface.reallifeplugin.module.level.Level;
+import de.static_interface.reallifeplugin.module.level.LevelAttachmentsManager;
 import de.static_interface.reallifeplugin.module.level.LevelModule;
-import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.user.IngameUser;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import de.static_interface.reallifeplugin.module.level.LevelPlayerTimer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionDefault;
-import org.bukkit.plugin.Plugin;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class PlayerJoinListener extends ModuleListener<LevelModule> {
-
-    private static Map<UUID, PermissionAttachment> attachments = new HashMap<>();
-
     public PlayerJoinListener(LevelModule module) {
         super(module);
     }
 
-    public static Permission getPermission(String perm) {
-        Permission permObject = Bukkit.getPluginManager().getPermission(perm);
-        if (permObject != null) {
-            return permObject;
-        }
-
-        permObject = new Permission(perm, "Auto generated perm " + perm, PermissionDefault.FALSE) {
-            @Override
-            public void recalculatePermissibles() {
-                // no-op
-            }
-        };
-        Bukkit.getServer().getPluginManager().addPermission(permObject);
-        return permObject;
-    }
-
-    public static void clearAttachments() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            UUID uuid = p.getUniqueId();
-            PermissionAttachment attachment = attachments.get(uuid);
-            if (attachment != null) {
-                p.removeAttachment(attachment);
-            }
-        }
-        attachments.clear();
-    }
-
-    public static void updateAttachment(Player p, Plugin pl) {
-        clearAttachment(p);
-
-        PermissionAttachment attachment = p.addAttachment(pl);
-        attachments.put(p.getUniqueId(), attachment);
-
-        IngameUser user = SinkLibrary.getInstance().getIngameUser(p);
-        Level level = Level.getLevel(user);
-        if (level != null) {
-            int i = level.getLevelId();
-            while (i >= 0) {
-                Level lvl = Level.Cache.getLevel(i);
-                if (lvl == null) {
-                    continue;
-                }
-                for (String s : lvl.getPermissions()) {
-                    Permission perm = getPermission(s);
-                    attachment.setPermission(perm, true);
-                }
-                i--;
-            }
-        }
-
-        p.recalculatePermissions();
-    }
-
-    public static void clearAttachment(Player p) {
-        UUID uuid = p.getUniqueId();
-        PermissionAttachment attachment = attachments.get(uuid);
-        if (attachment != null) {
-            p.removeAttachment(attachment);
-        }
-    }
-
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        updateAttachment(event.getPlayer(), getModule().getPlugin());
+        LevelAttachmentsManager.updateAttachment(event.getPlayer(), getModule().getPlugin());
+        LevelPlayerTimer.startPlayerTime(event.getPlayer(), System.currentTimeMillis());
     }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        clearAttachment(event.getPlayer());
+        LevelAttachmentsManager.clearAttachment(event.getPlayer());
+        LevelPlayerTimer.stopPlayerTime(event.getPlayer());
     }
 }

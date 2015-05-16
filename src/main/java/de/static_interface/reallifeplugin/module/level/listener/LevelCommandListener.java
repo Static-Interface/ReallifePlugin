@@ -21,6 +21,7 @@ import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfigur
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.level.Level;
 import de.static_interface.reallifeplugin.module.level.LevelModule;
+import de.static_interface.reallifeplugin.module.level.LevelUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.event.EventHandler;
@@ -45,12 +46,12 @@ public class LevelCommandListener extends ModuleListener<LevelModule> {
         }
 
         IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
-        Level userLevel = Level.getLevel(user);
+        Level userLevel = LevelUtil.getLevel(user);
 
         Level commandLevel = Level.Cache.getCommandLevel(cmd);
 
         if (userLevel.getLevelId() < commandLevel.getLevelId()) {
-            user.sendMessage(m("Level.CommandNotEnoughLevel", userLevel.getLevelName(), commandLevel.getLevelName()));
+            user.sendMessage(m("Level.NotEnoughLevel", userLevel.getLevelName(), commandLevel.getLevelName()));
             event.setCancelled(true);
         }
     }

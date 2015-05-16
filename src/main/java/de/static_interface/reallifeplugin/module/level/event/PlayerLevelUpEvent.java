@@ -14,23 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.level;
+package de.static_interface.reallifeplugin.module.level.event;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-
-import de.static_interface.sinklibrary.user.IngameUser;
-
-public class LevelPermissionUtil {
-
-    public static boolean hasPermission(IngameUser user, String permission) {
-        Level level = LevelUtil.getLevel(user);
-        Level permLevel = Level.Cache.getPermissionLevel(permission);
-
-        if (level.getLevelId() >= permLevel.getLevelId()) {
-            return true;
-        }
-
-        user.sendMessage(m("Level.NotEnoughLevel", level.getLevelName(), permLevel.getLevelName()));
-        return false;
-    }
+public class PlayerLevelUpEvent {
+    //ToDo
 }

@@ -132,7 +132,8 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Payday.Payday", "Payday ({0} {CURRENCY})");
         addDefault("AntiEscape.BanMessage", "You have been banned for {0} Minutes. Reason: Escape from PvP by quit");
 
-        addDefault("Level.CommandNotEnoughLevel",
-                   "&4Your level is not high enough to execute this command. You need &c{0} &4but are currently only on &c{1}&4!");
+        addDefault("Level.NotEnoughLevel",
+                   "&4Your level is not high enough to do this. You need &c{0} &4but are currently only on &c{1}&4!");
+        addDefault("Level.NotLoggedIn", "&4Not logged in!");
     }
 }

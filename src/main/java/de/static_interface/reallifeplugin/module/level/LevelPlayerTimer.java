@@ -16,21 +16,28 @@
 
 package de.static_interface.reallifeplugin.module.level;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-
+import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import org.bukkit.entity.Player;
 
-public class LevelPermissionUtil {
+import java.util.HashMap;
+import java.util.Map;
 
-    public static boolean hasPermission(IngameUser user, String permission) {
-        Level level = LevelUtil.getLevel(user);
-        Level permLevel = Level.Cache.getPermissionLevel(permission);
+public class LevelPlayerTimer {
 
-        if (level.getLevelId() >= permLevel.getLevelId()) {
-            return true;
+    private static Map<Player, Long> playTime = new HashMap<>();
+
+    public static void startPlayerTime(Player p, long time) {
+        playTime.put(p, time);
+    }
+
+    public static void stopPlayerTime(Player p) {
+        if (playTime.get(p) == null) {
+            return;
         }
-
-        user.sendMessage(m("Level.NotEnoughLevel", level.getLevelName(), permLevel.getLevelName()));
-        return false;
+        long playedTime = System.currentTimeMillis() - playTime.get(p);
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(p);
+        LevelUtil.setPlayTime(user, LevelUtil.getPlayTime(user) + playedTime);
+        playTime.remove(p);
     }
 }

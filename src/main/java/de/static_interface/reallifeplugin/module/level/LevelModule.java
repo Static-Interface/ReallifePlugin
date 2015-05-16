@@ -19,6 +19,7 @@ package de.static_interface.reallifeplugin.module.level;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.level.condition.LevelConditions;
 import de.static_interface.reallifeplugin.module.level.hook.VaultPermissionsHook;
 import de.static_interface.reallifeplugin.module.level.listener.LevelCommandListener;
 import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
@@ -105,7 +106,7 @@ public class LevelModule extends Module<ReallifeMain> {
         }
 
         String baseLevelName = getValue("baseLevelName").toString();
-        Level level = new Level(0, baseLevelName, new LevelCondition()); //base level (level 0)
+        Level level = new Level(0, baseLevelName, new LevelConditions()); //base level (level 0)
         levelList.add(level);
 
         int i = 1;
@@ -123,7 +124,7 @@ public class LevelModule extends Module<ReallifeMain> {
             int cost = Integer.valueOf(getValue("level." + key + ".condition.cost", 0).toString());
             String requiredPermission = getValue("level." + key + ".condition.permission", "none").toString();
 
-            LevelCondition levelCondition = new LevelCondition()
+            LevelConditions levelConditions = new LevelConditions()
                     .setRequiredLikes(requiredLikes)
                     .setRequiredActivityPoints(requiredActivityPoints)
                     .setRequiredTime(requiredTime * 60 * 60 * 1000)
@@ -134,7 +135,7 @@ public class LevelModule extends Module<ReallifeMain> {
             List<String> cmds = getConfig().getYamlConfiguration().getStringList("level." + key + ".unblockedCommands");
             List<String> permissions = getConfig().getYamlConfiguration().getStringList("level." + key + ".unblockedPermissions");
             String name = getValue("level." + key + ".name", "Level " + key).toString();
-            level = new Level(i, name, levelCondition);
+            level = new Level(i, name, levelConditions);
             level.setCommands(cmds);
             level.setPermissions(permissions);
             levelList.add(level);
@@ -145,7 +146,8 @@ public class LevelModule extends Module<ReallifeMain> {
         registerModuleListener(new LevelCommandListener(this));
         registerModuleListener(new PlayerJoinListener(this));
         for(Player p : Bukkit.getOnlinePlayers()) {
-            PlayerJoinListener.updateAttachment(p, getPlugin());
+            LevelAttachmentsManager.updateAttachment(p, getPlugin());
+            LevelPlayerTimer.startPlayerTime(p, System.currentTimeMillis());
         }
     }
 
@@ -155,6 +157,9 @@ public class LevelModule extends Module<ReallifeMain> {
         Level.Cache.clearCache();
         if(permissionsHook != null)
             Bukkit.getServer().getServicesManager().unregister(permissionsHook);
-        PlayerJoinListener.clearAttachments();
+        LevelAttachmentsManager.clearAttachments();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            LevelPlayerTimer.stopPlayerTime(p);
+        }
     }
 }
