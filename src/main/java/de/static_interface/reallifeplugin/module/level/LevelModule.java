@@ -63,6 +63,7 @@ public class LevelModule extends Module<ReallifeMain> {
                 set("level.1.condition.permission", "none");
                 set("level.1.condition.time", 5);
                 set("level.1.condition.cost", 0);
+                set("level.1.description", "You can use the cmd1 and cmd2 commands with this level!");
 
                 //Example Level 2
                 set("level.2.name", "Level 2");
@@ -83,6 +84,7 @@ public class LevelModule extends Module<ReallifeMain> {
                 set("level.2.condition.permission", "someplugin.perms");
                 set("level.2.condition.time", 5);
                 set("level.2.condition.cost", 0);
+                set("level.2.description", "You can use the cmd3 and cmd4 commands with this level!");
             }
 
             @Override
@@ -137,6 +139,7 @@ public class LevelModule extends Module<ReallifeMain> {
             String name = getValue("level." + key + ".name", "Level " + key).toString();
             level = new Level(i, name, levelConditions);
             level.setCommands(cmds);
+            level.setDescription(getValue("level." + key + ".description").toString());
             level.setPermissions(permissions);
             levelList.add(level);
             i++;

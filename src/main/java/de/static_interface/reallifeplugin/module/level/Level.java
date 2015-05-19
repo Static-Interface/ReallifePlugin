@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.module.level;
 
 import de.static_interface.reallifeplugin.module.level.condition.LevelConditions;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class Level {
     private List<String> permissions;
     private int levelId;
     private String name;
+    private String description;
 
     public Level(int levelId, String name, @Nonnull LevelConditions levelConditions) {
         this.levelConditions = levelConditions;
@@ -81,6 +83,17 @@ public class Level {
 
     public int getLevelId() {
         return levelId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        if (StringUtil.isEmptyOrNull(description)) {
+            description = null;
+        }
+        this.description = description;
     }
 
     public static class Cache {

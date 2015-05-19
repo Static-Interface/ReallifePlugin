@@ -32,6 +32,7 @@ import eu.adventuria.adventuriaplugin.api.forum.ForumRequestCode;
 import eu.adventuria.adventuriaplugin.api.forum.model.response.UserStatsResponse;
 import eu.adventuria.adventuriaplugin.api.model.ApiRequest;
 import org.apache.commons.cli.ParseException;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -59,7 +60,7 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
                         user.sendMessage(m("Level.NotLoggedIn"));
                         return true;
                     }
-                    sendCheckList(user);
+                    sendCheckList(user, false);
                 }
 
                 break;
@@ -86,8 +87,8 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
                                                   }
 
                                                   if (!canlevelup) {
-                                                      user.sendMessage("&4 Can't level up! You have to met these conditions:");
-                                                      sendCheckList(user);
+                                                      sendCheckList(user, true);
+                                                      user.sendMessage("&4 Can't level up! Not all conditions met!");
                                                   } else {
                                                       LevelUtil.setLevel(user, nextLevel);
                                                       user.sendMessage("&a Level up! Current level: " + nextLevel.getLevelName());
@@ -109,7 +110,7 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
         return true;
     }
 
-    public void sendCheckList(final IngameUser user) {
+    public void sendCheckList(final IngameUser user, final boolean useNext) {
         ForumAPI.sendRequestAsync(new ApiRequest(ForumRequestCode.REQUEST_USER_STATS, ForumAPI.getApiKey(user)), UserStatsResponse.class,
                                   user, new ResponseReceivedListener<UserStatsResponse>() {
                     @Override
@@ -117,10 +118,22 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
                         final Level userLevel = LevelUtil.getLevel(user);
                         final Level nextLevel = Level.Cache.getLevel(userLevel.getLevelId() + 1);
 
-                        user.sendMessage("a4Your current level: &c" + userLevel.getLevelName());
+                        if (!useNext) {
+                            user.sendMessage(ChatColor.DARK_RED + "Your current level: " + ChatColor.RED + userLevel.getLevelName());
+                        }
+                        if (!useNext && userLevel.getDescription() != null) {
+                            user.sendMessage(ChatColor.DARK_RED + "Description: " + ChatColor.RESET + userLevel.getDescription());
+                        }
+
                         boolean noneAvailable = true;
                         if (nextLevel != null) {
-                            user.sendMessage("&4Next level (" + nextLevel.getLevelName() + ") checklist:");
+                            if (useNext) {
+                                user.sendMessage(ChatColor.DARK_RED + "Next level: " + ChatColor.GOLD + nextLevel.getLevelName());
+                            }
+                            if (useNext && nextLevel.getDescription() != null) {
+                                user.sendMessage(ChatColor.DARK_RED + "Description: " + ChatColor.RESET + nextLevel.getDescription());
+                            }
+
                             LevelConditions conditions = nextLevel.getLevelConditions();
                             if (conditions.getRequiredActivityPoints() > 0) {
                                 user.sendMessage(toCheckList("ActivityPoints", conditions.getRequiredActivityPoints(), response.activityPoints));
