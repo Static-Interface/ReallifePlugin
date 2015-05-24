@@ -107,11 +107,14 @@ public class Level {
             if (command == null) {
                 return;
             }
-            for (String alias : Bukkit.getCommandAliases().get(command)) {
-                if (commands.containsKey(command)) {
-                    continue;
+            String[] aliases = Bukkit.getCommandAliases().get(command);
+            if (aliases != null) {
+                for (String alias : aliases) {
+                    if (commands.containsKey(command)) {
+                        continue;
+                    }
+                    commands.put(alias, level.getLevelId());
                 }
-                commands.put(alias, level.getLevelId());
             }
             commands.put(command, level.getLevelId());
         }

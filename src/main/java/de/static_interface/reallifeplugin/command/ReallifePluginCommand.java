@@ -128,7 +128,6 @@ public class ReallifePluginCommand extends SinkCommand {
                         break;
                     }
                 }
-
                 break;
 
             default:
