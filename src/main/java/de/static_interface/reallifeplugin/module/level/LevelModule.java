@@ -41,7 +41,7 @@ public class LevelModule extends Module<ReallifeMain> {
     private VaultPermissionsHook permissionsHook;
 
     public LevelModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, new Configuration(new File(plugin.getDataFolder(), "levelmodule.yml")) {
+        super(plugin, new Configuration(new File(plugin.getDataFolder(), "LevelModule.yml")) {
             @Override
             public void onCreate() {
                 //Example Level 1
