@@ -62,12 +62,15 @@ public class LevelUtil {
     }
 
     public static long getPlayTime(IngameUser user) {
-        if (user.isOnline()) {
-            LevelPlayerTimer.stopPlayerTime(user.getPlayer());
+        Object rawValue = user.getConfiguration().get("Level.PlayTime", "0");
+
+        long value = 0;
+        if (rawValue != null) {
+            value = Long.parseLong(rawValue.toString());
         }
-        long value = Long.parseLong(user.getConfiguration().get("Level.PlayTime", "0").toString());
+
         if (user.isOnline()) {
-            LevelPlayerTimer.startPlayerTime(user.getPlayer(), System.currentTimeMillis());
+            value += LevelPlayerTimer.getSessionTime(user.getPlayer());
         }
         return value;
     }

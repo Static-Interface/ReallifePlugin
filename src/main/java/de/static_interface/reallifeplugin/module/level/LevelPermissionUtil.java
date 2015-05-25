@@ -30,7 +30,7 @@ public class LevelPermissionUtil {
             return true;
         }
 
-        user.sendMessage(m("Level.NotEnoughLevel", level.getLevelName(), permLevel.getLevelName()));
+        user.sendMessage(m("Level.NotEnoughLevel", permLevel.getLevelName(), level.getLevelName()));
         return false;
     }
 }

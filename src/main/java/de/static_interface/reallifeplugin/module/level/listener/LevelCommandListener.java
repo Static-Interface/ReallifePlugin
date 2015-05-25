@@ -24,6 +24,7 @@ import de.static_interface.reallifeplugin.module.level.LevelModule;
 import de.static_interface.reallifeplugin.module.level.LevelUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -38,6 +39,8 @@ public class LevelCommandListener extends ModuleListener<LevelModule> {
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         String cmd = event.getMessage().split(" ")[0];
 
+        Debug.log("cmd: " + cmd);
+
         if (cmd.startsWith("/")) {
             cmd = cmd.replaceFirst("/", "");
         }
@@ -48,11 +51,17 @@ public class LevelCommandListener extends ModuleListener<LevelModule> {
         IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
         Level userLevel = LevelUtil.getLevel(user);
 
+        Debug.log("userLevel: " + userLevel.getLevelId());
+
         Level commandLevel = Level.Cache.getCommandLevel(cmd);
+        Debug.log("commandLevel: " + commandLevel.getLevelId());
 
         if (userLevel.getLevelId() < commandLevel.getLevelId()) {
-            user.sendMessage(m("Level.NotEnoughLevel", userLevel.getLevelName(), commandLevel.getLevelName()));
+            Debug.log("level check failed");
+            user.sendMessage(m("Level.NotEnoughLevel", commandLevel.getLevelName(), userLevel.getLevelName()));
             event.setCancelled(true);
         }
+
+        Debug.log("level check passed");
     }
 }

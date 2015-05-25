@@ -118,6 +118,14 @@ public class DateUtil {
         return DateUtil.formatDateDiff(now, c);
     }
 
+    public static String formatDateDiff(long date1, long date2) {
+        Calendar c = new GregorianCalendar();
+        c.setTimeInMillis(date1);
+        Calendar c2 = new GregorianCalendar();
+        c2.setTimeInMillis(date2);
+        return DateUtil.formatDateDiff(c, c2);
+    }
+
     public static String formatDateDiff(Calendar fromDate, Calendar toDate) {
         boolean future = false;
         if (toDate.equals(fromDate)) {
@@ -143,7 +151,11 @@ public class DateUtil {
             int diff = dateDiff(types[i], fromDate, toDate, future);
             if (diff > 0) {
                 accuracy++;
-                sb.append(" ").append(diff).append(" ").append(names[i * 2 + (diff > 1 ? 1 : 0)]);
+                int index = i * 2 + (diff > 1 ? 1 : 0);
+                if (index == 10 || index == 11) { // skip seconds
+                    continue;
+                }
+                sb.append(" ").append(diff).append(" ").append(names[index]);
             }
         }
         if (sb.length() == 0) {

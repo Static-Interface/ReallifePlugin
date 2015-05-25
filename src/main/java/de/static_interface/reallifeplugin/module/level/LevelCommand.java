@@ -23,7 +23,6 @@ import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.level.condition.LevelConditions;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 import eu.adventuria.adventuriaplugin.api.ResponseReceivedListener;
@@ -45,14 +44,23 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
 
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+        final IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
         if (args.length < 1) {
-            throw new NotEnoughArgumentsException();
+            if (Module.isPluginAvailable("AdventuriaPlugin")) {
+                if (!ForumAPI.isLoggedIn(user)) {
+                    user.sendMessage(m("Level.NotLoggedIn"));
+                    return true;
+                }
+
+                sendCheckList(user, false);
+            }
+            return true;
         }
 
-        final IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+
         final Level userLevel = LevelUtil.getLevel(user);
         final Level nextLevel = Level.Cache.getLevel(userLevel.getLevelId() + 1);
-
+        user.sendMessage("");
         switch (args[0]) {
             case "info":
                 if (Module.isPluginAvailable("AdventuriaPlugin")) {
@@ -60,6 +68,7 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
                         user.sendMessage(m("Level.NotLoggedIn"));
                         return true;
                     }
+
                     sendCheckList(user, false);
                 }
 
@@ -68,9 +77,9 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
 
             case "next":
                 if (nextLevel != null) {
-                    user.sendMessage("&Next level: " + nextLevel.getLevelId());
+                    user.sendMessage("§aNext level: " + nextLevel.getLevelId());
                 } else {
-                    user.sendMessage("&4Max level reached!");
+                    user.sendMessage("§2Max level reached!");
                 }
 
                 final LevelConditions conditions = nextLevel.getLevelConditions();
@@ -88,17 +97,19 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
 
                                                   if (!canlevelup) {
                                                       sendCheckList(user, true);
-                                                      user.sendMessage("&4 Can't level up! Not all conditions met!");
+                                                      user.sendMessage("§4 Can't level up! Not all conditions met!");
                                                   } else {
                                                       LevelUtil.setLevel(user, nextLevel);
-                                                      user.sendMessage("&a Level up! Current level: " + nextLevel.getLevelName());
+                                                      user.sendMessage("§a Level up! Current level: " + nextLevel.getLevelName());
                                                   }
+                                                  user.sendMessage("");
                                               }
 
                                               @Override
                                               public void onResponseFailed(Throwable throwable) {
                                                   throwable.printStackTrace();
                                                   user.sendMessage("&4An internal error occured");
+                                                  user.sendMessage("");
                                               }
                                           });
                 break;
@@ -119,22 +130,28 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
                         final Level nextLevel = Level.Cache.getLevel(userLevel.getLevelId() + 1);
 
                         if (!useNext) {
-                            user.sendMessage(ChatColor.DARK_RED + "Your current level: " + ChatColor.RED + userLevel.getLevelName());
+                            user.sendMessage(ChatColor.GOLD + "Your current level: " + ChatColor.RED + userLevel.getLevelName());
                         }
                         if (!useNext && userLevel.getDescription() != null) {
-                            user.sendMessage(ChatColor.DARK_RED + "Description: " + ChatColor.RESET + userLevel.getDescription());
+                            user.sendMessage(ChatColor.GOLD + "Description: " + ChatColor.RESET + userLevel.getDescription());
                         }
 
                         boolean noneAvailable = true;
                         if (nextLevel != null) {
                             if (useNext) {
-                                user.sendMessage(ChatColor.DARK_RED + "Next level: " + ChatColor.GOLD + nextLevel.getLevelName());
+                                user.sendMessage(ChatColor.GOLD + "Next level: " + ChatColor.GOLD + nextLevel.getLevelName());
                             }
                             if (useNext && nextLevel.getDescription() != null) {
-                                user.sendMessage(ChatColor.DARK_RED + "Description: " + ChatColor.RESET + nextLevel.getDescription());
+                                user.sendMessage(ChatColor.GOLD + "Description: " + ChatColor.RESET + nextLevel.getDescription());
                             }
 
                             LevelConditions conditions = nextLevel.getLevelConditions();
+
+                            if (!useNext) {
+                                user.sendMessage("");
+                                user.sendMessage("§4Next Level (§c" + nextLevel.getLevelName() + "§4) checklist: ");
+                            }
+
                             if (conditions.getRequiredActivityPoints() > 0) {
                                 user.sendMessage(toCheckList("ActivityPoints", conditions.getRequiredActivityPoints(), response.activityPoints));
                                 noneAvailable = false;
@@ -162,22 +179,24 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
 
                             if (conditions.getRequiredPermission() != null) {
                                 user.sendMessage(toCheckList("Permission", conditions.getRequiredPermission(),
-                                                             user.hasPermission(conditions.getRequiredPermission())));
+                                                             user.hasPermission(conditions.getRequiredPermission()), null));
                                 noneAvailable = false;
                             }
                         } else {
-                            user.sendMessage("&4Max level reached!");
+                            user.sendMessage("§2Max level reached!");
                             return;
                         }
                         if (noneAvailable) {
                             user.sendMessage("-");
                         }
+                        user.sendMessage("");
                     }
 
                     @Override
                     public void onResponseFailed(Throwable throwable) {
                         throwable.printStackTrace();
                         user.sendMessage("&4An internal error occured");
+                        user.sendMessage("");
                     }
                 });
     }
@@ -187,22 +206,29 @@ public class LevelCommand extends ModuleCommand<LevelModule> {
     }
 
     private String toCheckList(String name, Number requiredValue, Number value, boolean isDate) {
-        String s = "" + (isDate ? requiredValue : DateUtil.formatDateDiff(requiredValue.longValue()));
+        String s = "" + (isDate ? DateUtil.formatDateDiff(0, requiredValue.longValue()) : requiredValue);
         boolean done = value.longValue() >= requiredValue.longValue();
-        String left;
-        if (isDate) {
-            left = DateUtil.formatDateDiff(requiredValue.longValue() - value.longValue());
-        } else {
-            left = "" + MathUtil.round(requiredValue.longValue() - value.longValue());
-        }
+        String left = null;
         if (!done) {
-            s += " (" + left + " left)";
+            if (isDate) {
+                left = " (" + DateUtil.formatDateDiff(requiredValue.longValue(), value.longValue()) + " left)";
+            } else {
+                left = " (" + (int) MathUtil.round(requiredValue.longValue() - value.longValue()) + " left)";
+            }
         }
-        return toCheckList(name, s, done);
+        return toCheckList(name, s, done, left);
     }
 
-    private String toCheckList(String name, String value, boolean done) {
-        String s = "•" + name + ": " + value;
+    private String toCheckList(String name, String value, boolean done, String suffix) {
+        if (suffix == null) {
+            suffix = "";
+        }
+        String s;
+        if (done) {
+            s = ChatColor.DARK_GREEN + "• " + name + ": " + ChatColor.GREEN + value + suffix;
+        } else {
+            s = ChatColor.DARK_RED + "• " + name + ": " + ChatColor.RED + value + suffix;
+        }
         s = appendCheck(s, done);
         return s;
     }

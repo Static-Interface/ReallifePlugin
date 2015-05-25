@@ -24,6 +24,7 @@ import de.static_interface.reallifeplugin.module.level.hook.VaultPermissionsHook
 import de.static_interface.reallifeplugin.module.level.listener.LevelCommandListener;
 import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
@@ -39,57 +40,53 @@ public class LevelModule extends Module<ReallifeMain> {
     public static final String NAME = "Level";
     private List<Level> levelList;
     private VaultPermissionsHook permissionsHook;
-
+    private boolean inited = false;
     public LevelModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, new Configuration(new File(plugin.getDataFolder(), "LevelModule.yml")) {
+        super(plugin, new Configuration(new File(plugin.getDataFolder(), "LevelModule.yml"), false) {
             @Override
-            public void onCreate() {
+            public void addDefaults() {
                 //Example Level 1
-                set("level.1.name", "Level 1");
+                addDefault("level.1.name", "Level 1");
                 List<String> unblockedCmds = new ArrayList<>();
                 unblockedCmds.add("cmd1");
                 unblockedCmds.add("cmd2");
-                set("level.1.unblockedCommands", unblockedCmds);
+                addDefault("level.1.unblockedCommands", unblockedCmds);
 
                 List<String> permissions = new ArrayList<>();
                 permissions.add("plugin.permission1");
                 permissions.add("plugin.permission2");
-                set("level.1.unblockedPermissions", permissions);
+                addDefault("level.1.unblockedPermissions", permissions);
                 if (isPluginAvailable("AdventuriaPlugin")) {
-                    set("level.1.condition.likes", 0);
-                    set("level.1.condition.posts", 0);
-                    set("level.1.condition.activitypoints", 0);
+                    addDefault("level.1.condition.likes", 0);
+                    addDefault("level.1.condition.posts", 0);
+                    addDefault("level.1.condition.activitypoints", 0);
                 }
-                set("level.1.condition.permission", "none");
-                set("level.1.condition.time", 5);
-                set("level.1.condition.cost", 0);
-                set("level.1.description", "You can use the cmd1 and cmd2 commands with this level!");
+                addDefault("level.1.condition.permission", "none");
+                addDefault("level.1.condition.time", 5);
+                addDefault("level.1.condition.cost", 0);
+                addDefault("level.1.description", "You can use the cmd1 and cmd2 commands with this level!");
 
                 //Example Level 2
-                set("level.2.name", "Level 2");
+                addDefault("level.2.name", "Level 2");
                 unblockedCmds = new ArrayList<>();
                 unblockedCmds.add("cmd3");
                 unblockedCmds.add("cmd4");
-                set("level.2.unblockedCommands", unblockedCmds);
+                addDefault("level.2.unblockedCommands", unblockedCmds);
 
                 permissions = new ArrayList<>();
-                permissions.add("plugin.permission3");
-                permissions.add("plugin.permission4");
-                set("level.2.unblockedPermissions", permissions);
+                addDefault("level.2.unblockedPermissions", permissions, "Example for no permissions");
                 if (isPluginAvailable("AdventuriaPlugin")) {
-                    set("level.2.condition.likes", 0);
-                    set("level.2.condition.posts", 0);
-                    set("level.2.condition.activitypoints", 0);
+                    addDefault("level.2.condition.likes", 0);
+                    addDefault("level.2.condition.posts", 0);
+                    addDefault("level.2.condition.activitypoints", 0);
                 }
-                set("level.2.condition.permission", "someplugin.perms");
-                set("level.2.condition.time", 5);
-                set("level.2.condition.cost", 0);
-                set("level.2.description", "You can use the cmd3 and cmd4 commands with this level!");
-            }
+                addDefault("level.2.condition.permission", "someplugin.perms");
+                addDefault("level.2.condition.time", 5);
+                addDefault("level.2.condition.cost", 0);
+                addDefault("level.2.description", "You can use the cmd3 and cmd4 commands with this level!");
 
-            @Override
-            public void addDefaults() {
                 addDefault("baseLevelName", "Level 0");
+                addDefault("baseLevelDescription", "This is the baseLevel!");
             }
         }, db, NAME, true);
         levelList = new ArrayList<>();
@@ -97,6 +94,11 @@ public class LevelModule extends Module<ReallifeMain> {
 
     @Override
     public void onEnable() {
+        if (inited) {
+            getConfig().reload();
+        } else {
+            getConfig().init();
+        }
         permissionsHook = new VaultPermissionsHook();
 
         if (isPluginAvailable("Vault")) {
@@ -108,11 +110,25 @@ public class LevelModule extends Module<ReallifeMain> {
         }
 
         String baseLevelName = getValue("baseLevelName").toString();
+        String description = getValue("baseLevelDescription").toString();
+
         Level level = new Level(0, baseLevelName, new LevelConditions()); //base level (level 0)
+        if (!StringUtil.isEmptyOrNull(description)) {
+            level.setDescription(description);
+        }
         levelList.add(level);
 
         int i = 1;
         for (String key : getConfig().getYamlConfiguration().getConfigurationSection("level").getKeys(false)) {
+            try {
+                int id = Integer.valueOf(key);
+                if (id != i) {
+                    throw new RuntimeException("Invalid level config: level." + key + ": expected \"" + i + "\" but value was \"" + key + "\"");
+                }
+            } catch (NumberFormatException e) {
+                getPlugin().getLogger().info("[LevelModule] Invalid level identifier: " + key + " (not a valid number)");
+                break;
+            }
             int requiredLikes = 0;
             int requiredPosts = 0;
             int requiredActivityPoints = 0;
@@ -152,6 +168,7 @@ public class LevelModule extends Module<ReallifeMain> {
             LevelAttachmentsManager.updateAttachment(p, getPlugin());
             LevelPlayerTimer.startPlayerTime(p, System.currentTimeMillis());
         }
+        inited = true;
     }
 
     @Override

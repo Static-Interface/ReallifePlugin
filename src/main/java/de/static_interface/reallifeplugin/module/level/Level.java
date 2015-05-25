@@ -62,6 +62,12 @@ public class Level {
             commands = new ArrayList<>();
         }
 
+        for (String s : commands) {
+            if (StringUtil.isEmptyOrNull(s)) {
+                commands.remove(s);
+            }
+        }
+
         this.commands = commands;
         Level.Cache.addCommands(this, commands);
         return this;
@@ -74,6 +80,12 @@ public class Level {
     public Level setPermissions(@Nullable List<String> permissions) {
         if (permissions == null) {
             permissions = new ArrayList<>();
+        }
+
+        for (String s : permissions) {
+            if (StringUtil.isEmptyOrNull(s)) {
+                permissions.remove(s);
+            }
         }
 
         this.permissions = permissions;

@@ -18,6 +18,7 @@ package de.static_interface.reallifeplugin.module.level;
 
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -35,7 +36,6 @@ public class LevelAttachmentsManager {
 
     public static void updateAttachment(Player p, Plugin pl) {
         clearAttachment(p);
-
         PermissionAttachment attachment = p.addAttachment(pl);
         attachments.put(p.getUniqueId(), attachment);
 
@@ -60,20 +60,23 @@ public class LevelAttachmentsManager {
     }
 
     public static void clearAttachment(Player p) {
+        p.recalculatePermissions();
         UUID uuid = p.getUniqueId();
         PermissionAttachment attachment = attachments.get(uuid);
         if (attachment != null) {
-            p.removeAttachment(attachment);
+            try {
+                p.removeAttachment(attachment);
+            } catch (Exception e) {
+                Debug.log(e);
+            }
         }
+        attachments.remove(uuid);
+        p.recalculatePermissions();
     }
 
     public static void clearAttachments() {
         for (Player p : Bukkit.getOnlinePlayers()) {
-            UUID uuid = p.getUniqueId();
-            PermissionAttachment attachment = attachments.get(uuid);
-            if (attachment != null) {
-                p.removeAttachment(attachment);
-            }
+            clearAttachment(p);
         }
         attachments.clear();
     }

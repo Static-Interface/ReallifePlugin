@@ -35,9 +35,16 @@ public class LevelPlayerTimer {
         if (playTime.get(p) == null) {
             return;
         }
-        long playedTime = System.currentTimeMillis() - playTime.get(p);
         IngameUser user = SinkLibrary.getInstance().getIngameUser(p);
-        LevelUtil.setPlayTime(user, LevelUtil.getPlayTime(user) + playedTime);
+        LevelUtil.setPlayTime(user, LevelUtil.getPlayTime(user));
         playTime.remove(p);
+    }
+
+    public static long getSessionTime(Player p) {
+        Long val = playTime.get(p);
+        if (val == null) {
+            return 0;
+        }
+        return System.currentTimeMillis() - val;
     }
 }
