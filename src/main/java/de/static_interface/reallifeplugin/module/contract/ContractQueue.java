@@ -14,12 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module;
+package de.static_interface.reallifeplugin.module.contract;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.module.contract.Contract;
-import de.static_interface.reallifeplugin.module.contract.ContractModule;
+import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
 import de.static_interface.sinklibrary.user.IngameUser;

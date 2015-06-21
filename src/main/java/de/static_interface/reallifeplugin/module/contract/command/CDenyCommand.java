@@ -18,9 +18,9 @@ package de.static_interface.reallifeplugin.module.contract.command;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.module.ContractQueue;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
+import de.static_interface.reallifeplugin.module.contract.ContractQueue;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;

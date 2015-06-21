@@ -46,6 +46,7 @@ public class StocksTable extends AbstractTable<StockRow> {
                         + "dividend DOUBLE NOT NULL,"
                         + "price DOUBLE NOT NULL,"
                         + "share_holding DOUBLE NOT NULL,"
+                        + "allow_buy_stocks BOOLEAN NOT NULL,"
                         + "time BIGINT NOT NULL,"
                         + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + CorpsTable.TABLE_NAME
                         + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
@@ -63,6 +64,7 @@ public class StocksTable extends AbstractTable<StockRow> {
                         + "`dividend` DOUBLE NOT NULL,"
                         + "`price` DOUBLE NOT NULL,"
                         + "`share_holding` DOUBLE NOT NULL,"
+                        + "`allow_buy_stocks` BOOLEAN NOT NULL,"
                         + "`time` BIGINT NOT NULL,"
                         + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + CorpsTable.TABLE_NAME
                         + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE"
@@ -122,6 +124,9 @@ public class StocksTable extends AbstractTable<StockRow> {
             }
             if (hasColumn(rs, "time")) {
                 row.time = rs.getLong("time");
+            }
+            if (hasColumn(rs, "allow_buy_stocks")) {
+                row.allowBuyingStocks = rs.getBoolean("allow_buy_stocks");
             }
             rows[i] = row;
             i++;

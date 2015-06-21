@@ -23,12 +23,16 @@ import de.static_interface.reallifeplugin.module.corporation.Corporation;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
+import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockPriceRow;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
+import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockUserRow;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockPricesTable;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.reallifeplugin.module.stockmarket.event.StocksUpdateEvent;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import org.apache.commons.lang.Validate;
@@ -181,17 +185,21 @@ public class StockMarket {
                 s += ChatColor.GRAY + " - ";
             }
 
+
             s += ChatColor.GOLD + stock.getTag() + ChatColor.GRAY + " " + stock.getPrice() + " ";
 
-            double percent = MathUtil.round(((oldPrice - newPrice) / newPrice) * 100);
+            double percent;
 
             if (newPrice > oldPrice) {
+                percent = MathUtil.round(((newPrice - oldPrice) / oldPrice) * 100);
                 s += ChatColor.DARK_GREEN + "▲ " + percent + "%";
             }
             if (newPrice == oldPrice) {
+                percent = 0;
                 s += "● " + percent + "%";
             }
             if (oldPrice > newPrice) {
+                percent = MathUtil.round(((oldPrice - newPrice) / newPrice) * 100);
                 s += ChatColor.DARK_RED + "▼ " + percent + "%";
             }
             i++;
@@ -233,6 +241,28 @@ public class StockMarket {
 
         if (changedAmountBefore > changedAmount) {
             return ((double) -(changedAmount * 100) / changedAmountBefore) / 100;
+        }
+
+        return 0;
+    }
+
+
+    public int getStocksAmount(StockMarketModule module, CorporationModule corpModule, Stock stock, IngameUser user) {
+        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
+        if (tmp == null) {
+            tmp = CorporationUtil.insertUser(corpModule, user, null);
+        }
+
+        StockUsersTable usersTable = Module.getTable(module, StockUsersTable.class);
+        StockUserRow[] rows;
+        try {
+            rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stock.getId());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+        if (rows.length > 0) {
+            return rows[0].amount;
         }
 
         return 0;

@@ -22,6 +22,7 @@ import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
+import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 
 import java.sql.SQLException;
@@ -68,5 +69,9 @@ public class Stock {
 
     public double getDividend() {
         return getBase().dividend;
+    }
+
+    public boolean canSellStocks(IngameUser user) {
+        return CorporationUtil.hasCeoPermissions(user, getCorporation()) || getBase().allowBuyingStocks;
     }
 }

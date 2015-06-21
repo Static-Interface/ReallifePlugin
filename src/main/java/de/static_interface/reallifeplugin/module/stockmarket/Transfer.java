@@ -14,20 +14,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.stockmarket.database.row;
+package de.static_interface.reallifeplugin.module.stockmarket;
 
-import javax.annotation.Nullable;
+import de.static_interface.sinklibrary.user.IngameUser;
 
-public class StockRow {
+public class Transfer {
 
-    @Nullable
-    public Integer id;
-    public int amount;
-    public double basePrice;
-    public int corpId;
-    public double dividend;
-    public double price;
-    public double shareHolding;
-    public long time;
-    public boolean allowBuyingStocks;
+    IngameUser seller;
+    IngameUser buyer;
+    Stock stock;
+    int amount;
+    double price;
 }

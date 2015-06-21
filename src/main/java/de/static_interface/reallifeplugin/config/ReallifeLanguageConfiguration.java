@@ -122,8 +122,21 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
         addDefault("Corporation.Sign.SoldWatermark", "&4- &oSold");
         addDefault("Corporation.Sign.IsCeo", "&cCEO or co-CEOs can't sell items!");
+
         addDefault("StockMarket.NotEnoughStocksLeft", "&cNot enough stocks left!");
         addDefault("StockMarket.ForceFailed", "&4Couldn't update stocks");
+        addDefault("StockMarket.PendingTransferNotDone", "&4User already has a pending transfer");
+        addDefault("StockMarket.WaitingForTransfer", "&aWaiting for accept...");
+        addDefault("StockMarket.TransferCooldown", "&4You've to wait {0} minutes before using this command again");
+        addDefault("StockMarket.TransferRequest", "&7[&4StockTransfer&2]&2{0} wants to sell you {1} {2} for {3} {CURRENCY}");
+        addDefault("StockMarket.TransferAccept", "&2Use /sm transferaccept to accept it");
+        addDefault("StockMarket.TransferWithSelf", "&4You can't transfer stocks to yourself");
+        addDefault("StockMarket.NoPendingTransfers", "&2You don't have pending transfers!");
+        addDefault("StockMarket.TransferDeclined", "&2{0} declined tje transfer");
+        addDefault("StockMarket.TransferFailed", "&2The transfer failed for some reason");
+        addDefault("StockMarket.TransferAccepted", "&2{0} accepted the transfer. {1} {CURRENCY} has been added to your account.");
+        addDefault("StockMarket.BuyingDisabled", "&2This corporation currently doesn't buy stocks");
+        addDefault("StockMarket.MaxCorporationStocks", "&4Error: &cMax stocks amount: {0}");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");

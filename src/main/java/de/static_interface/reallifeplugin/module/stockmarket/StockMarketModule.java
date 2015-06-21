@@ -25,9 +25,11 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.table.Stoc
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockTradesTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
+import de.static_interface.sinklibrary.api.configuration.Configuration;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +43,13 @@ public class StockMarketModule extends Module<ReallifeMain> {
     private BukkitTask stocksTask;
 
     public StockMarketModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, ReallifeMain.getInstance().getSettings(), db, NAME, false);
+        super(plugin, new Configuration(new File(ReallifeMain.getInstance().getDataFolder(), NAME + ".yml")) {
+            @Override
+            public void addDefaults() {
+                addDefault("Transfer.Cooldown", 2, "In minutes");
+                addDefault("GoPublic.MaxStocks", 10000);
+            }
+        }, db, NAME, false);
     }
 
     @Override
