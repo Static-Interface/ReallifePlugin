@@ -83,8 +83,8 @@ public class StocksTable extends AbstractTable<StockRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.basePrice, row.corpId, row.dividend, row.price, row.shareHolding, row.time);
+        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?);";
+        executeUpdate(sql, row.amount, row.basePrice, row.corpId, row.dividend, row.price, row.shareHolding, row.allowBuyingStocks ? 1 : 0, row.time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 

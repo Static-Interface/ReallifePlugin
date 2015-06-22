@@ -136,7 +136,8 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("StockMarket.TransferFailed", "&2The transfer failed for some reason");
         addDefault("StockMarket.TransferAccepted", "&2{0} accepted the transfer. {1} {CURRENCY} has been added to your account.");
         addDefault("StockMarket.BuyingDisabled", "&2This corporation currently doesn't buy stocks");
-        addDefault("StockMarket.MaxCorporationStocks", "&4Error: &cMax stocks amount: {0}");
+        addDefault("StockMarket.MaxStocksAmount", "&4Error: &4Max stocks amount: &c{0}!");
+        addDefault("StockMarket.MaxStocksPrice", "&4Error: &4Max price for stocks: &c{0}!");
 
         addDefault("Ad.Message", "&7[&6Ad&7]&f {DISPLAYNAME} &6{MESSAGE}");
         addDefault("Ad.Timout", "&4Error: &cYou can use this command only every {0} minutes. Please wait {1} minutes before using this command again.");

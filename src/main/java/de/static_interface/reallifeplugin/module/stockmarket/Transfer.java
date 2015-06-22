@@ -16,12 +16,12 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket;
 
-import de.static_interface.sinklibrary.user.IngameUser;
+import java.util.UUID;
 
 public class Transfer {
 
-    IngameUser seller;
-    IngameUser buyer;
+    UUID seller;
+    UUID buyer;
     Stock stock;
     int amount;
     double price;

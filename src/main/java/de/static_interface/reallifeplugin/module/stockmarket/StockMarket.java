@@ -17,7 +17,6 @@
 package de.static_interface.reallifeplugin.module.stockmarket;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
@@ -35,10 +34,10 @@ import de.static_interface.reallifeplugin.module.stockmarket.event.StocksUpdateE
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -74,6 +73,10 @@ public class StockMarket {
 
     @Nullable
     public Stock getStock(StockMarketModule module, CorporationModule corpModule, String tag) {
+        if (StringUtil.isEmptyOrNull(tag)) {
+            return null;
+        }
+
         tag = tag.toUpperCase();
         for (Stock stock : getAllStocks(module, corpModule)) {
             if (stock.getTag().equalsIgnoreCase(tag)) {
@@ -100,6 +103,42 @@ public class StockMarket {
             }
             Stock stock = new Stock(module, corpModule, row.id);
             parsedRows.add(stock);
+        }
+        return parsedRows;
+    }
+
+    public Collection<StockUserRow> getAllStocks(StockMarketModule module, CorporationModule corpModule, IngameUser user, @Nullable Stock stock) {
+        StockUserRow[] rows;
+        String stockfilter = "";
+        if (stock != null) {
+            stockfilter = " AND stock_id = " + stock.getId();
+        }
+
+        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
+        if (tmp == null) {
+            tmp = CorporationUtil.insertUser(corpModule, user, null);
+        }
+
+        try {
+            rows = Module.getTable(module, StockUsersTable.class).get("SELECT * FROM `{TABLE}` where `user_id` = ?" + stockfilter + ";", tmp.id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<StockUserRow> parsedRows = new ArrayList<>();
+        for (StockUserRow row : rows) {
+            Stock s = getStock(module, corpModule, row.stockId);
+            Corporation corp = null;
+            try {
+                corp = s.getCorporation();
+            } catch (Exception ignored) {
+
+            }
+            if (corp == null) {
+                ReallifeMain.getInstance().getLogger().warning("(UserRows) Corp ID not found: " + row.id);
+                continue;
+            }
+            parsedRows.add(row);
         }
         return parsedRows;
     }
@@ -256,7 +295,7 @@ public class StockMarket {
         StockUsersTable usersTable = Module.getTable(module, StockUsersTable.class);
         StockUserRow[] rows;
         try {
-            rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stock.getId());
+            rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, stock.getId());
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
@@ -282,9 +321,5 @@ public class StockMarket {
             changedAmount += Math.abs(row.changedAmount);
         }
         return changedAmount;
-    }
-
-    public List<Stock> getAllStocks(Database db, Player player) {
-        return null;
     }
 }

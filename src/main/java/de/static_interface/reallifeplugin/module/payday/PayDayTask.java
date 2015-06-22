@@ -25,9 +25,6 @@ import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
 import de.static_interface.reallifeplugin.module.payday.model.Entry;
 import de.static_interface.reallifeplugin.module.payday.model.EntryResult;
 import de.static_interface.reallifeplugin.module.payday.model.Group;
-import de.static_interface.reallifeplugin.module.stockmarket.Stock;
-import de.static_interface.reallifeplugin.module.stockmarket.StockMarket;
-import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
@@ -63,10 +60,6 @@ public class PaydayTask implements Runnable {
         entries.add(new PayDayEntry(player, group));
         entries.add(new TaxesEntry(module, player, group));
 
-        if (db != null && Module.isEnabled(StockMarketModule.NAME)) {
-            List<Stock> stocks = StockMarket.getInstance().getAllStocks(db, player);
-            //Todo
-        }
         entries.addAll(event.getEntries());
         List<Entry> queue = PaydayQueue.getPlayerQueue(player.getUniqueId());
         if (queue != null) {

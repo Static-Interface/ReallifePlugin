@@ -32,8 +32,10 @@ import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.apache.commons.cli.ParseException;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -64,13 +66,16 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
     @Override
     protected boolean onExecute(CommandSender commandSender, String label, String[] args) throws ParseException {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+
         if (args.length == 0) {
+            sendHelp(user);
             return false;
         }
 
         String subcommand = args[0];
 
-        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+        String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
 
         switch (subcommand.toLowerCase()) {
             case "gopublic": {
@@ -86,6 +91,12 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return true;
                 }
 
+                Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, corp.getTag());
+                if (stock != null) {
+                    //Todo
+                    return true;
+                }
+
                 if (corp.getTag() == null && args.length < 5) {
                     user.sendMessage(ChatColor.RED + "Tag not set!"); // Todo
                     return true;
@@ -95,7 +106,10 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                         user.sendMessage(ChatColor.DARK_RED + "Min Tag Length: 2, Max Tag length: 5"); //Todo
                         return true;
                     }
-
+                    if (StockMarket.getInstance().getStock(getModule(), corpModule, tag) != null) {
+                        //Todo
+                        return true;
+                    }
                     corp.setTag(tag);
                 }
 
@@ -103,11 +117,16 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 int maxAmount = (int) getModule().getConfig().get("GoPublic.MaxStocks");
                 if (maxAmount > 0 && amount > maxAmount) {
-                    user.sendMessage(m("StockMarket.MaxCorporationStocks", maxAmount));
+                    user.sendMessage(m("StockMarket.MaxStocksAmount", maxAmount));
                     return true;
                 }
 
                 double price = Double.parseDouble(args[2]);
+                int maxPrice = (int) getModule().getConfig().get("GoPublic.MaxPrice");
+                if (maxPrice > 0 && price > maxPrice) {
+                    user.sendMessage(m("StockMarket.MaxStocksPrice", maxPrice));
+                    return true;
+                }
                 double divided = Double.parseDouble(args[3]);
                 double share = Double.parseDouble(args[4]);
 
@@ -129,10 +148,10 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return true;
                 }
 
-                int ceoShare = (int) ((double) (100 * amount) / share) - amount;
+                int ceoAmount = (int) ((amount * (100 - share)) / share);
 
                 try {
-                    addStocks(user, row.id, row.amount, ceoShare, false);
+                    addStocks(user, row.id, row.amount, ceoAmount, false);
                 } catch (SQLException e) {
                     user.sendMessage(ChatColor.RED + "An internal error occured");
                     e.printStackTrace();
@@ -306,7 +325,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     }
                 }
 
-                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[0]);
+                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
                 String tag = args[2].toUpperCase();
                 int amount = Integer.valueOf(args[3]);
                 int price = Integer.valueOf(args[4]);
@@ -332,21 +351,22 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 for (Transfer transfer : pendingTransfers) {
-                    if (transfer.buyer.getUniqueId().equals(target.getUniqueId())) {
+                    if (transfer.buyer.equals(target.getUniqueId())) {
                         user.sendMessage(m("StockMarket.PendingTransferNotDone"));
                         return true;
                     }
                 }
 
                 Transfer transfer = new Transfer();
-                transfer.buyer = target;
-                transfer.seller = user;
+                transfer.buyer = target.getUniqueId();
+                transfer.seller = user.getUniqueId();
                 transfer.amount = amount;
                 transfer.price = price;
                 transfer.stock = stock;
 
                 user.sendMessage(m("StockMarket.WaitingForTransfer"));
                 target.sendMessage(m("StockMarket.TransferRequest", user.getDisplayName(), amount, stock.getId(), price));
+                pendingTransfers.add(transfer);
                 transferCooldown.put(user.getUniqueId(), System.currentTimeMillis() + pendingCooldown * 60 * 1000);
                 break;
             }
@@ -354,7 +374,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             case "transferdecline": {
                 Transfer transfer = null;
                 for (Transfer t : pendingTransfers) {
-                    if (t.buyer.getUniqueId().equals(user.getUniqueId())) {
+                    if (t.buyer.equals(user.getUniqueId())) {
                         transfer = t;
                     }
                 }
@@ -364,8 +384,9 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return true;
                 }
 
-                if (transfer.buyer.isOnline()) {
-                    transfer.buyer.sendMessage(m("StockMarket.TransferDeclined", transfer.seller.getDisplayName()));
+                Player seller = Bukkit.getPlayer(transfer.seller);
+                if (seller != null && seller.isOnline()) {
+                    seller.sendMessage(m("StockMarket.TransferDeclined", user.getDisplayName()));
                 }
 
                 pendingTransfers.remove(transfer);
@@ -376,7 +397,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             case "transferaccept": {
                 Transfer transfer = null;
                 for (Transfer t : pendingTransfers) {
-                    if (t.buyer.getUniqueId().equals(user.getUniqueId())) {
+                    if (t.buyer.equals(user.getUniqueId())) {
                         transfer = t;
                     }
                 }
@@ -386,7 +407,8 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return true;
                 }
 
-                if (StockMarket.getInstance().getStocksAmount(getModule(), corpModule, transfer.stock, transfer.seller) < transfer.amount) {
+                IngameUser seller = SinkLibrary.getInstance().getIngameUser(transfer.seller);
+                if (StockMarket.getInstance().getStocksAmount(getModule(), corpModule, transfer.stock, seller) < transfer.amount) {
                     user.sendMessage(m("StockMarket.InvalidTransfer"));
                     pendingTransfers.remove(transfer);
                     return true;
@@ -397,25 +419,91 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return true;
                 }
 
-                transfer.buyer.addBalance(transfer.price);
+                seller.addBalance(transfer.price);
                 try {
                     processTransfer(transfer);
                     pendingTransfers.remove(transfer);
                     user.sendMessage(m("General.Success"));
-                    transfer.buyer.sendMessage(m("StockMarket.TransferAccepted", user.getDisplayName(), transfer.amount));
+                    seller.sendMessage(m("StockMarket.TransferAccepted", user.getDisplayName(), transfer.amount));
                 } catch (Exception e) {
                     e.printStackTrace();
                     //revert transactions
-                    transfer.buyer.addBalance(-transfer.price);
+                    seller.addBalance(-transfer.price);
                     user.addBalance(transfer.price);
                     user.sendMessage(m("StockMarket.TransferFailed"));
                 }
                 break;
             }
 
-            case "list": {
-                String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
+            case "listmine": {
+                Collection<StockUserRow> stocks = StockMarket.getInstance().getAllStocks(getModule(), corpModule, user, null);
+                if (stocks.size() < 1) {
+                    user.sendMessage(prefix + ChatColor.RED + "No stocks found"); //Todo
+                    return true;
+                }
+                for (StockUserRow userStock : stocks) {
+                    if (userStock.amount < 1) {
+                        continue;
+                    }
 
+                    Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, userStock.stockId);
+
+                    double percent = 0;
+                    String a = null;
+                    try {
+                        try {
+                            percent = StockMarket.getInstance().calculateStockQuotation(corpModule, stock);
+                        } catch (IOException e) {
+                            a = ChatColor.GRAY + "[-] %";
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+
+                    double oldPrice = stock.getPrice();
+
+                    double newPrice = oldPrice;
+
+                    String
+                            s =
+                            ChatColor.GOLD + "" + ChatColor.BOLD + stock.getTag() + ChatColor.RESET + "" + ChatColor.GRAY + " - " + ChatColor.GOLD
+                            + stock.getCorporation().getName() + ChatColor.GRAY + " - " + ChatColor.GOLD + stock.getPrice() + ChatColor.GRAY + " ";
+
+                    if (a == null) {
+                        boolean down = percent < 0;
+
+                        percent = Math.abs(percent);
+
+                        if (down) {
+                            newPrice = newPrice + (newPrice * percent);
+                        } else {
+                            newPrice = newPrice - (newPrice * percent);
+                        }
+                        if (newPrice > oldPrice) {
+                            s += ChatColor.DARK_GREEN + "▲ " + percent + "%";
+                        }
+                        if (newPrice == oldPrice) {
+                            s += ChatColor.YELLOW + "● " + percent + "%";
+                        }
+                        if (oldPrice > newPrice) {
+                            s += ChatColor.DARK_RED + "▼ " + percent + "%";
+                        }
+                    } else {
+                        s += a;
+                    }
+
+                    double holdingPercent = MathUtil.round((100 * userStock.amount) / getStocksAmount(stock));
+
+                    s +=
+                            ChatColor.GRAY + " - "
+                            + "Im Besitz: " + ChatColor.GOLD + userStock.amount + ChatColor.YELLOW + " (" + holdingPercent + "%)";
+                    user.sendMessage(prefix + s);
+                }
+                break;
+            }
+
+            case "list": {
                 Collection<Stock> stocks = StockMarket.getInstance().getAllStocks(getModule(), corpModule);
                 if (stocks.size() < 1) {
                     user.sendMessage(prefix + ChatColor.RED + "No stocks found"); //Todo
@@ -467,9 +555,11 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                         s += a;
                     }
 
+                    double holdingPercent = MathUtil.round((100 * stock.getAmount()) / getStocksAmount(stock));
+
                     s +=
                             ChatColor.GRAY + " - "
-                            + "Anzahl: " + ChatColor.GOLD + stock.getAmount();
+                            + "Anzahl: " + ChatColor.GOLD + stock.getAmount() + ChatColor.YELLOW + " (" + holdingPercent + "%)";
                     user.sendMessage(prefix + s);
                 }
 
@@ -477,22 +567,39 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             }
 
             default:
-                user.sendMessage("/sm <buy/sell/transfer/list/transferaccept/transferdecline/enablebuying/disablebuying/gopublic>");
+                sendHelp(user);
                 break;
         }
 
         return true;
     }
 
+
+    public void sendHelp(IngameUser user) {
+        user.sendMessage(ChatColor.DARK_GRAY + "=== Stockmarket ===");
+        user.sendMessage(ChatColor.GOLD + "/sm buy <Stock> <Amount>");
+        user.sendMessage(ChatColor.GOLD + "/sm sell <Stock> <Amount>");
+        user.sendMessage(ChatColor.GOLD + "/sm list");
+        user.sendMessage(ChatColor.GOLD + "/sm listmine");
+        user.sendMessage(ChatColor.GOLD + "/sm transfer <user> <stock> <amount> <price>");
+        user.sendMessage(ChatColor.GOLD + "/sm transferaccept");
+        user.sendMessage(ChatColor.GOLD + "/sm transferdecline");
+        user.sendMessage(ChatColor.GOLD + "/sm enablebuying");
+        user.sendMessage(ChatColor.GOLD + "/sm disablebuying");
+        user.sendMessage(ChatColor.GOLD + "/sm gopublic <stock amount> <price> <dividend> <share> [Tag]");
+    }
     private void processTransfer(Transfer transfer) throws SQLException {
         StockUsersTable usersTable = Module.getTable(getModule(), StockUsersTable.class);
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, transfer.seller);
+        IngameUser seller = SinkLibrary.getInstance().getIngameUser(transfer.seller);
+        IngameUser buyer = SinkLibrary.getInstance().getIngameUser(transfer.buyer);
+
+        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, seller);
         if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, transfer.seller, null);
+            tmp = CorporationUtil.insertUser(corpModule, seller, null);
         }
 
-        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, transfer.stock.getId());
+        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, transfer.stock.getId());
         if (rows.length > 0) {
             StockUserRow row = rows[0];
             int newAmount = row.amount - transfer.amount;
@@ -504,12 +611,12 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             throw new IllegalStateException("Seller doesn't have any stocks");
         }
 
-        tmp = CorporationUtil.getCorpUser(corpModule, transfer.buyer);
+        tmp = CorporationUtil.getCorpUser(corpModule, buyer);
         if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, transfer.buyer, null);
+            tmp = CorporationUtil.insertUser(corpModule, buyer, null);
         }
 
-        rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, transfer.stock.getId());
+        rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, transfer.stock.getId());
         if (rows.length > 0) {
             StockUserRow row = rows[0];
             int newAmount = row.amount + transfer.amount;
@@ -524,9 +631,9 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         usersTable.insert(row);
     }
 
-    private void sellStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
+    private void sellStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean addToStock) throws SQLException {
         int newAmount = stockAmount + amount;
-        if (removeFromStock) {
+        if (addToStock) {
             StocksTable table = Module.getTable(getModule(), StocksTable.class);
             table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stockId);
         }
@@ -538,7 +645,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
         StockUsersTable usersTable = Module.getTable(getModule(), StockUsersTable.class);
 
-        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stockId);
+        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, stockId);
         if (rows.length > 0) {
             StockUserRow row = rows[0];
             newAmount = row.amount - amount;
@@ -551,9 +658,25 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         throw new IllegalStateException("User doesn't have any stocks");
     }
 
+    public int getStocksAmount(Stock stock) {
+        int allStocks = stock.getAmount();
+        try {
+            StockUserRow[]
+                    rows =
+                    Module.getTable(getModule(), StockUsersTable.class)
+                            .get("SELECT * FROM `{TABLE}` where `stock_id` = ?", stock.getId());
+            for (StockUserRow row : rows) {
+                allStocks += row.amount;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return allStocks;
+    }
+
     private void addStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
         int newAmount = stockAmount - amount;
-        if (newAmount < 0) {
+        if (removeFromStock && newAmount < 0) {
             throw new IllegalStateException("Corporation doesn't have enough stocks");
         }
         if (removeFromStock) {
@@ -568,7 +691,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
         StockUsersTable usersTable = Module.getTable(getModule(), StockUsersTable.class);
 
-        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.uuid, stockId);
+        StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, stockId);
         if (rows.length > 0) {
             StockUserRow row = rows[0];
             int totalAmount = row.amount + amount;

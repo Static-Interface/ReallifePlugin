@@ -48,8 +48,9 @@ public class StockMarketModule extends Module<ReallifeMain> {
             public void addDefaults() {
                 addDefault("Transfer.Cooldown", 2, "In minutes");
                 addDefault("GoPublic.MaxStocks", 10000);
+                addDefault("GoPublic.MaxPrice", 500);
             }
-        }, db, NAME, false);
+        }, db, NAME, true);
     }
 
     @Override

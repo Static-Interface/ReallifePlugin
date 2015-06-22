@@ -74,4 +74,8 @@ public class Stock {
     public boolean canSellStocks(IngameUser user) {
         return CorporationUtil.hasCeoPermissions(user, getCorporation()) || getBase().allowBuyingStocks;
     }
+
+    public double getShare() {
+        return MathUtil.round(getBase().shareHolding);
+    }
 }
