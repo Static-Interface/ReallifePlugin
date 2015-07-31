@@ -192,11 +192,11 @@ public class Corporation {
     }
 
     public ProtectedRegion getBaseRegion() {
-        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().base_world)).getRegion(getBase().base_id);
+        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().base_world)).getRegion(getBase().baseId);
     }
 
     public IngameUser getCEO() {
-        return SinkLibrary.getInstance().getIngameUser(UUID.fromString(getBase().ceo_uuid));
+        return SinkLibrary.getInstance().getIngameUser(UUID.fromString(getBase().ceoUuid));
     }
 
     public void setCEO(IngameUser user) {
@@ -236,7 +236,7 @@ public class Corporation {
     }
 
     public String getName() {
-        return getBase().corp_name;
+        return getBase().corpName;
     }
 
     @Nullable

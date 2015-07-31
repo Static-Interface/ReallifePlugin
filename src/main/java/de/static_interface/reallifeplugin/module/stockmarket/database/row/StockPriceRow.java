@@ -16,14 +16,16 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 
 import javax.annotation.Nullable;
 
 public class StockPriceRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
     @Column
@@ -37,6 +39,7 @@ public class StockPriceRow implements Row {
     public double old_price;
 
     @Column
+    @ForeignKey(table = StocksTable.class, column = "id")
     public int stock_id;
 
     @Column

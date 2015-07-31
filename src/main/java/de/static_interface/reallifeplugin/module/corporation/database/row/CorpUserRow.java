@@ -16,19 +16,27 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
+import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
+import static de.static_interface.reallifeplugin.database.CascadeAction.SET_NULL;
+
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 
 import javax.annotation.Nullable;
 
 public class CorpUserRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
-    @Column
+    @Column(name = "corp_id")
+    @ForeignKey(table = CorpsTable.class, column = "id", onUpdate = CASCADE, onDelete = SET_NULL)
+    @Index
     @Nullable
-    public Integer corp_id;
+    public Integer corpId;
 
     @Column
     public boolean isCoCeo;
@@ -37,6 +45,6 @@ public class CorpUserRow implements Row {
     @Nullable
     public String rank;
 
-    @Column
+    @Column(uniqueKey = true)
     public String uuid;
 }

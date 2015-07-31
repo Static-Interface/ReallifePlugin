@@ -16,21 +16,31 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
+import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
+
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
+import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
 
 import javax.annotation.Nullable;
 
 public class ContractUserOptionsRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
-    @Column
-    public int user_id;
+    @Column(name = "user_id")
+    @ForeignKey(table = ContractUsersTable.class, column = "id", onUpdate = CASCADE, onDelete = CASCADE)
+    @Index
+    public int userId;
 
-    @Column
-    public int contract_id;
+    @Column(name = "contract_id")
+    @ForeignKey(table = ContractsTable.class, column = "id", onUpdate = CASCADE, onDelete = CASCADE)
+    @Index
+    public int contractId;
 
     @Column
     @Nullable

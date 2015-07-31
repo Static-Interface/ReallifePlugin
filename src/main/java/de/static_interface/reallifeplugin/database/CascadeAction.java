@@ -16,6 +16,13 @@
 
 package de.static_interface.reallifeplugin.database;
 
-public @interface Column {
+public enum CascadeAction {
+    RESTRICT,
+    CASCADE,
+    SET_NULL,
+    NO_ACTION;
 
+    public String toSql() {
+        return name().replace("_", " ");
+    }
 }

@@ -16,12 +16,17 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
+import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
+
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 
 public class StockRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
     @Column
@@ -30,7 +35,9 @@ public class StockRow implements Row {
     @Column
     public double base_price;
 
-    @Column
+    @Column(uniqueKey = true)
+    @ForeignKey(table = CorpsTable.class, column = "id", onDelete = CASCADE, onUpdate = CASCADE)
+    @Index
     public int corp_id;
 
     @Column

@@ -22,21 +22,60 @@ import org.jooq.SQLDialect;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 
 public abstract class Database {
 
     private final DatabaseConfiguration config;
-    private final DatabaseType type;
     private final SQLDialect dialect;
+    private final char backtick;
     protected HikariDataSource dataSource;
     protected Plugin plugin;
     protected Connection connection;
 
-    public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type, SQLDialect dialect) {
+    public Database(DatabaseConfiguration config, Plugin plugin, SQLDialect dialect, char backtick) {
         this.plugin = plugin;
-        this.type = type;
         this.config = config;
         this.dialect = dialect;
+        this.backtick = backtick;
+    }
+
+    public char getBacktick() {
+        return backtick;
+    }
+
+    public String toDatabaseType(Class<?> clazz) {
+        if (clazz == Date.class) {
+            throw new RuntimeException("Date is for now not supported!");
+        }
+        if (clazz == java.sql.Date.class) {
+            throw new RuntimeException("Date is for now not supported!");
+        }
+        if (clazz == Integer.class) {
+            return "INT";
+        }
+        if (clazz == Boolean.class) {
+            return "TINYINT(1)";
+        }
+        if (clazz == Double.class) {
+            return "DOUBLE";
+        }
+        if (clazz == Float.class) {
+            return "FLOAT";
+        }
+        if (clazz == Long.class) {
+            return "BIGINT";
+        }
+        if (clazz == Short.class) {
+            return "SMALLINT";
+        }
+        if (clazz == Byte.class) {
+            return "TINYINT";
+        }
+        if (clazz == String.class) {
+            return "TEXT";
+        }
+        throw new RuntimeException("No database type available for: " + clazz.getName());
     }
 
     public abstract void setupConfig();
@@ -47,10 +86,6 @@ public abstract class Database {
 
     public DatabaseConfiguration getConfig() {
         return config;
-    }
-
-    public DatabaseType getType() {
-        return type;
     }
 
     public Connection getConnection() {

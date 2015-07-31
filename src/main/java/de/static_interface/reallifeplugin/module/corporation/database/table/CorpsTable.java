@@ -20,55 +20,10 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRow;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 public class CorpsTable extends AbstractTable<CorpRow> {
 
     public static final String TABLE_NAME = "corps";
     public CorpsTable(Database db) {
         super(TABLE_NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-
-        switch (db.getType()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "balance DOUBLE NOT NULL,"
-                        + "base_id VARCHAR(255) NOT NULL,"
-                        + "base_world VARCHAR(255) NOT NULL,"
-                        + "ceo_uuid VARCHAR(36) NOT NULL UNIQUE KEY,"
-                        + "corp_name VARCHAR(255) NOT NULL UNIQUE KEY,"
-                        + "isdeleted TINYINT(0) NOT NULL,"
-                        + "tag VARCHAR(5) UNIQUE KEY,"
-                        + "time BIGINT NOT NULL"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`balance` DOUBLE NOT NULL,"
-                        + "`base_id` VARCHAR(255) NOT NULL,"
-                        + "`base_world` VARCHAR(255) NOT NULL,"
-                        + "`ceo_uuid` VARCHAR(36) NOT NULL UNIQUE KEY,"
-                        + "`corp_name` VARCHAR(255) NOT NULL UNIQUE KEY, "
-                        + "`isdeleted` TINYINT(0) NOT NULL,"
-                        + "`tag` VARCHAR(5) UNIQUE KEY,"
-                        + "`time` BIGINT NOT NULL"
-                        + ");";
-                break;
-        }
-
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
     }
 }

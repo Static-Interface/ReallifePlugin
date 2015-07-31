@@ -20,58 +20,11 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 public class ContractsTable extends AbstractTable<ContractRow> {
 
     public static final String TABLE_NAME = "contracts";
 
     public ContractsTable(Database db) {
         super(TABLE_NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-
-        switch (db.getDialect()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "name VARCHAR(255) NOT NULL,"
-                        + "creator_id VARCHAR(36) NOT NULL,"
-                        + "content TEXT NOT NULL,"
-                        + "type INT NOT NULL,"
-                        + "events VARCHAR(255) NOT NULL,"
-                        + "user_ids TEXT NOT NULL,"
-                        + "period BIGINT,"
-                        + "creation_time BIGINT NOT NULL,"
-                        + "expire_time BIGINT NOT NULL"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`name` VARCHAR(255) NOT NULL,"
-                        + "`creator_id` VARCHAR(255) NOT NULL,"
-                        + "`content` TEXT NOT NULL,"
-                        + "`type` INT NOT NULL,"
-                        + "`events` VARCHAR(255) NOT NULL,"
-                        + "`user_ids` TEXT NOT NULL,"
-                        + "`period` BIGINT,"
-                        + "`creation_time` BIGINT NOT NULL,"
-                        + "`expire_time` BIGINT NOT NULL"
-                        + ");";
-                break;
-        }
-
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
     }
 }

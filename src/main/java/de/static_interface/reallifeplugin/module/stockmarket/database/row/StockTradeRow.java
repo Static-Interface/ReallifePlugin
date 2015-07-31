@@ -16,25 +16,33 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
+import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
+
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
+import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 
 public class StockTradeRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
     @Column
     public int amount;
 
-    @Column
-    public int new_amount;
+    @Column(name = "new_amount")
+    public int newAmount;
 
     @Column
     public double price;
 
-    @Column
-    public int stock_id;
+    @Column(name = "stock_id")
+    @ForeignKey(table = StocksTable.class, column = "id", onDelete = CASCADE, onUpdate = CASCADE)
+    @Index
+    public int stockId;
 
     @Column
     public long time;
@@ -42,6 +50,8 @@ public class StockTradeRow implements Row {
     @Column
     public int type;
 
-    @Column
-    public int user_id;
+    @Column(name = "user_id")
+    @ForeignKey(table = CorpUsersTable.class, column = "id", onDelete = CASCADE, onUpdate = CASCADE)
+    @Index
+    public int userId;
 }

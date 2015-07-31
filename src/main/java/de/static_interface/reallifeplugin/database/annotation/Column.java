@@ -14,13 +14,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.database.annotation;
 
-import de.static_interface.sinklibrary.api.annotation.Unstable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public enum DatabaseType {
-    MYSQL,
-    INVALID,
-    NONE,
-    @Unstable H2
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Column {
+
+    String name() default "";
+
+    boolean autoIncrement() default false;
+
+    boolean primaryKey() default false;
+
+    boolean uniqueKey() default false;
+
+    String comment() default "";
+
+    String defaultValue() default "";
+
+    boolean unsigned() default false;
+
+    boolean zerofill() default false;
 }

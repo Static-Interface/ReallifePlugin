@@ -20,52 +20,10 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 public class CorpUsersTable extends AbstractTable<CorpUserRow> {
 
     public static final String TABLE_NAME = "corp_users";
     public CorpUsersTable(Database db) {
         super(TABLE_NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-
-        switch (db.getType()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "corp_id INT,"
-                        + "isCoCeo TINYINT(0) NOT NULL,"
-                        + "rank VARCHAR(36),"
-                        + "uuid VARCHAR(36) NOT NULL UNIQUE KEY,"
-                        + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + CorpsTable.TABLE_NAME
-                        + "(id) ON UPDATE CASCADE ON DELETE SET NULL,"
-                        + "INDEX corp_id_I (corp_id)"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`corp_id` INT,"
-                        + "`isCoCeo` TINYINT(0) NOT NULL,"
-                        + "`rank` VARCHAR(36),"
-                        + "`uuid` VARCHAR(36) NOT NULL UNIQUE KEY,"
-                        + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + CorpsTable.TABLE_NAME
-                        + "`(`id`) ON UPDATE CASCADE ON DELETE SET NULL,"
-                        + "INDEX `corp_id_I` (`corp_id`)"
-                        + ");";
-                break;
-        }
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
     }
 }

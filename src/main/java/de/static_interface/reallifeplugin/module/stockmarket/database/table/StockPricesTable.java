@@ -20,55 +20,10 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockPriceRow;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 public class StockPricesTable extends AbstractTable<StockPriceRow> {
 
     public static final String TABLE_NAME = "stock_price";
     public StockPricesTable(Database db) {
         super(TABLE_NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-
-        switch (db.getType()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "cause TEXT,"
-                        + "new_price DOUBLE NOT NULL,"
-                        + "old_price DOUBLE NOT NULL,"
-                        + "stock_id INT NOT NULL,"
-                        + "time BIGINT NOT NULL,"
-                        + "FOREIGN KEY (stock_id) REFERENCES " + db.getConfig().getTablePrefix() + StocksTable.TABLE_NAME
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX stock_id_I (stock_id)"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`cause` TEXT,"
-                        + "`new_price` DOUBLE NOT NULL,"
-                        + "`old_price` DOUBLE NOT NULL,"
-                        + "`stock_id` INT NOT NULL,"
-                        + "`time` BIGINT NOT NULL,"
-                        + "FOREIGN KEY (`stock_id`) REFERENCES `" + db.getConfig().getTablePrefix() + StocksTable.TABLE_NAME
-                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX `stock_id_I` (`stock_id`)"
-                        + ");";
-                break;
-        }
-
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
     }
 }

@@ -17,11 +17,16 @@
 package de.static_interface.reallifeplugin.database;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.apache.commons.lang.Validate;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.ResultQuery;
+import org.jooq.SQLDialect;
 import org.jooq.SelectField;
 import org.jooq.SelectJoinStep;
 import org.jooq.impl.DSL;
@@ -53,21 +58,155 @@ public abstract class AbstractTable<T extends Row> {
         return db.getConfig().getTablePrefix() + name;
     }
 
-    public abstract void create() throws SQLException;
+    public void create() throws SQLException {
+        char bt = db.getBacktick();
+        String sql = "CREATE TABLE IF NOT EXISTS " + bt + getName() + bt + " (";
+
+        List<Field> foreignKeys = new ArrayList<>();
+        List<Field> indexes = new ArrayList<>();
+
+        int position = 1;
+        boolean primarySet = false;
+        for (Field f : getRowClass().getFields()) {
+            Column column = f.getAnnotation(Column.class);
+            if (column == null) {
+                continue;
+            }
+            String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+
+            sql += bt + name + bt + " " + db.toDatabaseType(f.getType());
+
+            if (column.zerofill()) {
+                sql += " ZEROFILL";
+            }
+
+            if (column.unsigned()) {
+                sql += " UNSIGNED";
+            }
+
+            if (column.autoIncrement()) {
+                sql += " AUTO_INCREMENT";
+            }
+
+            if (column.uniqueKey()) {
+                sql += " UNIQUE KEY";
+            }
+
+            if (column.primaryKey()) {
+                if (primarySet) {
+                    throw new SQLException("Duplicate primary key");
+                }
+                primarySet = true;
+                sql += " PRIMARY KEY";
+            }
+
+            if (f.getAnnotation(Nullable.class) == null) {
+                sql += " NOT NULL";
+            }
+
+            if (!StringUtil.isEmptyOrNull(column.defaultValue())) {
+                sql += " DEFAULT " + column.defaultValue();
+            }
+
+            if (!StringUtil.isEmptyOrNull(column.comment())) {
+                sql += " COMMENT '" + column.comment() + "'";
+            }
+
+            if (f.getAnnotation(ForeignKey.class) != null) {
+                foreignKeys.add(f);
+            }
+
+            if (f.getAnnotation(Index.class) == null) {
+                indexes.add(f);
+            }
+
+            if (position == getRowClass().getFields().length && foreignKeys.size() == 0 && indexes.size() == 0) {
+                break;
+            }
+            sql += ",";
+            position++;
+        }
+
+        position = 1;
+        for (Field f : foreignKeys) {
+            Column column = f.getAnnotation(Column.class);
+            String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+            String tablename;
+
+            ForeignKey foreignKey = f.getAnnotation(ForeignKey.class);
+            Class<?> table = foreignKey.table();
+            try {
+                tablename = table.getField("TABLE_NAME").get(null).toString();
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new RuntimeException("Static String Field TABLE_NAME was not declared in table wrapper class " + table.getName() + "!", e);
+            }
+            sql +=
+                    "FOREIGN KEY (" + bt + name + bt + ") REFERENCES " + db.getConfig().getTablePrefix() + tablename + " (" + bt + foreignKey.column()
+                    + bt + ")";
+            sql += " ON UPDATE " + foreignKey.onUpdate().toSql() + " ON DELETE DELETE " + foreignKey.onDelete().toSql();
+
+            if (position == getRowClass().getFields().length && indexes.size() == 0) {
+                break;
+            }
+            sql += ",";
+            position++;
+        }
+
+        position = 1;
+        for (Field f : indexes) {
+            if (getEngine().equalsIgnoreCase("InnoDB") && foreignKeys.contains(f)) {
+                continue; //InnoDB already creates indexes for foreign keys, so skip these...
+            }
+
+            Column column = f.getAnnotation(Column.class);
+            String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+
+            Index index = f.getAnnotation(Index.class);
+            String indexName = StringUtil.isEmptyOrNull(index.name()) ? name + "_I" : index.name();
+
+            sql += "INDEX " + bt + indexName + bt + " (" + bt + name + bt + ")";
+
+            if (position == getRowClass().getFields().length) {
+                break;
+            }
+            sql += ",";
+            position++;
+        }
+
+        sql += ")";
+        if (db.getDialect() == SQLDialect.MYSQL || db.getDialect() == SQLDialect.MARIADB) {
+            //Todo: do other SQL databases support engines?
+            sql += " ENGINE=" + getEngine();
+        }
+        sql += ";";
+
+        PreparedStatement statement = db.getConnection().prepareStatement(sql);
+        statement.executeUpdate();
+        statement.close();
+    }
+
+    public String getEngine() {
+        return "InnoDB";
+    }
 
     public ResultSet serialize(T row) throws SQLException {
         String columns = "";
         int i = 0;
         Field[] fields = row.getClass().getFields();
         for(Field f : fields) {
-            if(f.getAnnotation(Column.class) == null) continue;
-
+            Column column = f.getAnnotation(Column.class);
+            if (column == null) {
+                continue;
+            }
+            String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
             if(i == 0) {
-                columns = f.getName();
+                columns = name;
                 i++;
                 continue;
             }
-            columns = ", " + f.getName();
+            columns = ", " + name;
             i++;
         }
 
@@ -96,15 +235,6 @@ public abstract class AbstractTable<T extends Row> {
 
         executeUpdate(sql, values.toArray(new Object[values.size()]));
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    protected ResultSet[] serialize(T[] rows) throws SQLException {
-        ResultSet[] result  = new ResultSet[rows.length];
-        for(int i = 0; i < rows.length; i++) {
-            result[i] = serialize(rows[i]);
-        }
-
-        return result;
     }
 
     protected T[] deserialize(ResultSet rs) {
@@ -173,8 +303,11 @@ public abstract class AbstractTable<T extends Row> {
 
         Field[] fields = getRowClass().getFields();
         for (Field f : fields) {
-            if(f.getAnnotation(Column.class) == null) continue;
-            String name = f.getName();
+            Column column = f.getAnnotation(Column.class);
+            if (column == null) {
+                continue;
+            }
+            String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
             try {
                 f.set(instance, r.getValue(name));
             } catch (Exception e) {
@@ -203,7 +336,11 @@ public abstract class AbstractTable<T extends Row> {
 
                 Field[] fields = getRowClass().getFields();
                 for (Field f : fields) {
-                    String name = f.getName();
+                    Column column = f.getAnnotation(Column.class);
+                    if (column == null) {
+                        continue;
+                    }
+                    String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
                     try {
                         f.set(instance, r.getObject(name, f.getType()));
                     } catch (Exception e) {

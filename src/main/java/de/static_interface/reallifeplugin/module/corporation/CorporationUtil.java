@@ -143,7 +143,7 @@ public class CorporationUtil {
         try {
             CorpUserRow row = new CorpUserRow();
             row.id = null;
-            row.corp_id = null;
+            row.corpId = null;
             row.isCoCeo = false;
             row.rank = rank;
             row.uuid = user.getUniqueId().toString();
@@ -264,10 +264,10 @@ public class CorporationUtil {
         IngameUser ceo = SinkLibrary.getInstance().getIngameUser(username, true);
 
         CorpRow row = new CorpRow();
-        row.base_id = base;
+        row.baseId = base;
         row.base_world = world.getName();
-        row.ceo_uuid = ceo.getUniqueId().toString();
-        row.corp_name = name;
+        row.ceoUuid = ceo.getUniqueId().toString();
+        row.corpName = name;
         row.time = System.currentTimeMillis();
         row.isDeleted = false;
 

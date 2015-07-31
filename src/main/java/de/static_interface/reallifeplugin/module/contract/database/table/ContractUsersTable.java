@@ -20,42 +20,11 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserRow;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 public class ContractUsersTable extends AbstractTable<ContractUserRow> {
 
     public static final String TABLE_NAME = "contract_users";
 
     public ContractUsersTable(Database db) {
         super(TABLE_NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-
-        switch (db.getType()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "uuid VARCHAR(36) NOT NULL"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`uuid` VARCHAR(36) NOT NULL"
-                        + ");";
-                break;
-        }
-
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
     }
 }

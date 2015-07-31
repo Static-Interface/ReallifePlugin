@@ -458,7 +458,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                         continue;
                     }
 
-                    Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, userStock.stock_id);
+                    Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, userStock.stockId);
 
                     double percent = 0;
                     String a = null;
@@ -638,8 +638,8 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
         StockUserRow row = new StockUserRow();
         row.amount = transfer.amount;
-        row.stock_id = transfer.stock.getId();
-        row.user_id = tmp.id;
+        row.stockId = transfer.stock.getId();
+        row.userId = tmp.id;
         usersTable.insert(row);
     }
 
@@ -713,8 +713,8 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
         StockUserRow row = new StockUserRow();
         row.amount = amount;
-        row.stock_id = stockId;
-        row.user_id = tmp.id;
+        row.stockId = stockId;
+        row.userId = tmp.id;
         usersTable.insert(row);
     }
 }

@@ -22,7 +22,6 @@ import de.static_interface.reallifeplugin.command.ReallifePluginCommand;
 import de.static_interface.reallifeplugin.config.Settings;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
-import de.static_interface.reallifeplugin.database.DatabaseType;
 import de.static_interface.reallifeplugin.database.impl.H2Database;
 import de.static_interface.reallifeplugin.database.impl.MySqlDatabase;
 import de.static_interface.reallifeplugin.module.Module;
@@ -37,6 +36,7 @@ import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jooq.SQLDialect;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -73,19 +73,22 @@ public class ReallifeMain extends JavaPlugin {
         settings = new Settings(this);
 
         DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder());
-        DatabaseType type = config.getDatabaseType();
+
+        SQLDialect type;
+        try {
+            type = config.getDatabaseType();
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Warning, an error occured while parsing the config:");
+            getLogger().log(Level.SEVERE, "Invalid Database type: " + config.get("Type"));
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         switch (type) {
             case H2:
                 db = new H2Database(config, this);
                 break;
             case MYSQL:
                 db = new MySqlDatabase(config, this);
-                break;
-
-            case INVALID:
-                getLogger().log(Level.WARNING, "Invalid Database type: " + config.get("Type"));
-            case NONE:
-                db = null;
                 break;
         }
 

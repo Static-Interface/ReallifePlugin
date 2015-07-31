@@ -14,18 +14,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract.database.row;
+package de.static_interface.reallifeplugin.database.annotation;
 
-import de.static_interface.reallifeplugin.database.Row;
-import de.static_interface.reallifeplugin.database.annotation.Column;
-import de.static_interface.reallifeplugin.database.annotation.Index;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public class ContractUserRow implements Row {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Index {
 
-    @Column(autoIncrement = true, primaryKey = true)
-    public Integer id;
-
-    @Column
-    @Index
-    public String uuid;
+    String name() default ""; //will add the _I suffix to the name of the column
 }

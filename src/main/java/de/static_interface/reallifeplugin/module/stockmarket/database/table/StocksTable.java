@@ -18,61 +18,12 @@ package de.static_interface.reallifeplugin.module.stockmarket.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 public class StocksTable extends AbstractTable<StockRow> {
 
     public static final String TABLE_NAME = "stocks";
     public StocksTable(Database db) {
         super(TABLE_NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-        switch (db.getType()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "amount INT NOT NULL,"
-                        + "base_price DOUBLE NOT NULL,"
-                        + "corp_id INT NOT NULL UNIQUE KEY,"
-                        + "dividend DOUBLE NOT NULL,"
-                        + "price DOUBLE NOT NULL,"
-                        + "share_holding DOUBLE NOT NULL,"
-                        + "allow_buy_stocks BOOLEAN NOT NULL,"
-                        + "time BIGINT NOT NULL,"
-                        + "FOREIGN KEY (corp_id) REFERENCES " + db.getConfig().getTablePrefix() + CorpsTable.TABLE_NAME
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`amount` INT NOT NULL,"
-                        + "`base_price` DOUBLE NOT NULL,"
-                        + "`corp_id` INT NOT NULL UNIQUE KEY,"
-                        + "`dividend` DOUBLE NOT NULL,"
-                        + "`price` DOUBLE NOT NULL,"
-                        + "`share_holding` DOUBLE NOT NULL,"
-                        + "`allow_buy_stocks` BOOLEAN NOT NULL,"
-                        + "`time` BIGINT NOT NULL,"
-                        + "FOREIGN KEY (`corp_id`) REFERENCES `" + db.getConfig().getTablePrefix() + CorpsTable.TABLE_NAME
-                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE"
-                        + ");";
-                break;
-        }
-
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
     }
 }

@@ -127,7 +127,7 @@ public class StockMarket {
 
         List<StockUserRow> parsedRows = new ArrayList<>();
         for (StockUserRow row : rows) {
-            Stock s = getStock(module, corpModule, row.stock_id);
+            Stock s = getStock(module, corpModule, row.stockId);
             Corporation corp = null;
             try {
                 corp = s.getCorporation();
@@ -318,7 +318,7 @@ public class StockMarket {
         // calculate amount
         long changedAmount = 0;
         for (CorpTradesRow row : rows) {
-            changedAmount += Math.abs(row.changed_amount);
+            changedAmount += Math.abs(row.changedAmount);
         }
         return changedAmount;
     }

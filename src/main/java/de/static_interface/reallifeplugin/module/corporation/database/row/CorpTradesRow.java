@@ -16,31 +16,39 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
+import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
+
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 
 public class CorpTradesRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
-    @Column
-    public int corp_id;
+    @Column(name = "corp_id")
+    @ForeignKey(table = CorpsTable.class, column = "id", onDelete = CASCADE, onUpdate = CASCADE)
+    @Index
+    public int corpId;
 
-    @Column
-    public String material_name;
+    @Column(name = "material_name")
+    public String materialName;
 
-    @Column
-    public int new_amount;
+    @Column(name = "new_amount")
+    public int newAmount;
 
     @Column
     public double price;
 
-    @Column
-    public int sign_amount;
+    @Column(name = "sign_amount")
+    public int signAmount;
 
-    @Column
-    public int changed_amount;
+    @Column(name = "changed_amount")
+    public int changedAmount;
 
     @Column
     public long time;
@@ -48,8 +56,10 @@ public class CorpTradesRow implements Row {
     @Column
     public int type;
 
-    @Column
-    public int user_id;
+    @Column(name = "user_id")
+    @ForeignKey(table = CorpUsersTable.class, column = "id", onDelete = CASCADE, onUpdate = CASCADE)
+    @Index
+    public int userId;
 
     @Column
     public String world;

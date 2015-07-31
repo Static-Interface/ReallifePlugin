@@ -14,18 +14,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract.database.row;
+package de.static_interface.reallifeplugin.database.annotation;
 
-import de.static_interface.reallifeplugin.database.Row;
-import de.static_interface.reallifeplugin.database.annotation.Column;
-import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.database.AbstractTable;
+import de.static_interface.reallifeplugin.database.CascadeAction;
 
-public class ContractUserRow implements Row {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-    @Column(autoIncrement = true, primaryKey = true)
-    public Integer id;
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ForeignKey {
 
-    @Column
-    @Index
-    public String uuid;
+    Class<? extends AbstractTable> table();
+
+    String column();
+
+    CascadeAction onDelete() default CascadeAction.RESTRICT; //MySQL default
+
+    CascadeAction onUpdate() default CascadeAction.RESTRICT; //MySQL default
 }

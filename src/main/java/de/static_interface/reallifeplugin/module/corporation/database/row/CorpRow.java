@@ -16,35 +16,39 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
+import de.static_interface.reallifeplugin.database.annotation.Index;
 
 import javax.annotation.Nullable;
 
 public class CorpRow implements Row {
 
-    @Column
+    @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
     @Column
     public double balance;
 
-    @Column
-    public String base_id;
+    @Column(name = "base_id")
+    public String baseId;
 
     @Column
     public String base_world;
 
-    @Column
-    public String ceo_uuid;
+    @Column(name = "ceo_uuid", uniqueKey = true)
+    @Index
+    public String ceoUuid;
 
-    @Column
-    public String corp_name;
+    @Column(name = "corp_name", uniqueKey = true)
+    @Index
+    public String corpName;
 
     @Column
     public boolean isDeleted;
 
-    @Column
+    @Column(uniqueKey = true)
+    @Index
     @Nullable
     public String tag;
 

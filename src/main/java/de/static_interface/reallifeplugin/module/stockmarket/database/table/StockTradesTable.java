@@ -18,68 +18,12 @@ package de.static_interface.reallifeplugin.module.stockmarket.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockTradeRow;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 public class StockTradesTable extends AbstractTable<StockTradeRow> {
 
-    public static final String NAME = "stock_trades";
+    public static final String TABLE_NAME = "stock_trades";
     public StockTradesTable(Database db) {
-        super(NAME, db);
-    }
-
-    @Override
-    public void create() throws SQLException {
-        String sql;
-
-        switch (db.getType()) {
-            case H2:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS " + getName() + " ("
-                        + "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "amount INT NOT NULL,"
-                        + "new_amount INT NOT NULL,"
-                        + "price DOUBLE NOT NULL,"
-                        + "stock_id INT NOT NULL,"
-                        + "time BIGINT NOT NULL,"
-                        + "type INT NOT NULL,"
-                        + "user_id INT NOT NULL,"
-                        + "FOREIGN KEY (stock_id) REFERENCES " + db.getConfig().getTablePrefix() + StocksTable.TABLE_NAME
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "FOREIGN KEY (user_id) REFERENCES " + db.getConfig().getTablePrefix() + CorpUsersTable.TABLE_NAME
-                        + "(id) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX stock_id_I (stock_id),"
-                        + "INDEX user_id_I (user_id)"
-                        + ");";
-                break;
-
-            case MYSQL:
-            default:
-                sql =
-                        "CREATE TABLE IF NOT EXISTS `" + getName() + "` ("
-                        + "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                        + "`amount` INT NOT NULL,"
-                        + "`new_amount` INT NOT NULL,"
-                        + "`price` DOUBLE NOT NULL,"
-                        + "`stock_id` INT NOT NULL,"
-                        + "`time` BIGINT NOT NULL,"
-                        + "`type` INT NOT NULL,"
-                        + "`user_id` INT NOT NULL,"
-                        + "FOREIGN KEY (`stock_id`) REFERENCES `" + db.getConfig().getTablePrefix() + StocksTable.TABLE_NAME
-                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "FOREIGN KEY (`user_id`) REFERENCES `" + db.getConfig().getTablePrefix() + CorpUsersTable.TABLE_NAME
-                        + "`(`id`) ON UPDATE CASCADE ON DELETE CASCADE,"
-                        + "INDEX `stock_id_I` (`stock_id`),"
-                        + "INDEX `user_id_I` (`user_id`)"
-                        + ");";
-                break;
-        }
-
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
+        super(TABLE_NAME, db);
     }
 }

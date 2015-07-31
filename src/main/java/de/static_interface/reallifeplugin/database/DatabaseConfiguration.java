@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.database;
 
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import org.jooq.SQLDialect;
 
 import java.io.File;
 
@@ -37,11 +38,11 @@ public class DatabaseConfiguration extends Configuration {
         addDefault("DatabaseName", "ReallifePlugin");
     }
 
-    public DatabaseType getDatabaseType() {
+    public SQLDialect getDatabaseType() {
         try {
-            return DatabaseType.valueOf(((String) get("Type")).toUpperCase());
+            return SQLDialect.valueOf(((String) get("Type")).toUpperCase());
         } catch (IllegalArgumentException e) {
-            return DatabaseType.INVALID;
+            throw new RuntimeException(e);
         }
     }
 

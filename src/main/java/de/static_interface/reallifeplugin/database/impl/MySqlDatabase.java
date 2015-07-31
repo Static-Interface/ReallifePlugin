@@ -20,7 +20,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
-import de.static_interface.reallifeplugin.database.DatabaseType;
 import org.bukkit.plugin.Plugin;
 import org.jooq.SQLDialect;
 
@@ -29,7 +28,7 @@ import java.sql.SQLException;
 public class MySqlDatabase extends Database {
 
     public MySqlDatabase(DatabaseConfiguration config, Plugin plugin) {
-        super(config, plugin, DatabaseType.MYSQL, SQLDialect.MYSQL);
+        super(config, plugin, SQLDialect.MYSQL, '`');
     }
 
     @Override

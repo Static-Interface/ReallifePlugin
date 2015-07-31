@@ -44,7 +44,7 @@ public class StockMarketListener extends ModuleListener<StockMarketModule> {
         }
 
         for (StockUserRow row : stocks) {
-            Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, row.stock_id);
+            Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, row.stockId);
             if (stock.getCorporation().getCEO().getUniqueId().equals(user.getUniqueId())) {
                 continue;
             }
