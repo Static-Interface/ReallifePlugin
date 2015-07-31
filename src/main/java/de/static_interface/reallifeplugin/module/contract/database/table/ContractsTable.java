@@ -18,15 +18,11 @@ package de.static_interface.reallifeplugin.module.contract.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.module.contract.conversation.ContractEventType;
-import de.static_interface.reallifeplugin.module.contract.conversation.ContractType;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ContractsTable extends AbstractTable<ContractRow> {
 
@@ -40,7 +36,7 @@ public class ContractsTable extends AbstractTable<ContractRow> {
     public void create() throws SQLException {
         String sql;
 
-        switch (db.getType()) {
+        switch (db.getDialect()) {
             case H2:
                 sql =
                         "CREATE TABLE IF NOT EXISTS " + getName() + " ("
@@ -87,99 +83,8 @@ public class ContractsTable extends AbstractTable<ContractRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-
-        String events = "";
-        for (ContractEventType event : row.events) {
-            if (event == null) {
-                continue;
-            }
-            if (events.equals("")) {
-                events = "" + event.getId();
-                continue;
-            }
-
-            events += ", " + event.getId();
-        }
-
-        String users = "";
-        for (Integer user : row.userIds) {
-            if (user == null) {
-                continue;
-            }
-            if (users.equals("")) {
-                users = "" + user;
-                continue;
-            }
-
-            users += ", " + user;
-        }
-
-        executeUpdate(sql, row.name, row.creator, row.content, row.type, events, users, row.period, row.creationTime,
-                      row.expireTime);
+        executeUpdate(sql, row.name, row.creator, row.content, row.type, row.events, row.user_ids, row.period, row.creation_time,
+                      row.expire_time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public ContractRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        ContractRow[] rows = new ContractRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            ContractRow row = new ContractRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "name")) {
-                row.name = rs.getString("name");
-            }
-            if (hasColumn(rs, "creator_id")) {
-                row.creator = rs.getInt("creator_id");
-            }
-            if (hasColumn(rs, "content")) {
-                row.content = rs.getString("content");
-            }
-            if (hasColumn(rs, "type")) {
-                row.type = ContractType.getById(rs.getInt("type"));
-            }
-            if (hasColumn(rs, "events")) {
-                String[] rawStrings = rs.getString("events").split(",");
-                List<ContractEventType> events = new ArrayList<>();
-                for (String s : rawStrings) {
-                    s = s.trim();
-                    events.add(ContractEventType.getById(Integer.valueOf(s)));
-                }
-                row.events = events;
-            }
-            if (hasColumn(rs, "user_ids")) {
-                String[] rawStrings = rs.getString("user_ids").split(",");
-                List<Integer> userIds = new ArrayList<>();
-                for (String s : rawStrings) {
-                    s = s.trim();
-                    userIds.add(Integer.valueOf(s));
-                }
-                row.userIds = userIds;
-            }
-            if (hasColumn(rs, "period")) {
-                row.period = rs.getLong("period");
-                if (rs.wasNull()) {
-                    row.period = null;
-                }
-            }
-            if (hasColumn(rs, "creation_time")) {
-                row.creationTime = rs.getLong("creation_time");
-            }
-            if (hasColumn(rs, "expire_time")) {
-                row.expireTime = rs.getLong("expire_time");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

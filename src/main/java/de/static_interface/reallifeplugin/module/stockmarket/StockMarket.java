@@ -96,9 +96,9 @@ public class StockMarket {
 
         List<Stock> parsedRows = new ArrayList<>();
         for (StockRow row : rows) {
-            Corporation corp = CorporationUtil.getCorporation(corpModule, row.corpId);
+            Corporation corp = CorporationUtil.getCorporation(corpModule, row.corp_id);
             if (corp == null) {
-                ReallifeMain.getInstance().getLogger().warning("Corp ID not found: " + row.corpId);
+                ReallifeMain.getInstance().getLogger().warning("Corp ID not found: " + row.corp_id);
                 continue;
             }
             Stock stock = new Stock(module, corpModule, row.id);
@@ -127,7 +127,7 @@ public class StockMarket {
 
         List<StockUserRow> parsedRows = new ArrayList<>();
         for (StockUserRow row : rows) {
-            Stock s = getStock(module, corpModule, row.stockId);
+            Stock s = getStock(module, corpModule, row.stock_id);
             Corporation corp = null;
             try {
                 corp = s.getCorporation();
@@ -208,9 +208,9 @@ public class StockMarket {
 
                 StockPriceRow row = new StockPriceRow();
                 row.cause = "onStocksUpdate";
-                row.newPrice = newPrice;
-                row.oldPrice = oldPrice;
-                row.stockId = stock.getId();
+                row.new_price = newPrice;
+                row.old_price = oldPrice;
+                row.stock_id = stock.getId();
                 row.time = System.currentTimeMillis();
 
                 StockPricesTable table = Module.getTable(module, StockPricesTable.class);
@@ -318,7 +318,7 @@ public class StockMarket {
         // calculate amount
         long changedAmount = 0;
         for (CorpTradesRow row : rows) {
-            changedAmount += Math.abs(row.changedAmount);
+            changedAmount += Math.abs(row.changed_amount);
         }
         return changedAmount;
     }

@@ -19,9 +19,6 @@ package de.static_interface.reallifeplugin.module.corporation.database.table;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,67 +100,11 @@ public class CorpTradesTable extends AbstractTable<CorpTradesRow> {
             throw new IllegalArgumentException("Id should be null!");
         }
 
-        Location loc = row.location;
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.corpId, row.material.toString(),
-                      row.newAmount, row.price, row.signAmount, row.changedAmount, row.time, row.type,
-                      row.userId, loc.getWorld().getName(), (int) loc.getX(), (int) loc.getY(), (int) loc.getZ());
+        executeUpdate(sql, row.corp_id, row.material_name,
+                      row.new_amount, row.price, row.sign_amount, row.changed_amount, row.time, row.type,
+                      row.user_id, row.world, row.x, row.y, row.z);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public CorpTradesRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst(); // not rs.first() because the rs.next() below will move on, missing the first element
-        }
-
-        CorpTradesRow[] rows = new CorpTradesRow[rowcount];
-        int i = 0;
-        while (rs.next()) {
-            CorpTradesRow row = new CorpTradesRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "corp_id")) {
-                row.corpId = rs.getInt("corp_id");
-            }
-            if (hasColumn(rs, "world") && hasColumn(rs, "x") && hasColumn(rs, "y") && hasColumn(rs, "z")) {
-                String world = rs.getString("world");
-                double x = rs.getInt("x");
-                double y = rs.getInt("y");
-                double z = rs.getInt("z");
-                row.location = new Location(Bukkit.getWorld(world), x, y, z);
-            }
-            if (hasColumn(rs, "material_name")) {
-                row.material = Material.valueOf(rs.getString("material_name"));
-            }
-            if (hasColumn(rs, "new_amount")) {
-                row.newAmount = rs.getInt("new_amount");
-            }
-            if (hasColumn(rs, "price")) {
-                row.price = rs.getDouble("price");
-            }
-            if (hasColumn(rs, "sign_amount")) {
-                row.signAmount = rs.getInt("sign_amount");
-            }
-            if (hasColumn(rs, "changed_amount")) {
-                row.changedAmount = rs.getInt("changed_amount");
-            }
-            if (hasColumn(rs, "time")) {
-                row.time = rs.getLong("time");
-            }
-            if (hasColumn(rs, "type")) {
-                row.type = rs.getInt("type");
-            }
-            if (hasColumn(rs, "userId")) {
-                row.userId = rs.getInt("user_id");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

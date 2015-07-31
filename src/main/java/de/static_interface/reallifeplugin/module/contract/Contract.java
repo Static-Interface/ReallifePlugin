@@ -40,7 +40,7 @@ public class Contract {
     public static IngameUser getUserFromUserId(ContractModule module, int id) {
         UUID uuid;
         try {
-            uuid = Module.getTable(module, ContractUsersTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = ?", id)[0].uuid;
+            uuid = UUID.fromString(Module.getTable(module, ContractUsersTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = ?", id)[0].uuid);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -56,7 +56,7 @@ public class Contract {
             }
         } catch (Exception e) {
             row = new ContractUserRow();
-            row.uuid = user.getUniqueId();
+            row.uuid = user.getUniqueId().toString();
             try {
                 row = Module.getTable(module, ContractUsersTable.class).insert(row);
             } catch (SQLException e1) {

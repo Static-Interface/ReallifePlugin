@@ -16,19 +16,21 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
+import de.static_interface.reallifeplugin.database.Row;
 
-public class CorpTradesRow {
+public class CorpTradesRow implements Row {
     public Integer id;
-    public int signAmount;
-    public int corpId;
-    public Location location;
-    public Material material;
-    public int newAmount;
+    public int corp_id;
+    public String material_name;
+    public int new_amount;
     public double price;
-    public int changedAmount;
+    public int sign_amount;
+    public int changed_amount;
     public long time;
-    public int userId;
     public int type;
+    public int user_id;
+    public String world;
+    public int x;
+    public int y;
+    public int z;
 }

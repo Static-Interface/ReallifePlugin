@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.database;
 
-import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.plugin.Plugin;
+import org.jooq.SQLDialect;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,16 +27,16 @@ public abstract class Database {
 
     private final DatabaseConfiguration config;
     private final DatabaseType type;
-    private final SQLTemplates dialect;
+    private final SQLDialect dialect;
     protected HikariDataSource dataSource;
     protected Plugin plugin;
     protected Connection connection;
 
-    public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type) {
+    public Database(DatabaseConfiguration config, Plugin plugin, DatabaseType type, SQLDialect dialect) {
         this.plugin = plugin;
         this.type = type;
         this.config = config;
-        this.dialect = generateDialect();
+        this.dialect = dialect;
     }
 
     public abstract void setupConfig();
@@ -44,8 +44,6 @@ public abstract class Database {
     public abstract void connect() throws SQLException;
 
     public abstract void close() throws SQLException;
-
-    public abstract SQLTemplates generateDialect();
 
     public DatabaseConfiguration getConfig() {
         return config;
@@ -59,7 +57,7 @@ public abstract class Database {
         return connection;
     }
 
-    public SQLTemplates getDialect() {
+    public SQLDialect getDialect() {
         return dialect;
     }
 }

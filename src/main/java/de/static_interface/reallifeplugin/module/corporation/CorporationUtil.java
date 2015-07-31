@@ -143,10 +143,10 @@ public class CorporationUtil {
         try {
             CorpUserRow row = new CorpUserRow();
             row.id = null;
-            row.corpId = null;
+            row.corp_id = null;
             row.isCoCeo = false;
             row.rank = rank;
-            row.uuid = user.getUniqueId();
+            row.uuid = user.getUniqueId().toString();
 
             return Module.getTable(module, CorpUsersTable.class).insert(row);
         } catch (SQLException e) {
@@ -264,10 +264,10 @@ public class CorporationUtil {
         IngameUser ceo = SinkLibrary.getInstance().getIngameUser(username, true);
 
         CorpRow row = new CorpRow();
-        row.baseId = base;
-        row.baseWorld = world.getName();
-        row.ceoUniqueId = ceo.getUniqueId();
-        row.corpName = name;
+        row.base_id = base;
+        row.base_world = world.getName();
+        row.ceo_uuid = ceo.getUniqueId().toString();
+        row.corp_name = name;
         row.time = System.currentTimeMillis();
         row.isDeleted = false;
 

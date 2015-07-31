@@ -91,51 +91,9 @@ public class StockTradesTable extends AbstractTable<StockTradeRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.newAmount,
-                      row.price, row.stockId, row.time, row.type, row.userId);
+        executeUpdate(sql, row.amount, row.new_amount,
+                      row.price, row.stock_id, row.time, row.type, row.user_id);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public StockTradeRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst(); // not rs.first() because the rs.next() below will move on, missing the first element
-        }
-
-        StockTradeRow[] rows = new StockTradeRow[rowcount];
-        int i = 0;
-        while (rs.next()) {
-            StockTradeRow row = new StockTradeRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "amount")) {
-                row.amount = rs.getInt("amount");
-            }
-            if (hasColumn(rs, "new_amount")) {
-                row.newAmount = rs.getInt("new_amount");
-            }
-            if (hasColumn(rs, "price")) {
-                row.price = rs.getDouble("price");
-            }
-            if (hasColumn(rs, "stock_id")) {
-                row.stockId = rs.getInt("stock_id");
-            }
-            if (hasColumn(rs, "time")) {
-                row.time = rs.getLong("time");
-            }
-            if (hasColumn(rs, "type")) {
-                row.type = rs.getInt("type");
-            }
-            if (hasColumn(rs, "userId")) {
-                row.userId = rs.getInt("user_id");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

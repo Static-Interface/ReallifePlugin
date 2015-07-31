@@ -14,13 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.stockmarket.database.row;
+package de.static_interface.reallifeplugin.database;
 
-import de.static_interface.reallifeplugin.database.Row;
+public interface Row {
 
-public class StockUserRow implements Row {
-    public Integer id;
-    public int amount;
-    public int stock_id;
-    public int user_id;
 }

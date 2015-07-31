@@ -37,7 +37,7 @@ public class ContractUserOptionsTable extends AbstractTable<ContractUserOptionsR
     public void create() throws SQLException {
         String sql;
 
-        switch (db.getType()) {
+        switch (db.getDialect()) {
             case H2:
                 sql =
                         "CREATE TABLE IF NOT EXISTS " + getName() + " ("
@@ -85,45 +85,8 @@ public class ContractUserOptionsTable extends AbstractTable<ContractUserOptionsR
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?);";
-        executeUpdate(sql, row.userId, row.contractId, row.money, row.isCreator);
+        executeUpdate(sql, row.user_id, row.contract_id, row.money, row.isCreator);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public ContractUserOptionsRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        ContractUserOptionsRow[] rows = new ContractUserOptionsRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            ContractUserOptionsRow row = new ContractUserOptionsRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "user_id")) {
-                row.userId = rs.getInt("userId");
-            }
-            if (hasColumn(rs, "contract_id")) {
-                row.contractId = rs.getInt("contract_id");
-            }
-            if (hasColumn(rs, "isCreator")) {
-                row.isCreator = rs.getBoolean("isCreator");
-            }
-            if (hasColumn(rs, "money")) {
-                row.money = rs.getDouble("money");
-                if (rs.wasNull()) {
-                    row.money = null;
-                }
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

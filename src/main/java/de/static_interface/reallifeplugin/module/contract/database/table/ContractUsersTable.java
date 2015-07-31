@@ -24,7 +24,6 @@ import org.apache.commons.lang.Validate;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 public class ContractUsersTable extends AbstractTable<ContractUserRow> {
 
@@ -70,33 +69,8 @@ public class ContractUsersTable extends AbstractTable<ContractUserRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?);";
-        executeUpdate(sql, row.uuid.toString());
+        executeUpdate(sql, row.uuid);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public ContractUserRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        ContractUserRow[] rows = new ContractUserRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            ContractUserRow row = new ContractUserRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "uuid")) {
-                row.uuid = UUID.fromString(rs.getString("uuid"));
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

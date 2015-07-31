@@ -18,23 +18,36 @@ package de.static_interface.reallifeplugin.database;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import org.apache.commons.lang.Validate;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.ResultQuery;
+import org.jooq.SelectField;
+import org.jooq.SelectJoinStep;
+import org.jooq.impl.DSL;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
-public abstract class AbstractTable<T> {
+public abstract class AbstractTable<T extends Row> {
     private final String name;
     protected Database db;
-
-
+    private DSLContext context;
     public AbstractTable(String name, Database db) {
         this.name = name;
         this.db = db;
+        context = DSL.using(db.getConnection(), db.getDialect());
     }
 
     public String getName() {
@@ -54,7 +67,11 @@ public abstract class AbstractTable<T> {
         return result;
     }
 
-    public abstract T[] deserialize(ResultSet rs) throws SQLException;
+    public T[] deserialize(ResultSet rs) {
+        List<T> result = deserializeResultSet(rs);
+        T[] array = (T[]) Array.newInstance(getRowClass(), result.size());
+        return result.toArray(array);
+    }
 
     public T[] get(String query, Object... paramObjects) throws SQLException {
         query = query.replaceAll("\\Q{TABLE}\\E", getName());
@@ -73,6 +90,96 @@ public abstract class AbstractTable<T> {
     public T insert(T row) throws SQLException {
         Validate.notNull(row);
         return deserialize(serialize(row))[0];
+    }
+
+    public SelectJoinStep select(SelectField... selectFields) {
+        return context.select(selectFields).from(name);
+    }
+
+    public T fetch(ResultQuery query) {
+        List<T> result = fetchList(query);
+        if (result == null || result.size() < 1) {
+            return null;
+        }
+        return result.get(0);
+    }
+
+    public List<T> fetchList(ResultQuery query) {
+        List<T> result = new ArrayList<>();
+        Result<Record> queryResult = query.fetch();
+        if (queryResult == null || queryResult.size() < 1) {
+            return null;
+        }
+        for (Record r : queryResult) {
+            result.add(deserializeRecord(r));
+        }
+        return result;
+    }
+
+
+    private T deserializeRecord(Record r) {
+        Constructor<?> ctor;
+        Object instance;
+        try {
+            ctor = getRowClass().getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Invalid row class: " + getRowClass().getName() + ": Constructor shouldn't accept arguments!");
+        }
+        try {
+            instance = ctor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Deserializing failed: ", e);
+        }
+
+        Field[] fields = getRowClass().getFields();
+        for (Field f : fields) {
+            String name = f.getName();
+            try {
+                f.set(instance, r.getValue(name));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return (T) instance;
+    }
+
+    private List<T> deserializeResultSet(ResultSet r) {
+        List<T> result = new ArrayList<>();
+        Constructor<?> ctor;
+        Object instance;
+        try {
+            ctor = getRowClass().getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Invalid row class: " + getRowClass().getName() + ": Constructor shouldn't accept arguments!");
+        }
+        try {
+            while (r.next()) {
+                try {
+                    instance = ctor.newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException("Deserializing failed: ", e);
+                }
+
+                Field[] fields = getRowClass().getFields();
+                for (Field f : fields) {
+                    String name = f.getName();
+                    try {
+                        f.set(instance, r.getObject(name, f.getType()));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                result.add((T) instance);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
+    public Class<T> getRowClass() {
+        return (Class<T>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
     public ResultSet executeQuery(String sql, @Nullable Object... paramObjects) throws SQLException {

@@ -84,53 +84,7 @@ public class StocksTable extends AbstractTable<StockRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.basePrice, row.corpId, row.dividend, row.price, row.shareHolding, row.allowBuyingStocks ? 1 : 0, row.time);
+        executeUpdate(sql, row.amount, row.base_price, row.corp_id, row.dividend, row.price, row.share_holding, row.allow_buy_stocks, row.time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public StockRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        StockRow[] rows = new StockRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            StockRow row = new StockRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "amount")) {
-                row.amount = rs.getInt("amount");
-            }
-            if (hasColumn(rs, "base_price")) {
-                row.basePrice = rs.getDouble("base_price");
-            }
-            if (hasColumn(rs, "corp_id")) {
-                row.corpId = rs.getInt("corp_id");
-            }
-            if (hasColumn(rs, "dividend")) {
-                row.dividend = rs.getDouble("dividend");
-            }
-            if (hasColumn(rs, "price")) {
-                row.price = rs.getDouble("price");
-            }
-            if (hasColumn(rs, "share_holding")) {
-                row.shareHolding = rs.getDouble("share_holding");
-            }
-            if (hasColumn(rs, "time")) {
-                row.time = rs.getLong("time");
-            }
-            if (hasColumn(rs, "allow_buy_stocks")) {
-                row.allowBuyingStocks = rs.getBoolean("allow_buy_stocks");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

@@ -16,8 +16,6 @@
 
 package de.static_interface.reallifeplugin.database.impl;
 
-import com.mysema.query.sql.H2Templates;
-import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.static_interface.reallifeplugin.database.Database;
@@ -25,6 +23,7 @@ import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
 import de.static_interface.reallifeplugin.database.DatabaseType;
 import de.static_interface.sinklibrary.api.annotation.Unstable;
 import org.bukkit.plugin.Plugin;
+import org.jooq.SQLDialect;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -35,7 +34,7 @@ import java.sql.SQLException;
 public class H2Database extends Database {
 
     public H2Database(DatabaseConfiguration config, Plugin plugin) {
-        super(config, plugin, DatabaseType.H2);
+        super(config, plugin, DatabaseType.H2, SQLDialect.H2);
     }
 
     @Override
@@ -69,10 +68,5 @@ public class H2Database extends Database {
         if (dataSource != null) {
             dataSource.close();
         }
-    }
-
-    @Override
-    public SQLTemplates generateDialect() {
-        return new H2Templates();
     }
 }

@@ -16,16 +16,16 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import java.util.UUID;
+import de.static_interface.reallifeplugin.database.Row;
 
-public class CorpRow {
+public class CorpRow implements Row {
     public Integer id;
     public double balance;
-    public String baseId;
-    public String baseWorld;
-    public UUID ceoUniqueId;
-    public String corpName;
-    public long time;
+    public String base_id;
+    public String base_world;
+    public String ceo_uuid;
+    public String corp_name;
     public boolean isDeleted;
     public String tag;
+    public long time;
 }

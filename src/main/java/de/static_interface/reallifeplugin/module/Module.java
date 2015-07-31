@@ -92,16 +92,6 @@ public abstract class Module<T extends Plugin> {
     }
 
     @Nullable
-    public static <E extends Module> E getModule(Class<E> classOfE) {
-        for (Module module : modules) {
-            if (module.getClass().equals(classOfE)) {
-                return (E) module;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
     public static Module getModule(String name) {
         name = name.trim().replace(" ", "_");
 
@@ -118,8 +108,13 @@ public abstract class Module<T extends Plugin> {
         return m != null && m.isEnabled();
     }
 
-    public static <T extends Module> T getModule(String name, Class<T> classOfT) {
-        return (T) getModule(name);
+    public static <T extends Module> T getModule(Class<T> classOfT) {
+        for (Module module : modules) {
+            if (module.getClass().getName().equals(classOfT.getName())) {
+                return (T) module;
+            }
+        }
+        return null;
     }
 
     public static Collection<Module> getModules() {

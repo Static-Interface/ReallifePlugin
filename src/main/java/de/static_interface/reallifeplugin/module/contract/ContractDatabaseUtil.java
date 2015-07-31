@@ -14,13 +14,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.stockmarket.database.row;
+package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.database.Row;
+import java.util.ArrayList;
+import java.util.List;
 
-public class StockUserRow implements Row {
-    public Integer id;
-    public int amount;
-    public int stock_id;
-    public int user_id;
+public class ContractDatabaseUtil {
+
+    public static List<Integer> splitIds(String idlist) {
+        String[] rawStrings = idlist.split(",");
+        List<Integer> userIds = new ArrayList<>();
+        for (String s : rawStrings) {
+            s = s.trim();
+            userIds.add(Integer.valueOf(s));
+        }
+        return userIds;
+    }
 }

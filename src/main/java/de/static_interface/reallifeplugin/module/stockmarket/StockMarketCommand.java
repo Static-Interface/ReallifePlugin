@@ -127,18 +127,30 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     user.sendMessage(m("StockMarket.MaxStocksPrice", maxPrice));
                     return true;
                 }
+
                 double divided = Double.parseDouble(args[3]);
                 double share = Double.parseDouble(args[4]);
+                double minShare = (double) getModule().getConfig().get("GoPublic.MinStocksShare");
+                if (minShare > 0 && share < minShare) {
+                    user.sendMessage(m("StockMarket.MinStocksShare", minShare));
+                    return true;
+                }
+
+                double minDividend = (double) getModule().getConfig().get("GoPublic.MinStocksDividend");
+                if (minDividend > 0 && divided < minDividend) {
+                    user.sendMessage(m("StockMarket.MinStocksDividend", minDividend));
+                    return true;
+                }
 
                 StockRow row = new StockRow();
                 row.amount = amount;
-                row.basePrice = price;
-                row.corpId = corp.getId();
+                row.base_price = price;
+                row.corp_id = corp.getId();
                 row.dividend = divided;
                 row.price = price;
-                row.shareHolding = share;
+                row.share_holding = share;
                 row.time = System.currentTimeMillis();
-                row.allowBuyingStocks = true;
+                row.allow_buy_stocks = true;
 
                 try {
                     row = Module.getTable(getModule(), StocksTable.class).insert(row);
@@ -446,7 +458,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                         continue;
                     }
 
-                    Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, userStock.stockId);
+                    Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, userStock.stock_id);
 
                     double percent = 0;
                     String a = null;
@@ -473,7 +485,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     if (a == null) {
                         boolean down = percent < 0;
 
-                        percent = Math.abs(percent);
+                        percent = MathUtil.round(Math.abs(percent));
 
                         if (down) {
                             newPrice = newPrice + (newPrice * percent);
@@ -496,7 +508,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     double holdingPercent = MathUtil.round((100 * userStock.amount) / getStocksAmount(stock));
 
                     s +=
-                            ChatColor.GRAY + " - "
+                            ChatColor.GRAY + " - " + "Dividenden: " + ChatColor.GOLD + stock.getDividend() + ChatColor.GRAY + " - "
                             + "Im Besitz: " + ChatColor.GOLD + userStock.amount + ChatColor.YELLOW + " (" + holdingPercent + "%)";
                     user.sendMessage(prefix + s);
                 }
@@ -535,7 +547,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     if (a == null) {
                         boolean down = percent < 0;
 
-                        percent = Math.abs(percent);
+                        percent = MathUtil.round(Math.abs(percent));
 
                         if (down) {
                             newPrice = newPrice + (newPrice * percent);
@@ -558,7 +570,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     double holdingPercent = MathUtil.round((100 * stock.getAmount()) / getStocksAmount(stock));
 
                     s +=
-                            ChatColor.GRAY + " - "
+                            ChatColor.GRAY + " - " + "Dividenden: " + ChatColor.GOLD + stock.getDividend() + ChatColor.GRAY + " - "
                             + "Anzahl: " + ChatColor.GOLD + stock.getAmount() + ChatColor.YELLOW + " (" + holdingPercent + "%)";
                     user.sendMessage(prefix + s);
                 }
@@ -626,8 +638,8 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
         StockUserRow row = new StockUserRow();
         row.amount = transfer.amount;
-        row.stockId = transfer.stock.getId();
-        row.userId = tmp.id;
+        row.stock_id = transfer.stock.getId();
+        row.user_id = tmp.id;
         usersTable.insert(row);
     }
 
@@ -701,8 +713,8 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
         StockUserRow row = new StockUserRow();
         row.amount = amount;
-        row.stockId = stockId;
-        row.userId = tmp.id;
+        row.stock_id = stockId;
+        row.user_id = tmp.id;
         usersTable.insert(row);
     }
 }

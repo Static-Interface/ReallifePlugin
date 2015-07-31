@@ -82,47 +82,7 @@ public class StockPricesTable extends AbstractTable<StockPriceRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.cause, row.newPrice, row.oldPrice, row.stockId, row.time);
+        executeUpdate(sql, row.cause, row.new_price, row.old_price, row.stock_id, row.time);
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public StockPriceRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        StockPriceRow[] rows = new StockPriceRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            StockPriceRow row = new StockPriceRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "cause")) {
-                row.cause = rs.getString("cause");
-                if (rs.wasNull()) {
-                    row.cause = null;
-                }
-            }
-            if (hasColumn(rs, "new_price")) {
-                row.newPrice = rs.getDouble("new_price");
-            }
-            if (hasColumn(rs, "old_price")) {
-                row.oldPrice = rs.getDouble("old_price");
-            }
-            if (hasColumn(rs, "stock_id")) {
-                row.stockId = rs.getInt("stock_id");
-            }
-            if (hasColumn(rs, "time")) {
-                row.time = rs.getLong("time");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

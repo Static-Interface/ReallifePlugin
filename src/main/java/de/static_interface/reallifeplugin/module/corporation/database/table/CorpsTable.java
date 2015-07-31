@@ -24,7 +24,6 @@ import org.apache.commons.lang.Validate;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 public class CorpsTable extends AbstractTable<CorpRow> {
 
@@ -87,55 +86,9 @@ public class CorpsTable extends AbstractTable<CorpRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.balance, row.baseId, row.baseWorld, row.ceoUniqueId.toString(), row.corpName,
+        executeUpdate(sql, row.balance, row.base_id, row.base_world, row.ceo_uuid, row.corp_name,
                       row.isDeleted, row.tag, row.time);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public CorpRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        CorpRow[] rows = new CorpRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            CorpRow row = new CorpRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "balance")) {
-                row.balance = rs.getDouble("balance");
-            }
-            if (hasColumn(rs, "base_id")) {
-                row.baseId = rs.getString("base_id");
-            }
-            if (hasColumn(rs, "base_world")) {
-                row.baseWorld = rs.getString("base_world");
-            }
-            if (hasColumn(rs, "ceo_uuid")) {
-                row.ceoUniqueId = UUID.fromString(rs.getString("ceo_uuid"));
-            }
-            if (hasColumn(rs, "corp_name")) {
-                row.corpName = rs.getString("corp_name");
-            }
-            if (hasColumn(rs, "isdeleted")) {
-                row.isDeleted = rs.getBoolean("isdeleted");
-            }
-            if (hasColumn(rs, "tag")) {
-                row.tag = rs.getString("tag");
-            }
-            if (hasColumn(rs, "time")) {
-                row.time = rs.getLong("time");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

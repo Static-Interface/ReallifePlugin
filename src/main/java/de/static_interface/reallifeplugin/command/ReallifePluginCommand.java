@@ -51,7 +51,7 @@ public class ReallifePluginCommand extends SinkCommand {
                         }
                     }
 
-                    PaydayModule module = Module.getModule(PaydayModule.NAME, PaydayModule.class);
+                    PaydayModule module = Module.getModule(PaydayModule.class);
                     module.getPaydayTask().run(!skipTimeCheck);
                     break;
                 }
@@ -127,6 +127,9 @@ public class ReallifePluginCommand extends SinkCommand {
                         sender.sendMessage(ChatColor.GREEN + "Disabled " + module.getName());
                         break;
                     }
+                    default:
+                        sender.sendMessage("Unknown module subcommand: " + args[1]);
+                        break;
                 }
                 break;
 

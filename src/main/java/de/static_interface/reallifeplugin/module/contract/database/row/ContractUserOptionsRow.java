@@ -16,13 +16,15 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
+import de.static_interface.reallifeplugin.database.Row;
+
 import javax.annotation.Nullable;
 
-public class ContractUserOptionsRow {
+public class ContractUserOptionsRow implements Row {
 
     public Integer id;
-    public int userId;
-    public int contractId;
+    public int user_id;
+    public int contract_id;
     @Nullable
     public Double money;
     public boolean isCreator;

@@ -16,21 +16,20 @@
 
 package de.static_interface.reallifeplugin.database.impl;
 
-import com.mysema.query.sql.MySQLTemplates;
-import com.mysema.query.sql.SQLTemplates;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.DatabaseConfiguration;
 import de.static_interface.reallifeplugin.database.DatabaseType;
 import org.bukkit.plugin.Plugin;
+import org.jooq.SQLDialect;
 
 import java.sql.SQLException;
 
 public class MySqlDatabase extends Database {
 
     public MySqlDatabase(DatabaseConfiguration config, Plugin plugin) {
-        super(config, plugin, DatabaseType.MYSQL);
+        super(config, plugin, DatabaseType.MYSQL, SQLDialect.MYSQL);
     }
 
     @Override
@@ -67,10 +66,5 @@ public class MySqlDatabase extends Database {
         if (dataSource != null) {
             dataSource.close();
         }
-    }
-
-    @Override
-    public SQLTemplates generateDialect() {
-        return new MySQLTemplates();
     }
 }

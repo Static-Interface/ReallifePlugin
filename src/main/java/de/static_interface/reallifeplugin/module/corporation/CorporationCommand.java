@@ -618,7 +618,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         if (row.type != 0) {
                             continue; //wasn't selling items
                         }
-                        i += row.changedAmount;
+                        i += row.changed_amount;
                     }
                     soldItems = m("Corporation.ItemsSold", target.getDisplayName(), i, days + " " + LanguageConfiguration.m("TimeUnit.Days"));
                 }

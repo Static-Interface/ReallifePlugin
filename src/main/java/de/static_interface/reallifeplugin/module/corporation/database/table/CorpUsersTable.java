@@ -23,7 +23,6 @@ import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUs
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 public class CorpUsersTable extends AbstractTable<CorpUserRow> {
 
@@ -78,47 +77,8 @@ public class CorpUsersTable extends AbstractTable<CorpUserRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?);";
-        executeUpdate(sql, row.corpId, row.isCoCeo, row.rank, row.uuid.toString());
+        executeUpdate(sql, row.corp_id, row.isCoCeo, row.rank, row.uuid);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public CorpUserRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst(); // not rs.first() because the rs.next() below will move on, missing the first element
-        }
-
-        CorpUserRow[] rows = new CorpUserRow[rowcount];
-        int i = 0;
-        while (rs.next()) {
-            CorpUserRow row = new CorpUserRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "corp_id")) {
-                row.corpId = rs.getInt("corp_id");
-                if (rs.wasNull()) {
-                    row.corpId = null;
-                }
-            }
-            if (hasColumn(rs, "isCoCeo")) {
-                row.isCoCeo = rs.getBoolean("isCoCeo");
-            }
-            if (hasColumn(rs, "rank")) {
-                row.rank = rs.getString("rank");
-                if (rs.wasNull()) {
-                    row.rank = null;
-                }
-            }
-            if (hasColumn(rs, "uuid")) {
-                row.uuid = UUID.fromString(rs.getString("uuid"));
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

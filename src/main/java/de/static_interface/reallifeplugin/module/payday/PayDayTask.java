@@ -113,10 +113,10 @@ public class PaydayTask implements Runnable {
 
         String entryPrefix = "|- ";
         if (negative) {
-            text = StringUtil.format(ChatColor.RED + entryPrefix + "-{0} " + curreny + " wurden abgezogen. (Grund: {1})", -amount, entry.getReason());
+            text = StringUtil.format(ChatColor.RED + entryPrefix + "-{0} " + curreny + ": {1}", -amount, entry.getReason());
         } else {
             text =
-                    StringUtil.format(ChatColor.GREEN + entryPrefix + "+{0} " + curreny + " wurden hinzugefuegt. (Grund: {1})", amount,
+                    StringUtil.format(ChatColor.GREEN + entryPrefix + "+{0} " + curreny + ": {1}", amount,
                                       entry.getReason());
         }
 
@@ -124,8 +124,10 @@ public class PaydayTask implements Runnable {
         result.amount = amount;
 
         String source = entry.getSourceAccount();
-        VaultBridge.addBalance(source, amount);
-        if (entry.sendToTarget()) {
+        if (!StringUtil.isEmptyOrNull(source)) {
+            VaultBridge.addBalance(source, amount);
+        }
+        if (entry.sendToTarget() && !StringUtil.isEmptyOrNull(entry.getTargetAccount())) {
             String target = entry.getTargetAccount();
             VaultBridge.addBalance(target, -amount);
         }

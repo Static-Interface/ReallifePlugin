@@ -85,39 +85,8 @@ public class StockUsersTable extends AbstractTable<StockUserRow> {
         }
 
         String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.stockId, row.userId);
+        executeUpdate(sql, row.amount, row.stock_id, row.user_id);
 
         return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
-    }
-
-    @Override
-    public StockUserRow[] deserialize(ResultSet rs) throws SQLException {
-        int rowcount = 0;
-        if (rs.last()) {
-            rowcount = rs.getRow();
-            rs.beforeFirst();
-        }
-
-        StockUserRow[] rows = new StockUserRow[rowcount];
-        int i = 0;
-
-        while (rs.next()) {
-            StockUserRow row = new StockUserRow();
-            if (hasColumn(rs, "id")) {
-                row.id = rs.getInt("id");
-            }
-            if (hasColumn(rs, "amount")) {
-                row.amount = rs.getInt("amount");
-            }
-            if (hasColumn(rs, "stock_id")) {
-                row.stockId = rs.getInt("stock_id");
-            }
-            if (hasColumn(rs, "user_id")) {
-                row.userId = rs.getInt("user_id");
-            }
-            rows[i] = row;
-            i++;
-        }
-        return rows;
     }
 }

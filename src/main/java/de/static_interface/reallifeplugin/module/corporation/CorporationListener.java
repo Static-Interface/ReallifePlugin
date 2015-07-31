@@ -540,16 +540,19 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
             CorpTradesRow row = new CorpTradesRow();
             row.id = null;
-            row.signAmount = amount;
-            row.corpId = corp.getId();
-            row.location = sign.getLocation();
-            row.material = stack.getType();
-            row.newAmount = newAmount;
+            row.sign_amount = amount;
+            row.corp_id = corp.getId();
+            row.x = sign.getLocation().getBlockX();
+            row.y = sign.getLocation().getBlockY();
+            row.z = sign.getLocation().getBlockZ();
+            row.world = sign.getLocation().getWorld().getName();
+            row.material_name = stack.getType().name();
+            row.new_amount = newAmount;
             row.price = -price;
-            row.changedAmount = stack.getAmount();
+            row.changed_amount = stack.getAmount();
             row.time = System.currentTimeMillis();
             row.type = 0;
-            row.userId = CorporationUtil.getUserId(getModule(), user);
+            row.user_id = CorporationUtil.getUserId(getModule(), user);
             Module.getTable(getModule(), CorpTradesTable.class).insert(row);
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
@@ -666,16 +669,19 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
             CorpTradesRow row = new CorpTradesRow();
             row.id = null;
-            row.corpId = signCorp.getId();
-            row.location = sign.getLocation();
-            row.material = stack.getType();
-            row.newAmount = newAmount;
+            row.corp_id = signCorp.getId();
+            row.x = sign.getLocation().getBlockX();
+            row.y = sign.getLocation().getBlockY();
+            row.z = sign.getLocation().getBlockZ();
+            row.world = sign.getLocation().getWorld().getName();
+            row.material_name = stack.getType().name();
+            row.new_amount = newAmount;
             row.price = price;
-            row.changedAmount = -stack.getAmount();
-            row.signAmount = amount;
+            row.changed_amount = -stack.getAmount();
+            row.sign_amount = amount;
             row.time = System.currentTimeMillis();
             row.type = 1;
-            row.userId = CorporationUtil.getUserId(getModule(), user);
+            row.user_id = CorporationUtil.getUserId(getModule(), user);
 
             Module.getTable(getModule(), CorpTradesTable.class).insert(row);
         } catch (Exception e) {

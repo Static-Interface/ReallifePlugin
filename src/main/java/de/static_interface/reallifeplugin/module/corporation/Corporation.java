@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -191,11 +192,11 @@ public class Corporation {
     }
 
     public ProtectedRegion getBaseRegion() {
-        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().baseWorld)).getRegion(getBase().baseId);
+        return ReallifeMain.getInstance().getWorldGuardPlugin().getRegionManager(Bukkit.getWorld(getBase().base_world)).getRegion(getBase().base_id);
     }
 
     public IngameUser getCEO() {
-        return SinkLibrary.getInstance().getIngameUser(getBase().ceoUniqueId);
+        return SinkLibrary.getInstance().getIngameUser(UUID.fromString(getBase().ceo_uuid));
     }
 
     public void setCEO(IngameUser user) {
@@ -235,7 +236,7 @@ public class Corporation {
     }
 
     public String getName() {
-        return getBase().corpName;
+        return getBase().corp_name;
     }
 
     @Nullable

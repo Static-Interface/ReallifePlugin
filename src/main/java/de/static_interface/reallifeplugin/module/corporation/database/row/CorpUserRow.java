@@ -16,16 +16,16 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import java.util.UUID;
+import de.static_interface.reallifeplugin.database.Row;
 
 import javax.annotation.Nullable;
 
-public class CorpUserRow {
+public class CorpUserRow implements Row {
     public Integer id;
     @Nullable
-    public Integer corpId;
+    public Integer corp_id;
     public boolean isCoCeo;
     @Nullable
     public String rank;
-    public UUID uuid;
+    public String uuid;
 }

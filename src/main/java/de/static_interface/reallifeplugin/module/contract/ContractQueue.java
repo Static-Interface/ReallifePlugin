@@ -39,7 +39,7 @@ public class ContractQueue {
     public static void addToQueue(ContractModule module, ContractRow row) {
 
         //Todo: remove users from row
-        for (int id : row.userIds) {
+        for (int id : ContractDatabaseUtil.splitIds(row.user_ids)) {
             IngameUser user = Contract.getUserFromUserId(module, id);
             List<ContractRow> rows = queue.get(user);
             if (rows == null) {

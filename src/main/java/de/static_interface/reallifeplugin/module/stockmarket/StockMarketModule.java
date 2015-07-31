@@ -49,6 +49,8 @@ public class StockMarketModule extends Module<ReallifeMain> {
                 addDefault("Transfer.Cooldown", 2, "In minutes");
                 addDefault("GoPublic.MaxStocks", 10000);
                 addDefault("GoPublic.MaxPrice", 500);
+                addDefault("GoPublic.MinStocksDividend", 3);
+                addDefault("GoPublic.MinStocksShare", 20);
             }
         }, db, NAME, true);
     }
@@ -75,7 +77,7 @@ public class StockMarketModule extends Module<ReallifeMain> {
             return;
         }
 
-        final CorporationModule corpModule = Module.getModule(CorporationModule.NAME, CorporationModule.class);
+        final CorporationModule corpModule = Module.getModule(CorporationModule.class);
         stocksTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), new Runnable() {
             @Override
             public void run() {
@@ -83,6 +85,7 @@ public class StockMarketModule extends Module<ReallifeMain> {
             }
         }, 20 * STOCK_TIME, 20 * STOCK_TIME);
         registerModuleCommand("stockmarket", new StockMarketCommand(this, corpModule));
+        registerModuleListener(new StockMarketListener(this, corpModule));
     }
 
     @Override

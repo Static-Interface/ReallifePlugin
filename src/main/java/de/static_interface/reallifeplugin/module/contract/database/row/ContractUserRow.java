@@ -16,10 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import java.util.UUID;
+import de.static_interface.reallifeplugin.database.Row;
 
-public class ContractUserRow {
-
+public class ContractUserRow implements Row {
     public Integer id;
-    public UUID uuid;
+    public String uuid;
 }

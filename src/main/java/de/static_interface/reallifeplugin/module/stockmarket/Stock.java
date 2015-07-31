@@ -52,7 +52,7 @@ public class Stock {
     }
 
     public Corporation getCorporation() {
-        return CorporationUtil.getCorporation(corpModule, getBase().corpId);
+        return CorporationUtil.getCorporation(corpModule, getBase().corp_id);
     }
 
     public final int getId() {
@@ -72,10 +72,10 @@ public class Stock {
     }
 
     public boolean canSellStocks(IngameUser user) {
-        return CorporationUtil.hasCeoPermissions(user, getCorporation()) || getBase().allowBuyingStocks;
+        return CorporationUtil.hasCeoPermissions(user, getCorporation()) || getBase().allow_buy_stocks;
     }
 
     public double getShare() {
-        return MathUtil.round(getBase().shareHolding);
+        return MathUtil.round(getBase().share_holding);
     }
 }

@@ -16,15 +16,16 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
+import de.static_interface.reallifeplugin.database.Row;
+
 import javax.annotation.Nullable;
 
-public class StockPriceRow {
-
+public class StockPriceRow implements Row {
     public Integer id;
     @Nullable
     public String cause;
-    public double newPrice;
-    public double oldPrice;
-    public int stockId;
+    public double new_price;
+    public double old_price;
+    public int stock_id;
     public long time;
 }

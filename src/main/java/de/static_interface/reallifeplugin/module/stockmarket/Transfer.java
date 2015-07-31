@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 import java.util.UUID;
 
 public class Transfer {
-
     UUID seller;
     UUID buyer;
     Stock stock;
