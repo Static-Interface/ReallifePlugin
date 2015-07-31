@@ -20,10 +20,8 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockUserRow;
-import org.apache.commons.lang.Validate;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StockUsersTable extends AbstractTable<StockUserRow> {
@@ -75,18 +73,5 @@ public class StockUsersTable extends AbstractTable<StockUserRow> {
         PreparedStatement statement = db.getConnection().prepareStatement(sql);
         statement.executeUpdate();
         statement.close();
-    }
-
-    @Override
-    public ResultSet serialize(StockUserRow row) throws SQLException {
-        Validate.notNull(row);
-        if (row.id != null) {
-            throw new IllegalArgumentException("Id should be null!");
-        }
-
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.stock_id, row.user_id);
-
-        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 }

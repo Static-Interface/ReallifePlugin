@@ -16,20 +16,41 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
 import javax.annotation.Nullable;
 
 public class ContractRow implements Row {
+
+    @Column
     public Integer id;
+
+    @Column
     public String name;
+
+    @Column
     public int creator;
+
+    @Column
     public String content;
+
+    @Column
     public int type;
+
+    @Column
     public String events;
+
+    @Column
     public String user_ids;
+
+    @Column
     @Nullable
     public Long period;
+
+    @Column
     public long creation_time;
+
+    @Column
     public long expire_time;
 }

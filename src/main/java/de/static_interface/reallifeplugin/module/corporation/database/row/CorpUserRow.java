@@ -16,16 +16,27 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
 import javax.annotation.Nullable;
 
 public class CorpUserRow implements Row {
+
+    @Column
     public Integer id;
+
+    @Column
     @Nullable
     public Integer corp_id;
+
+    @Column
     public boolean isCoCeo;
+
+    @Column
     @Nullable
     public String rank;
+
+    @Column
     public String uuid;
 }

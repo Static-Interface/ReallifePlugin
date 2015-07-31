@@ -16,16 +16,38 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
+import javax.annotation.Nullable;
+
 public class CorpRow implements Row {
+
+    @Column
     public Integer id;
+
+    @Column
     public double balance;
+
+    @Column
     public String base_id;
+
+    @Column
     public String base_world;
+
+    @Column
     public String ceo_uuid;
+
+    @Column
     public String corp_name;
+
+    @Column
     public boolean isDeleted;
+
+    @Column
+    @Nullable
     public String tag;
+
+    @Column
     public long time;
 }

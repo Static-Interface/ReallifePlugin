@@ -22,7 +22,6 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockTradeRow;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StockTradesTable extends AbstractTable<StockTradeRow> {
@@ -82,18 +81,5 @@ public class StockTradesTable extends AbstractTable<StockTradeRow> {
         PreparedStatement statement = db.getConnection().prepareStatement(sql);
         statement.executeUpdate();
         statement.close();
-    }
-
-    @Override
-    public ResultSet serialize(StockTradeRow row) throws SQLException {
-        if (row.id != null) {
-            throw new IllegalArgumentException("Id should be null!");
-        }
-
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.amount, row.new_amount,
-                      row.price, row.stock_id, row.time, row.type, row.user_id);
-
-        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 }

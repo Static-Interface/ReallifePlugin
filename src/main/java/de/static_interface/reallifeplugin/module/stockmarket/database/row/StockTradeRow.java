@@ -16,16 +16,32 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
 public class StockTradeRow implements Row {
 
+    @Column
     public Integer id;
+
+    @Column
     public int amount;
+
+    @Column
     public int new_amount;
+
+    @Column
     public double price;
+
+    @Column
     public int stock_id;
+
+    @Column
     public long time;
+
+    @Column
     public int type;
+
+    @Column
     public int user_id;
 }

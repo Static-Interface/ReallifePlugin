@@ -16,9 +16,14 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
 public class ContractUserRow implements Row {
+
+    @Column
     public Integer id;
+
+    @Column
     public String uuid;
 }

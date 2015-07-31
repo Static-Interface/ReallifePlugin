@@ -33,7 +33,6 @@ import java.lang.reflect.ParameterizedType;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,15 +49,56 @@ public abstract class AbstractTable<T extends Row> {
         context = DSL.using(db.getConnection(), db.getDialect());
     }
 
-    public String getName() {
+    public final String getName() {
         return db.getConfig().getTablePrefix() + name;
     }
 
     public abstract void create() throws SQLException;
 
-    public abstract ResultSet serialize(T row) throws SQLException;
+    public ResultSet serialize(T row) throws SQLException {
+        String columns = "";
+        int i = 0;
+        Field[] fields = row.getClass().getFields();
+        for(Field f : fields) {
+            if(f.getAnnotation(Column.class) == null) continue;
 
-    public ResultSet[] serialize(T[] rows) throws SQLException {
+            if(i == 0) {
+                columns = f.getName();
+                i++;
+                continue;
+            }
+            columns = ", " + f.getName();
+            i++;
+        }
+
+        if(i == 0) {
+            throw new IllegalStateException(getRowClass().getName() + " doesn't have any public fields!");
+        }
+
+        String valuesPlaceholders = "";
+        for(int k = 0; k < i; k++) {
+            if(k == 0) {
+                valuesPlaceholders = "?";
+                continue;
+            }
+            valuesPlaceholders += ",?";
+        }
+
+        String sql = "INSERT INTO `{TABLE}` (" + columns + ") " + "VALUES(" + valuesPlaceholders + ")";
+        List<Object> values = new ArrayList<>();
+        for(Field f : fields) {
+            try {
+                values.add(f.get(row));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        executeUpdate(sql, values.toArray(new Object[values.size()]));
+        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
+    }
+
+    protected ResultSet[] serialize(T[] rows) throws SQLException {
         ResultSet[] result  = new ResultSet[rows.length];
         for(int i = 0; i < rows.length; i++) {
             result[i] = serialize(rows[i]);
@@ -67,7 +107,7 @@ public abstract class AbstractTable<T extends Row> {
         return result;
     }
 
-    public T[] deserialize(ResultSet rs) {
+    protected T[] deserialize(ResultSet rs) {
         List<T> result = deserializeResultSet(rs);
         T[] array = (T[]) Array.newInstance(getRowClass(), result.size());
         return result.toArray(array);
@@ -117,7 +157,7 @@ public abstract class AbstractTable<T extends Row> {
     }
 
 
-    private T deserializeRecord(Record r) {
+    protected T deserializeRecord(Record r) {
         Constructor<?> ctor;
         Object instance;
         try {
@@ -133,6 +173,7 @@ public abstract class AbstractTable<T extends Row> {
 
         Field[] fields = getRowClass().getFields();
         for (Field f : fields) {
+            if(f.getAnnotation(Column.class) == null) continue;
             String name = f.getName();
             try {
                 f.set(instance, r.getValue(name));
@@ -143,7 +184,7 @@ public abstract class AbstractTable<T extends Row> {
         return (T) instance;
     }
 
-    private List<T> deserializeResultSet(ResultSet r) {
+    protected List<T> deserializeResultSet(ResultSet r) {
         List<T> result = new ArrayList<>();
         Constructor<?> ctor;
         Object instance;
@@ -219,7 +260,7 @@ public abstract class AbstractTable<T extends Row> {
         }
     }
 
-    private String sqlToString(String sql, Object... paramObjects) {
+    protected String sqlToString(String sql, Object... paramObjects) {
         if (paramObjects == null || paramObjects.length < 1) {
             return sql;
         }
@@ -229,17 +270,6 @@ public abstract class AbstractTable<T extends Row> {
         }
 
         return sql;
-    }
-
-    public boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
-        ResultSetMetaData rsmd = rs.getMetaData();
-        int columns = rsmd.getColumnCount();
-        for (int x = 1; x <= columns; x++) {
-            if (columnName.equals(rsmd.getColumnName(x))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public boolean exists() {

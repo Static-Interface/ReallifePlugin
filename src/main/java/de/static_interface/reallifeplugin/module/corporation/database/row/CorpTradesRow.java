@@ -16,21 +16,50 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
 public class CorpTradesRow implements Row {
+
+    @Column
     public Integer id;
+
+    @Column
     public int corp_id;
+
+    @Column
     public String material_name;
+
+    @Column
     public int new_amount;
+
+    @Column
     public double price;
+
+    @Column
     public int sign_amount;
+
+    @Column
     public int changed_amount;
+
+    @Column
     public long time;
+
+    @Column
     public int type;
+
+    @Column
     public int user_id;
+
+    @Column
     public String world;
+
+    @Column
     public int x;
+
+    @Column
     public int y;
+
+    @Column
     public int z;
 }

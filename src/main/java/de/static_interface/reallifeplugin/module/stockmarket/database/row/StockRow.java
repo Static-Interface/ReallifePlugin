@@ -16,19 +16,35 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
-import javax.annotation.Nullable;
-
 public class StockRow implements Row {
-    @Nullable
+
+    @Column
     public Integer id;
+
+    @Column
     public int amount;
+
+    @Column
     public double base_price;
+
+    @Column
     public int corp_id;
+
+    @Column
     public double dividend;
+
+    @Column
     public double price;
+
+    @Column
     public double share_holding;
+
+    @Column
     public long time;
+
+    @Column
     public boolean allow_buy_stocks;
 }

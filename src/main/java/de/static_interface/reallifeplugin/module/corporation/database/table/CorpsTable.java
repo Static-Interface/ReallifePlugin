@@ -19,10 +19,8 @@ package de.static_interface.reallifeplugin.module.corporation.database.table;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRow;
-import org.apache.commons.lang.Validate;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class CorpsTable extends AbstractTable<CorpRow> {
@@ -72,23 +70,5 @@ public class CorpsTable extends AbstractTable<CorpRow> {
         PreparedStatement statement = db.getConnection().prepareStatement(sql);
         statement.executeUpdate();
         statement.close();
-    }
-
-    @Override
-    public ResultSet serialize(CorpRow row) throws SQLException {
-        Validate.notNull(row);
-        if (row.id != null) {
-            throw new IllegalArgumentException("Id should be null!");
-        }
-
-        if (row.tag != null && row.tag.length() > 5) {
-            throw new IllegalArgumentException("Tags may only have max. 5 characters!");
-        }
-
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.balance, row.base_id, row.base_world, row.ceo_uuid, row.corp_name,
-                      row.isDeleted, row.tag, row.time);
-
-        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 }

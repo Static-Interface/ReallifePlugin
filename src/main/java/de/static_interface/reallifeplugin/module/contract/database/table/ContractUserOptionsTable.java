@@ -19,10 +19,8 @@ package de.static_interface.reallifeplugin.module.contract.database.table;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptionsRow;
-import org.apache.commons.lang.Validate;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ContractUserOptionsTable extends AbstractTable<ContractUserOptionsRow> {
@@ -75,18 +73,5 @@ public class ContractUserOptionsTable extends AbstractTable<ContractUserOptionsR
         PreparedStatement statement = db.getConnection().prepareStatement(sql);
         statement.executeUpdate();
         statement.close();
-    }
-
-    @Override
-    public ResultSet serialize(ContractUserOptionsRow row) throws SQLException {
-        Validate.notNull(row);
-        if (row.id != null) {
-            throw new IllegalArgumentException("Id should be null!");
-        }
-
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?);";
-        executeUpdate(sql, row.user_id, row.contract_id, row.money, row.isCreator);
-
-        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 }

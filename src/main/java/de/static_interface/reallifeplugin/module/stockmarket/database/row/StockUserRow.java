@@ -16,11 +16,20 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.row;
 
+import de.static_interface.reallifeplugin.database.Column;
 import de.static_interface.reallifeplugin.database.Row;
 
 public class StockUserRow implements Row {
+
+    @Column
     public Integer id;
+
+    @Column
     public int amount;
+
+    @Column
     public int stock_id;
+
+    @Column
     public int user_id;
 }

@@ -16,6 +16,6 @@
 
 package de.static_interface.reallifeplugin.database;
 
-public @interface ColumnInfo {
+public @interface Column {
 
 }

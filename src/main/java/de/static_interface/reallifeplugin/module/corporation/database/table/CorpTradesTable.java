@@ -21,7 +21,6 @@ import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class CorpTradesTable extends AbstractTable<CorpTradesRow> {
@@ -92,19 +91,5 @@ public class CorpTradesTable extends AbstractTable<CorpTradesRow> {
         PreparedStatement statement = db.getConnection().prepareStatement(sql);
         statement.executeUpdate();
         statement.close();
-    }
-
-    @Override
-    public ResultSet serialize(CorpTradesRow row) throws SQLException {
-        if (row.id != null) {
-            throw new IllegalArgumentException("Id should be null!");
-        }
-
-        String sql = "INSERT INTO `{TABLE}` VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        executeUpdate(sql, row.corp_id, row.material_name,
-                      row.new_amount, row.price, row.sign_amount, row.changed_amount, row.time, row.type,
-                      row.user_id, row.world, row.x, row.y, row.z);
-
-        return executeQuery("SELECT * FROM `{TABLE}` ORDER BY id DESC LIMIT 1");
     }
 }
