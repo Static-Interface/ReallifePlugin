@@ -209,7 +209,7 @@ public abstract class AbstractTable<T extends Row> {
                 i++;
                 continue;
             }
-            columns = ", " + name;
+            columns += ", " + name;
             i++;
         }
 
