@@ -167,7 +167,7 @@ public class Corporation {
         try {
             CorpUserRow[] result = corpUsersTable.get("SELECT `uuid` from `{TABLE}` WHERE `corp_id`=?", id);
             for (CorpUserRow row : result) {
-                IngameUser member = SinkLibrary.getInstance().getIngameUser(row.uuid);
+                IngameUser member = SinkLibrary.getInstance().getIngameUser(UUID.fromString(row.uuid));
                 if (excludeCeo && (isCeo(member) || isCoCeo(member))) {
                     continue;
                 }
@@ -222,7 +222,7 @@ public class Corporation {
                                         id);
 
             for (CorpUserRow row : result) {
-                tmp.add(SinkLibrary.getInstance().getIngameUser(row.uuid));
+                tmp.add(SinkLibrary.getInstance().getIngameUser(UUID.fromString(row.uuid)));
             }
 
             return tmp;

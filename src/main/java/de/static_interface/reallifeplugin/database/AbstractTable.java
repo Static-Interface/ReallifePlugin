@@ -38,6 +38,7 @@ import java.lang.reflect.ParameterizedType;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,21 @@ public abstract class AbstractTable<T extends Row> {
         context = DSL.using(db.getConnection(), db.getDialect());
     }
 
+    public static boolean hasColumn(Record r, String columnName) throws SQLException {
+        return r.field(columnName) != null;
+    }
+
+    public static boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columns = rsmd.getColumnCount();
+        for (int x = 1; x <= columns; x++) {
+            if (columnName.equals(rsmd.getColumnName(x))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public final String getName() {
         return db.getConfig().getTablePrefix() + name;
     }
@@ -65,7 +81,6 @@ public abstract class AbstractTable<T extends Row> {
         List<Field> foreignKeys = new ArrayList<>();
         List<Field> indexes = new ArrayList<>();
 
-        int position = 1;
         boolean primarySet = false;
         for (Field f : getRowClass().getFields()) {
             Column column = f.getAnnotation(Column.class);
@@ -74,7 +89,7 @@ public abstract class AbstractTable<T extends Row> {
             }
             String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
 
-            sql += bt + name + bt + " " + db.toDatabaseType(f.getType());
+            sql += bt + name + bt + " " + db.toDatabaseType(f.getType(), column);
 
             if (column.zerofill()) {
                 sql += " ZEROFILL";
@@ -116,18 +131,13 @@ public abstract class AbstractTable<T extends Row> {
                 foreignKeys.add(f);
             }
 
-            if (f.getAnnotation(Index.class) == null) {
+            if (f.getAnnotation(Index.class) != null) {
                 indexes.add(f);
             }
 
-            if (position == getRowClass().getFields().length && foreignKeys.size() == 0 && indexes.size() == 0) {
-                break;
-            }
             sql += ",";
-            position++;
         }
 
-        position = 1;
         for (Field f : foreignKeys) {
             Column column = f.getAnnotation(Column.class);
             String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
@@ -145,16 +155,11 @@ public abstract class AbstractTable<T extends Row> {
             sql +=
                     "FOREIGN KEY (" + bt + name + bt + ") REFERENCES " + db.getConfig().getTablePrefix() + tablename + " (" + bt + foreignKey.column()
                     + bt + ")";
-            sql += " ON UPDATE " + foreignKey.onUpdate().toSql() + " ON DELETE DELETE " + foreignKey.onDelete().toSql();
+            sql += " ON UPDATE " + foreignKey.onUpdate().toSql() + " ON DELETE " + foreignKey.onDelete().toSql();
 
-            if (position == getRowClass().getFields().length && indexes.size() == 0) {
-                break;
-            }
             sql += ",";
-            position++;
         }
 
-        position = 1;
         for (Field f : indexes) {
             if (getEngine().equalsIgnoreCase("InnoDB") && foreignKeys.contains(f)) {
                 continue; //InnoDB already creates indexes for foreign keys, so skip these...
@@ -168,11 +173,11 @@ public abstract class AbstractTable<T extends Row> {
 
             sql += "INDEX " + bt + indexName + bt + " (" + bt + name + bt + ")";
 
-            if (position == getRowClass().getFields().length) {
-                break;
-            }
             sql += ",";
-            position++;
+        }
+
+        if (sql.endsWith(",")) {
+            sql = sql.substring(0, sql.length() - 1);
         }
 
         sql += ")";
@@ -182,9 +187,7 @@ public abstract class AbstractTable<T extends Row> {
         }
         sql += ";";
 
-        PreparedStatement statement = db.getConnection().prepareStatement(sql);
-        statement.executeUpdate();
-        statement.close();
+        executeUpdate(sql);
     }
 
     public String getEngine() {
@@ -286,7 +289,6 @@ public abstract class AbstractTable<T extends Row> {
         return result;
     }
 
-
     protected T deserializeRecord(Record r) {
         Constructor<?> ctor;
         Object instance;
@@ -308,10 +310,24 @@ public abstract class AbstractTable<T extends Row> {
                 continue;
             }
             String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+            Object value = null;
             try {
-                f.set(instance, r.getValue(name));
+                if (!hasColumn(r, name)) {
+                    //Select query may not include this column
+                    continue;
+                }
+                value = r.getValue(name);
+                if (f.getType() == boolean.class || f.getType() == Boolean.class) {
+                    value = ((int) value) != 0; // for some reason this is returned as int on TINYINT(1)..
+                }
+                if (value == null && f.getAnnotation(Nullable.class) == null && !column.autoIncrement()) {
+                    throw new RuntimeException("Trying to set null value on a not nullable and not autoincrement column");
+                }
+                f.set(instance, value);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException(
+                        "Couldn't set value \"" + (value == null ? "null" : value.toString()) + "\" for field: " + getRowClass().getName() + "." + f
+                                .getName() + ": ", e);
             }
         }
         return (T) instance;
@@ -340,17 +356,37 @@ public abstract class AbstractTable<T extends Row> {
                     if (column == null) {
                         continue;
                     }
-                    String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+                    Object value = null;
                     try {
-                        f.set(instance, r.getObject(name, f.getType()));
+                        String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+
+                        if (!hasColumn(r, name)) {
+                            //Select query may not include this column
+                            continue;
+                        }
+
+                        value = r.getObject(name);
+                        if (f.getType() == boolean.class || f.getType() == Boolean.class) {
+                            value = ((int) value) != 0; // for some reason this is returned as int on TINYINT(1)..
+                        }
+
+                        if (value == null && f.getAnnotation(Nullable.class) == null && !column.autoIncrement()) {
+                            ReallifeMain.getInstance().getLogger().warning(
+                                    "Trying to set null value on a not nullable and not autoincrement column: " + getRowClass().getName() + "." + f
+                                            .getName());
+                        }
+
+                        f.set(instance, value);
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException(
+                                "Couldn't set value \"" + (value == null ? "null" : value.toString()) + "\" for field: " + getRowClass().getName()
+                                + "." + f.getName() + ": ", e);
                     }
                 }
                 result.add((T) instance);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("An error occurred while deserializing " + getRowClass().getName() + ": ", e);
         }
         return result;
     }

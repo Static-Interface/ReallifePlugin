@@ -84,17 +84,15 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 break;
 
             case "user":
-                if (args.length < 2) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    break;
+                IngameUser target = (IngameUser) user;
+                if (args.length > 1) {
+                    target = SinkLibrary.getInstance().getIngameUser(args[1]);
+                    if (!target.hasPlayedBefore()) {
+                        throw new UserNotFoundException(args[1]);
+                    }
                 }
 
-                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1]);
-                if (!target.hasPlayedBefore()) {
-                    throw new UserNotFoundException(args[1]);
-                }
                 sendUserInfo(user, target);
-
                 break;
             case "ceo": {
                 if (user instanceof IngameUser) {

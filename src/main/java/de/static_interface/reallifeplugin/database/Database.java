@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.database;
 
 import com.zaxxer.hikari.HikariDataSource;
+import de.static_interface.reallifeplugin.database.annotation.Column;
 import org.bukkit.plugin.Plugin;
 import org.jooq.SQLDialect;
 
@@ -44,36 +45,36 @@ public abstract class Database {
         return backtick;
     }
 
-    public String toDatabaseType(Class<?> clazz) {
+    public String toDatabaseType(Class<?> clazz, Column column) {
         if (clazz == Date.class) {
             throw new RuntimeException("Date is for now not supported!");
         }
         if (clazz == java.sql.Date.class) {
             throw new RuntimeException("Date is for now not supported!");
         }
-        if (clazz == Integer.class) {
+        if (clazz == Integer.class || clazz == int.class) {
             return "INT";
         }
-        if (clazz == Boolean.class) {
+        if (clazz == Boolean.class || clazz == boolean.class) {
             return "TINYINT(1)";
         }
-        if (clazz == Double.class) {
+        if (clazz == Double.class || clazz == double.class) {
             return "DOUBLE";
         }
-        if (clazz == Float.class) {
+        if (clazz == Float.class || clazz == float.class) {
             return "FLOAT";
         }
-        if (clazz == Long.class) {
+        if (clazz == Long.class || clazz == long.class) {
             return "BIGINT";
         }
-        if (clazz == Short.class) {
+        if (clazz == Short.class || clazz == short.class) {
             return "SMALLINT";
         }
-        if (clazz == Byte.class) {
+        if (clazz == Byte.class || clazz == byte.class) {
             return "TINYINT";
         }
         if (clazz == String.class) {
-            return "TEXT";
+            return column.primaryKey() || column.uniqueKey() ? "VARCHAR(255)" : "TEXT";
         }
         throw new RuntimeException("No database type available for: " + clazz.getName());
     }

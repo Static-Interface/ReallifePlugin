@@ -35,13 +35,12 @@ public class MySqlDatabase extends Database {
     public void setupConfig() {
         HikariConfig hConfig = new HikariConfig();
         hConfig.setMaximumPoolSize(10);
-        hConfig.setDataSourceClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
+        hConfig.setDataSourceClassName("org.mariadb.jdbc.MySQLDataSource");
         hConfig.addDataSourceProperty("serverName", getConfig().getAddress());
         hConfig.addDataSourceProperty("port", getConfig().getPort());
         hConfig.addDataSourceProperty("databaseName", getConfig().getDatabaseName());
         hConfig.addDataSourceProperty("user", getConfig().getUsername());
         hConfig.addDataSourceProperty("password", getConfig().getPassword());
-        hConfig.addDataSourceProperty("autoDeserialize", true);
         hConfig.setConnectionTimeout(5000);
         dataSource = new HikariDataSource(hConfig);
     }
