@@ -93,7 +93,7 @@ public class CorporationUtil {
     @Nullable
     public static Integer getUserId(CorporationModule module, IngameUser user) {
         try {
-            return Module.getTable(module, CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString())[0].id;
+            return module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString())[0].id;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -102,7 +102,7 @@ public class CorporationUtil {
 
     public static CorpUserRow getCorpUser(CorporationModule module, int userId) {
         try {
-            return Module.getTable(module, CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `id`=?", userId)[0];
+            return module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `id`=?", userId)[0];
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -113,7 +113,7 @@ public class CorporationUtil {
         try {
             CorpUserRow[]
                     rows =
-                    Module.getTable(module, CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString());
+                    module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString());
             if (rows.length < 1) {
                 return null;
             }
@@ -125,7 +125,7 @@ public class CorporationUtil {
 
     public static boolean hasEntry(CorporationModule module, IngameUser user) {
         try {
-            return Module.getTable(module, CorpUsersTable.class)
+            return module.getTable(CorpUsersTable.class)
                            .get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString()).length > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -148,7 +148,7 @@ public class CorporationUtil {
             row.rank = rank;
             row.uuid = user.getUniqueId().toString();
 
-            return Module.getTable(module, CorpUsersTable.class).insert(row);
+            return module.getTable(CorpUsersTable.class).insert(row);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -273,7 +273,7 @@ public class CorporationUtil {
 
         try {
             insertUser(module, ceo, CorporationRanks.RANK_CEO);
-            Module.getTable(module, CorpsTable.class).insert(row);
+            module.getTable(CorpsTable.class).insert(row);
         } catch (Exception e) {
             if (user != null) {
                 user.sendMessage("Error: " + e.getMessage());
@@ -327,7 +327,7 @@ public class CorporationUtil {
                 createCorporation(module, null, corpName, Bukkit.getOfflinePlayer(ceo).getName(), regionId, world);
                 Corporation corp = getCorporation(module, corpName);
 
-                Module.getTable(module, CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", balance, corp.getId());
+                module.getTable(CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", balance, corp.getId());
 
                 for (String s : config.getYamlConfiguration().getStringList("Corporations." + corpName + ".CoCEOs")) {
                     IngameUser coceo = SinkLibrary.getInstance().getIngameUser(UUID.fromString(s));
@@ -380,7 +380,7 @@ public class CorporationUtil {
         }
 
         try {
-            Module.getTable(module, CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `isdeleted`=1 WHERE `id`=?", corporation.getId());
+            module.getTable(CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `isdeleted`=1 WHERE `id`=?", corporation.getId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -408,7 +408,7 @@ public class CorporationUtil {
 
         CorpRow[] rows;
         try {
-            rows = Module.getTable(module, CorpsTable.class).get("SELECT * FROM `{TABLE}` WHERE `isdeleted`=0");
+            rows = module.getTable(CorpsTable.class).get("SELECT * FROM `{TABLE}` WHERE `isdeleted`=0");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -430,7 +430,7 @@ public class CorporationUtil {
         }
 
         try {
-            Module.getTable(module, CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_name` = ? WHERE id = ?", newName, corp.getId());
+            module.getTable(CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_name` = ? WHERE id = ?", newName, corp.getId());
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

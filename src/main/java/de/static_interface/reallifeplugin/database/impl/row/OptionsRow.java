@@ -14,15 +14,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.database.impl.row;
 
-public enum CascadeAction {
-    RESTRICT,
-    CASCADE,
-    SET_NULL,
-    NO_ACTION, onDelete, onDelete;
+import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
 
-    public String toSql() {
-        return name().replace("_", " ");
-    }
+import javax.annotation.Nullable;
+
+public final class OptionsRow implements Row {
+
+    @Column(autoIncrement = true, primaryKey = true)
+    public Integer id;
+
+    @Column
+    public String key;
+
+    @Column
+    public String value;
+
+    @Column
+    @Nullable
+    public int foreignTarget;
 }

@@ -18,10 +18,10 @@ package de.static_interface.reallifeplugin.module.level;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.DateUtil;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.level.condition.LevelConditions;
+import de.static_interface.reallifeplugin.util.DateUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;

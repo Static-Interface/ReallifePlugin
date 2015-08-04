@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract.conversation;
 
-import de.static_interface.reallifeplugin.DateUtil;
+import de.static_interface.reallifeplugin.util.DateUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.ChatColor;

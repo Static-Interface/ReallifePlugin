@@ -14,15 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.module.politics.database.table;
 
-public enum CascadeAction {
-    RESTRICT,
-    CASCADE,
-    SET_NULL,
-    NO_ACTION, onDelete, onDelete;
+import de.static_interface.reallifeplugin.database.AbstractTable;
+import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.reallifeplugin.module.politics.database.row.PartyRow;
 
-    public String toSql() {
-        return name().replace("_", " ");
+public class PartyTable extends AbstractTable<PartyRow> {
+
+    public static final String TABLE_NAME = "parties";
+
+    public PartyTable(Database db) {
+        super(TABLE_NAME, db);
     }
 }

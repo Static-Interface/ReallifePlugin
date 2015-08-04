@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.module.corporation;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
@@ -553,7 +552,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             row.time = System.currentTimeMillis();
             row.type = 0;
             row.userId = CorporationUtil.getUserId(getModule(), user);
-            Module.getTable(getModule(), CorpTradesTable.class).insert(row);
+            getModule().getTable(CorpTradesTable.class).insert(row);
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
             e.printStackTrace();
@@ -683,7 +682,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             row.type = 1;
             row.userId = CorporationUtil.getUserId(getModule(), user);
 
-            Module.getTable(getModule(), CorpTradesTable.class).insert(row);
+            getModule().getTable(CorpTradesTable.class).insert(row);
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
             e.printStackTrace();

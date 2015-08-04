@@ -20,6 +20,8 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.annotation.Column;
 import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
 import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.database.impl.row.OptionsRow;
+import de.static_interface.reallifeplugin.util.ReflectionUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.apache.commons.lang.Validate;
 import org.jooq.DSLContext;
@@ -80,6 +82,11 @@ public abstract class AbstractTable<T extends Row> {
 
         List<Field> foreignKeys = new ArrayList<>();
         List<Field> indexes = new ArrayList<>();
+        Class foreignOptionsTable = null;
+
+        if(OptionsRow.class.isAssignableFrom(getRowClass())) {
+            foreignOptionsTable = ReflectionUtil.Invoke(this, "getTargetTable", Class.class);
+        }
 
         boolean primarySet = false;
         for (Field f : getRowClass().getFields()) {
@@ -141,23 +148,17 @@ public abstract class AbstractTable<T extends Row> {
         for (Field f : foreignKeys) {
             Column column = f.getAnnotation(Column.class);
             String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
-            String tablename;
-
             ForeignKey foreignKey = f.getAnnotation(ForeignKey.class);
-            Class<?> table = foreignKey.table();
-            try {
-                tablename = table.getField("TABLE_NAME").get(null).toString();
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (Exception e) {
-                throw new RuntimeException("Static String Field TABLE_NAME was not declared in table wrapper class " + table.getName() + "!", e);
-            }
-            sql +=
-                    "FOREIGN KEY (" + bt + name + bt + ") REFERENCES " + db.getConfig().getTablePrefix() + tablename + " (" + bt + foreignKey.column()
-                    + bt + ")";
-            sql += " ON UPDATE " + foreignKey.onUpdate().toSql() + " ON DELETE " + foreignKey.onDelete().toSql();
 
-            sql += ",";
+            sql = addForeignKey(sql, name, foreignKey.table(), foreignKey.column(), foreignKey.onUpdate(), foreignKey.onDelete());
+        }
+
+
+        if(foreignOptionsTable != null) {
+            String column = ReflectionUtil.Invoke(this, "getTargetIdColumn", String.class);
+            CascadeAction onUpdate = ReflectionUtil.Invoke(this, "getOnUpdateAction", CascadeAction.class);
+            CascadeAction onDelete = ReflectionUtil.Invoke(this, "getOnDeleteAction", CascadeAction.class);
+            sql = addForeignKey(sql, "foreignTarget", foreignOptionsTable, column, onUpdate, onDelete);
         }
 
         for (Field f : indexes) {
@@ -190,6 +191,30 @@ public abstract class AbstractTable<T extends Row> {
         executeUpdate(sql);
     }
 
+
+
+    protected String addForeignKey(String sql, String name, Class<? extends AbstractTable> targetClass, String columnName, CascadeAction onUpdate, CascadeAction onDelete) {
+        char bt = db.getBacktick();
+
+        String tablename;
+        try {
+            tablename = targetClass.getField("TABLE_NAME").get(null).toString();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Static String Field TABLE_NAME was not declared in table wrapper class " + targetClass.getName() + "!", e);
+        }
+
+        sql +=
+                "FOREIGN KEY (" + bt + name + bt + ") REFERENCES " + db.getConfig().getTablePrefix() + tablename + " (" + bt + columnName
+                + bt + ")";
+        sql += " ON UPDATE " + onUpdate.toSql() + " ON DELETE " + onDelete.toSql();
+
+        sql += ",";
+
+        return sql;
+    }
+
     public String getEngine() {
         return "InnoDB";
     }
@@ -197,7 +222,7 @@ public abstract class AbstractTable<T extends Row> {
     public ResultSet serialize(T row) throws SQLException {
         String columns = "";
         int i = 0;
-        Field[] fields = row.getClass().getFields();
+        Field[] fields = ReflectionUtil.getAllFields(getRowClass());
         for(Field f : fields) {
             Column column = f.getAnnotation(Column.class);
             if (column == null) {
@@ -303,7 +328,7 @@ public abstract class AbstractTable<T extends Row> {
             throw new RuntimeException("Deserializing failed: ", e);
         }
 
-        Field[] fields = getRowClass().getFields();
+        Field[] fields = ReflectionUtil.getAllFields(getRowClass());
         for (Field f : fields) {
             Column column = f.getAnnotation(Column.class);
             if (column == null) {
@@ -350,7 +375,7 @@ public abstract class AbstractTable<T extends Row> {
                     throw new RuntimeException("Deserializing failed: ", e);
                 }
 
-                Field[] fields = getRowClass().getFields();
+                Field[] fields = ReflectionUtil.getAllFields(getRowClass());
                 for (Field f : fields) {
                     Column column = f.getAnnotation(Column.class);
                     if (column == null) {

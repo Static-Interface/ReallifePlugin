@@ -14,15 +14,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.module.politics.database.row;
 
-public enum CascadeAction {
-    RESTRICT,
-    CASCADE,
-    SET_NULL,
-    NO_ACTION, onDelete, onDelete;
+import de.static_interface.reallifeplugin.database.Row;
+import de.static_interface.reallifeplugin.database.annotation.Column;
 
-    public String toSql() {
-        return name().replace("_", " ");
-    }
+import javax.annotation.Nullable;
+
+public class PartyRow implements Row {
+
+    @Column(autoIncrement = true, primaryKey = true)
+    public Integer id;
+
+    @Column(uniqueKey = true)
+    public String name;
+
+    @Column(uniqueKey = true)
+    public String tag;
+
+    @Column
+    public double balance;
+
+    @Column
+    @Nullable
+    public String description;
+
+    @Column(name = "creator_uuid")
+    public String creatorUuid;
+
+    @Column(name = "creation_time")
+    public long creationTime;
 }

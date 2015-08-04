@@ -121,6 +121,21 @@ public abstract class Module<T extends Plugin> {
         return Collections.unmodifiableCollection(modules);
     }
 
+    @Nullable
+    public <E extends AbstractTable> E getTable(Class<E> classOfE) {
+        if (requiredTables.size() == 0) {
+            throw new IllegalStateException("This module doesn't have any tables");
+        }
+
+        for (Object o : getRequiredTables()) {
+            if (o.getClass().equals(classOfE)) {
+                return (E) o;
+            }
+        }
+
+        return null;
+    }
+
     public final Collection<ModuleListener> getModuleListenesr() {
         return Collections.unmodifiableCollection(listeners);
     }

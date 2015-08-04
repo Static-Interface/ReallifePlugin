@@ -14,15 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.database;
+package de.static_interface.reallifeplugin.module.politics.command;
 
-public enum CascadeAction {
-    RESTRICT,
-    CASCADE,
-    SET_NULL,
-    NO_ACTION, onDelete, onDelete;
+import de.static_interface.sinklibrary.api.user.SinkUser;
 
-    public String toSql() {
-        return name().replace("_", " ");
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+public class PartyUtil {
+
+    public static void createNewPary(@Nullable SinkUser user, String name, UUID uuid) {
+
     }
 }

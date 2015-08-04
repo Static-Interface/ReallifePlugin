@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.module.corporation;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
@@ -607,7 +606,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 int days = 3;
                 long maxTime = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * days;
                 CorpTradesRow[] rows =
-                        Module.getTable(getModule(), CorpTradesTable.class).get(
+                        getModule().getTable(CorpTradesTable.class).get(
                                 "SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `corp_id` = ? AND `time` > ?", userId,
                                 corp.getId(), maxTime);
                 if (rows.length > 0) {
