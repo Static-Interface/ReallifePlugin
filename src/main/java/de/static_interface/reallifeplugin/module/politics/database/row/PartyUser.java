@@ -27,7 +27,7 @@ import de.static_interface.reallifeplugin.module.politics.database.table.PartyTa
 
 import javax.annotation.Nullable;
 
-public class PartyUserRow implements Row {
+public class PartyUser implements Row {
 
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;

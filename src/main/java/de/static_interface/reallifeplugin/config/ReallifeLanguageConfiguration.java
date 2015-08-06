@@ -152,5 +152,9 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Level.NotEnoughLevel",
                    "&4Your level is not high enough to do this. You need &c{0} &4but are currently only on &c{1}&4!");
         addDefault("Level.NotLoggedIn", "&4Not logged in!");
+
+        addDefault("Party.NotEnoughPriority", "&4You can't modify or assign a rank with a higher priorty!");
+        addDefault("Party.RankNotFound", "&4Rank &c\"{0}\"&4 not found");
+        addDefault("Party.DeletingDefaultRank", "&4Can't delete a default rank. Please set an other rank as default rank before deleting this one!");
     }
 }

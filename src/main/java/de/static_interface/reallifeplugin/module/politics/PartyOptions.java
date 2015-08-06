@@ -14,17 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.politics.command;
+package de.static_interface.reallifeplugin.module.politics;
 
-import de.static_interface.sinklibrary.api.user.SinkUser;
+public class PartyOptions {
 
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
-public class PartyUtil {
-
-    public static void createNewPary(@Nullable SinkUser user, String name, UUID uuid) {
-
-    }
+    public static final String DEFAULT_RANK = "default_rank";
 }

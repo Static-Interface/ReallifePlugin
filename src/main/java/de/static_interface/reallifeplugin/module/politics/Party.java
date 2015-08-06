@@ -16,9 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.politics;
 
-import de.static_interface.reallifeplugin.module.politics.database.row.PartyRankRow;
+import de.static_interface.reallifeplugin.module.politics.database.row.PartyRank;
 import de.static_interface.reallifeplugin.module.politics.database.row.PartyRow;
-import de.static_interface.reallifeplugin.module.politics.database.row.PartyUserRow;
+import de.static_interface.reallifeplugin.module.politics.database.row.PartyUser;
+import de.static_interface.reallifeplugin.module.politics.database.table.PartyOptionsTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
@@ -68,15 +69,15 @@ public class Party {
 
     public List<IngameUser> getMembers() {
         List<IngameUser> tmp = new ArrayList<>();
-        for (PartyUserRow user : getUsersInternal()) {
+        for (PartyUser user : getUsersInternal()) {
             tmp.add(SinkLibrary.getInstance().getIngameUser(UUID.fromString(user.uuid)));
         }
         return tmp;
     }
 
     @Nullable
-    public PartyRankRow getRank(IngameUser user) {
-        PartyUserRow row = getUserInternal(user);
+    public PartyRank getUserRank(IngameUser user) {
+        PartyUser row = getUserInternal(user);
         if (row == null) {
             throw new RuntimeException(user.getName() + " is not a member of " + getName() + "!");
         }
@@ -84,7 +85,7 @@ public class Party {
         if (rankId == null) {
             return null;
         }
-        PartyRankRow[] result;
+        PartyRank[] result;
         try {
             result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", rankId);
         } catch (SQLException e) {
@@ -96,7 +97,41 @@ public class Party {
         return result[0];
     }
 
-    private List<PartyUserRow> getUsersInternal() {
+    @Nullable
+    public PartyRank getRank(String name) {
+        PartyRank[] result;
+        try {
+            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `name` = ?", name);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (result == null || result.length < 1) {
+            return null;
+        }
+        return result[0];
+    }
+
+    @Nullable
+    public PartyRank getRank(int id) {
+        PartyRank[] result;
+        try {
+            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (result == null || result.length < 1) {
+            return null;
+        }
+        return result[0];
+    }
+
+    public PartyRank getDefaultRank() {
+        int defaultRankId = module.getTable(PartyOptionsTable.class)
+                .getOption(PartyOptions.DEFAULT_RANK, getId(), Integer.class, null);
+        return getRank(defaultRankId);
+    }
+
+    private List<PartyUser> getUsersInternal() {
         try {
             return Arrays.asList(module.getTable(PartyUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", getBase().id));
         } catch (SQLException e) {
@@ -105,8 +140,8 @@ public class Party {
     }
 
     @Nullable
-    private PartyUserRow getUserInternal(IngameUser user) {
-        for (PartyUserRow row : getUsersInternal()) {
+    private PartyUser getUserInternal(IngameUser user) {
+        for (PartyUser row : getUsersInternal()) {
             if (Objects.equals(row.uuid, user.getUniqueId().toString()) && Objects.equals(row.partyId, getBase().id)) {
                 return row;
             }
@@ -128,5 +163,9 @@ public class Party {
 
     public double getBalance() {
         return getBase().balance;
+    }
+
+    public void addMember(UUID user, int rankId) {
+
     }
 }

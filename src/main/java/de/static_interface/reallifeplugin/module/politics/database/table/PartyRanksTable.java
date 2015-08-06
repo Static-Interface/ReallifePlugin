@@ -18,9 +18,9 @@ package de.static_interface.reallifeplugin.module.politics.database.table;
 
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.module.politics.database.row.PartyRankRow;
+import de.static_interface.reallifeplugin.module.politics.database.row.PartyRank;
 
-public class PartyRanksTable extends AbstractTable<PartyRankRow> {
+public class PartyRanksTable extends AbstractTable<PartyRank> {
 
     public static final String TABLE_NAME = "party_ranks";
 

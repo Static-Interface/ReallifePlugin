@@ -25,7 +25,7 @@ import de.static_interface.reallifeplugin.module.politics.database.table.PartyTa
 
 import javax.annotation.Nullable;
 
-public class PartyRankRow implements Row, Comparable<PartyRankRow> {
+public class PartyRank implements Row, Comparable<PartyRank> {
 
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
@@ -38,6 +38,7 @@ public class PartyRankRow implements Row, Comparable<PartyRankRow> {
     public String description;
 
     @Column
+    @Nullable
     public String prefix;
 
     @Column
@@ -50,7 +51,7 @@ public class PartyRankRow implements Row, Comparable<PartyRankRow> {
 
 
     @Override
-    public int compareTo(PartyRankRow o) {
+    public int compareTo(PartyRank o) {
         if (o == null) {
             return 1;
         }
