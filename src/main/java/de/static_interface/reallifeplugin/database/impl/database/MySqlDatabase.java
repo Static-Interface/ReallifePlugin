@@ -35,6 +35,15 @@ public class MySqlDatabase extends Database {
     public void setupConfig() {
         HikariConfig hConfig = new HikariConfig();
         hConfig.setMaximumPoolSize(10);
+        /*
+                We use the MariaDB driver for MySQL connections, because bukkit itself and some other plugins use older versions of the MySQL JDBC driver
+            which result in MethodNotFoundExceptions or AbstractMethodErrors. Updating the driver itself is hard and may not work on all servers, so we use this simple solution
+            to get the latest and up-to-date driver.
+                There should be no problems, since MariaDB is a compatible fork of MySQL
+
+                Description on the driver homepage: "MariaDB Connector/J is a Type 4 JDBC driver. It was developed specifically as a lightweight JDBC connector
+            for use with MySQL and MariaDB database servers. It's originally based on the Drizzle JDBC code, and with a lot of additions and bug fixes."
+         */
         hConfig.setDataSourceClassName("org.mariadb.jdbc.MySQLDataSource");
         hConfig.addDataSourceProperty("serverName", getConfig().getAddress());
         hConfig.addDataSourceProperty("port", getConfig().getPort());

@@ -73,6 +73,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("General.UnknownSubCommand", "&4Unknown subcommand: {0}");
         addDefault("General.InvalidValue", "Invalid Value: {0}");
         addDefault("General.Success", "&aSuccess");
+        addDefault("General.SuccessSet", "&aSuccessfully set to &7\"&f{0}&r&7\"!");
 
         addDefault("Corporation.Corporation", "&6Corporation");
         addDefault("Corporation.Exists", "&4Error: &cCorporation already exists!");
@@ -107,7 +108,6 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.InvalidName", "Invalid Corporation Name");
         addDefault("Corporation.NotInCorporation", "&4Error:&c You aren't in any corporation!");
         addDefault("Corporation.Sign.ItemAlreadySold", "&4This item has been already sold. You can't re-sell it");
-        addDefault("Corporation.NotEnoughMoney", "&cYour corporation doesn't have enough money!");
         addDefault("Corporation.ItemsSold", "&6{0} has sold {1} items in the last {2}");
 
         addDefault("Corporation.Sign.CantPickup", "&4Error:&c Your inventory is full!");
@@ -154,7 +154,23 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Level.NotLoggedIn", "&4Not logged in!");
 
         addDefault("Party.NotEnoughPriority", "&4You can't modify or assign a rank with a higher priorty!");
-        addDefault("Party.RankNotFound", "&4Rank &c\"{0}\"&4 not found");
+        addDefault("Party.RankNotFound", "&4Rank &c\"{0}\"&r&4 not found");
         addDefault("Party.DeletingDefaultRank", "&4Can't delete a default rank. Please set an other rank as default rank before deleting this one!");
+        addDefault("Party.NotInParty", "&4Not in any party!");
+        addDefault("Party.UserHasBeenInvited", "&3{0}&r&3 has been invited");
+        addDefault("Party.GotInvited", "&3You've got invited for party: {1}&r&3 by {0}.&r&3 Use /party join {2}&r&3 to accept.");
+        addDefault("Party.AlreadyInParty", "&4Error: &cYou're already in a party: {0}");
+        addDefault("Party.PartyNotFound", "&4Error: &cParty \"{0}\"&r&c not found!");
+        addDefault("Party.NotInvited", "&4Error: &cYou're not invited to {0}&r&c!");
+        addDefault("Party.Joined", "&3{0}&r&3 joined the party!");
+        addDefault("Party.Left", "&3{0}&r&3 left the party!");
+        addDefault("Party.UserAlreadyInParty", "&4Error: &c{0}&r&c is already in a party: {1}&r&c!");
+        addDefault("Party.UserNotMember", "&4Error: &c{0}&r&c is not a member of {1}&r&c!");
+        addDefault("Party.Kicked", "&c{0}&r&4 has been kicked by &c{1}&r&4 from the party!");
+        addDefault("Party.Deposit", "&4{0} has deposited {1} {CURRENCY} to party account");
+        addDefault("Party.Withdraw", "&4{0} has withdrawn {1} {CURRENCY} from party account");
+        addDefault("Party.NotEnoughMoney", "&4Error: &cThe party doesn't have enough money!");
+        addDefault("Party.AlreadyInvited", "&4Error: &c{0}&r&c is already invited!");
+        addDefault("Party.UnknownPermission", "&4Error: &cUnknown permission: {0}&c!");
     }
 }

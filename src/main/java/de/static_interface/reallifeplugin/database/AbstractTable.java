@@ -20,7 +20,7 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.annotation.Column;
 import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
 import de.static_interface.reallifeplugin.database.annotation.Index;
-import de.static_interface.reallifeplugin.database.impl.row.OptionsRow;
+import de.static_interface.reallifeplugin.database.impl.table.OptionsTable;
 import de.static_interface.reallifeplugin.util.ReflectionUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.apache.commons.lang.Validate;
@@ -37,6 +37,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -84,8 +85,8 @@ public abstract class AbstractTable<T extends Row> {
         List<Field> indexes = new ArrayList<>();
         Class foreignOptionsTable = null;
 
-        if(OptionsRow.class.isAssignableFrom(getRowClass())) {
-            foreignOptionsTable = ReflectionUtil.Invoke(this, "getTargetTable", Class.class);
+        if (this instanceof OptionsTable) {
+            foreignOptionsTable = ((OptionsTable) this).getForeignTable();
         }
 
         boolean primarySet = false;
@@ -155,9 +156,9 @@ public abstract class AbstractTable<T extends Row> {
 
 
         if(foreignOptionsTable != null) {
-            String column = ReflectionUtil.Invoke(this, "getTargetIdColumn", String.class);
-            CascadeAction onUpdate = ReflectionUtil.Invoke(this, "getOnUpdateAction", CascadeAction.class);
-            CascadeAction onDelete = ReflectionUtil.Invoke(this, "getOnDeleteAction", CascadeAction.class);
+            String column = ((OptionsTable) this).getForeignColumn();
+            CascadeAction onUpdate = ((OptionsTable) this).getForeignOnUpdateAction();
+            CascadeAction onDelete = ((OptionsTable) this).getForeignOnDeleteAction();
             sql = addForeignKey(sql, "foreignTarget", foreignOptionsTable, column, onUpdate, onDelete);
         }
 
@@ -221,14 +222,16 @@ public abstract class AbstractTable<T extends Row> {
 
     public ResultSet serialize(T row) throws SQLException {
         String columns = "";
+        char bt = db.getBacktick();
         int i = 0;
-        Field[] fields = ReflectionUtil.getAllFields(getRowClass());
+        List<Field> fields = ReflectionUtil.getAllFields(new ArrayList<Field>(), getRowClass());
         for(Field f : fields) {
             Column column = f.getAnnotation(Column.class);
             if (column == null) {
                 continue;
             }
             String name = StringUtil.isEmptyOrNull(column.name()) ? f.getName() : column.name();
+            name = bt + name + bt;
             if(i == 0) {
                 columns = name;
                 i++;
@@ -328,7 +331,7 @@ public abstract class AbstractTable<T extends Row> {
             throw new RuntimeException("Deserializing failed: ", e);
         }
 
-        Field[] fields = ReflectionUtil.getAllFields(getRowClass());
+        List<Field> fields = ReflectionUtil.getAllFields(new ArrayList<Field>(), getRowClass());
         for (Field f : fields) {
             Column column = f.getAnnotation(Column.class);
             if (column == null) {
@@ -375,7 +378,7 @@ public abstract class AbstractTable<T extends Row> {
                     throw new RuntimeException("Deserializing failed: ", e);
                 }
 
-                Field[] fields = ReflectionUtil.getAllFields(getRowClass());
+                List<Field> fields = ReflectionUtil.getAllFields(new ArrayList<Field>(), getRowClass());
                 for (Field f : fields) {
                     Column column = f.getAnnotation(Column.class);
                     if (column == null) {
@@ -417,8 +420,18 @@ public abstract class AbstractTable<T extends Row> {
     }
 
     public Class<T> getRowClass() {
-        return (Class<T>) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0];
+        Object superclass = getClass().getGenericSuperclass();
+        if (superclass instanceof Class) {
+            return (Class<T>) superclass;
+        }
+        ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
+        Type type = genericSuperclass.getActualTypeArguments()[0];
+        if (type instanceof Class) {
+            return (Class<T>) type;
+        } else if (type instanceof ParameterizedType) {
+            return (Class<T>) ((ParameterizedType) type).getRawType();
+        }
+        throw new IllegalStateException("Unknown type: " + type.getTypeName());
     }
 
     public ResultSet executeQuery(String sql, @Nullable Object... paramObjects) throws SQLException {
@@ -459,12 +472,12 @@ public abstract class AbstractTable<T extends Row> {
     }
 
     protected String sqlToString(String sql, Object... paramObjects) {
-        if (paramObjects == null || paramObjects.length < 1) {
+        if (sql == null || paramObjects == null || paramObjects.length < 1) {
             return sql;
         }
 
         for (Object paramObject : paramObjects) {
-            sql = sql.replaceFirst("\\Q?\\E", paramObject.toString());
+            sql = sql.replaceFirst("\\Q?\\E", paramObject == null ? "NULL" : paramObject.toString());
         }
 
         return sql;

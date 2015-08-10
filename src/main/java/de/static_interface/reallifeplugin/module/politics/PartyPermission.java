@@ -20,17 +20,19 @@ import javax.annotation.Nonnull;
 
 public enum PartyPermission {
     ALL("*", "All permissions", false),
-    SET_RANK("setrank", "Allows setting ranks", false),
-    MANAGE_RANKS("manageranks", "Allows creating and configurin of ranks", false),
-    DEPOSIT("desposit", "Allows depositing money", true),
-    WITHDRAW("withdraw", "Allows withdrawing money", false),
-    INVITE("invite", "Allows inviting people", false),
-    KICK("kick", "Allows kicking members from a party", false),
-    MEMBER_FEE("memberfee", "Set fee for beeing member", Integer.class, null),
-    MEMBER_FEE_PERIOD("memberfeeperiod", "Period for fee in days", 7),;
+    SET_RANK("setrank", "Set ranks", false),
+    MANAGE_RANKS("manageranks", "Create and configure ranks", false),
+    DEPOSIT("desposit", "Deposit money", true),
+    WITHDRAW("withdraw", "Withdraw money", false),
+    INVITE("invite", "Invite people to the party", false),
+    KICK("kick", "Kick members from a party", false),
+    MEMBER_FEE("memberfee", "Fee for beeing member", Integer.class, null, false),
+    MEMBER_FEE_PERIOD("memberfeeperiod", "Period for fee in days", Integer.class, null, false),
+    DELETE("delete", "Delete this party", false),;
 
     private final String description;
     private final Class valueType;
+    private final boolean includeInAllPerms;
     private String permissionString;
     private Object defaultValue;
 
@@ -39,13 +41,15 @@ public enum PartyPermission {
         this.description = description;
         this.defaultValue = defaultValue;
         this.valueType = defaultValue.getClass();
+        includeInAllPerms = true;
     }
 
-    PartyPermission(String permissionString, String description, Class valueType, Object defaultValue) {
+    PartyPermission(String permissionString, String description, Class valueType, Object defaultValue, boolean includeInAllPerms) {
         this.permissionString = permissionString;
         this.description = description;
         this.defaultValue = defaultValue;
         this.valueType = valueType;
+        this.includeInAllPerms = includeInAllPerms;
     }
 
     public String getDescription() {
@@ -62,5 +66,9 @@ public enum PartyPermission {
 
     public Class getValueType() {
         return valueType;
+    }
+
+    public boolean includeInAllPermission() {
+        return includeInAllPerms;
     }
 }

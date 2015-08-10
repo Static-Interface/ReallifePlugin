@@ -16,7 +16,18 @@
 
 package de.static_interface.reallifeplugin.module.politics;
 
-public class PartyOptions {
+public enum PartyOptions {
+    DEFAULT_RANK("default_rank"),
+    ANNOUNCEMENT_MESSAGE("announcement_message"),
+    PUBLIC("is_public");
 
-    public static final String DEFAULT_RANK = "default_rank";
+    private String optionName;
+
+    PartyOptions(String optionName) {
+        this.optionName = optionName;
+    }
+
+    public String getIdentifier() {
+        return optionName;
+    }
 }

@@ -18,25 +18,24 @@ package de.static_interface.reallifeplugin.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ReflectionUtil {
 
-    public static Field[] getAllFields(Class<?> clazz) {
-        List<Field> fields = new ArrayList<>();
-        Class<?> current = clazz;
-        while (current.getSuperclass() != null) {
-            fields.addAll(Arrays.asList(current.getFields()));
-            current = current.getSuperclass();
+    public static List<Field> getAllFields(List<Field> fields, Class<?> type) {
+        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+        if (type.getSuperclass() != null) {
+            fields = getAllFields(fields, type.getSuperclass());
         }
-        return fields.toArray(new Field[fields.size()]);
+
+        return fields;
     }
 
     public static <T> T Invoke(Object object, String methodName, Class<T> returnClass, Object... args) {
         try {
-            Method method = object.getClass().getDeclaredMethod(methodName);
+            Method method = object.getClass().getMethod(methodName);
             method.setAccessible(true);
             return (T) method.invoke(object, args);
         } catch (Exception e) {
@@ -46,7 +45,7 @@ public class ReflectionUtil {
 
     public static <T> T InvokeStatic(Class<?> clazz, String methodName, Class<T> returnClass, Object... args) {
         try {
-            Method method = clazz.getDeclaredMethod(methodName);
+            Method method = clazz.getMethod(methodName);
             method.setAccessible(true);
             return (T) method.invoke(null, args);
         } catch (Exception e) {

@@ -19,10 +19,13 @@ package de.static_interface.reallifeplugin.database.annotation;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.CascadeAction;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
 public @interface ForeignKey {
 
     Class<? extends AbstractTable> table();

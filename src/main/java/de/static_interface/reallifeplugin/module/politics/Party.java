@@ -25,18 +25,21 @@ import de.static_interface.reallifeplugin.module.politics.database.table.PartyTa
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.MathUtil;
 import org.bukkit.ChatColor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-public class Party {
+public class Party implements Comparable<Party> {
 
     private final int id;
     private PoliticsModule module;
@@ -64,7 +67,7 @@ public class Party {
 
     @Nullable
     public String getDescription() {
-        return ChatColor.translateAlternateColorCodes('&', getBase().description);
+        return getBase().description;
     }
 
     public List<IngameUser> getMembers() {
@@ -76,7 +79,7 @@ public class Party {
     }
 
     @Nullable
-    public PartyRank getUserRank(IngameUser user) {
+    public PartyRank getRank(IngameUser user) {
         PartyUser row = getUserInternal(user);
         if (row == null) {
             throw new RuntimeException(user.getName() + " is not a member of " + getName() + "!");
@@ -97,11 +100,26 @@ public class Party {
         return result[0];
     }
 
+    public List<PartyUser> getRankUsers(PartyRank rank) {
+        PartyUser[] result;
+        try {
+            result =
+                    module.getTable(PartyUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ? AND `party_rank` = ?", getId(), rank.id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (result == null || result.length < 1) {
+            return new ArrayList<>();
+        }
+
+        return Arrays.asList(result);
+    }
+
     @Nullable
     public PartyRank getRank(String name) {
         PartyRank[] result;
         try {
-            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `name` = ?", name);
+            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `name` = ? AND `party_id` = ?", name, getId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -127,7 +145,7 @@ public class Party {
 
     public PartyRank getDefaultRank() {
         int defaultRankId = module.getTable(PartyOptionsTable.class)
-                .getOption(PartyOptions.DEFAULT_RANK, getId(), Integer.class, null);
+                .getOption(PartyOptions.DEFAULT_RANK.getIdentifier(), getId(), Integer.class, null);
         return getRank(defaultRankId);
     }
 
@@ -166,6 +184,98 @@ public class Party {
     }
 
     public void addMember(UUID user, int rankId) {
+        try {
+            int userId = PartyManager.getInstance().getUserId(user);
+            module.getTable(PartyUsersTable.class)
+                    .executeUpdate("UPDATE `{TABLE}` SET `party_id` = ?, `party_rank` = ? WHERE `id` = ?", getId(), rankId, userId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public boolean isMember(UUID user) {
+        for (IngameUser member : getMembers()) {
+            if (member.getUniqueId().equals(user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void removeMember(UUID user) {
+        if (!isMember(user)) {
+            throw new IllegalArgumentException(
+                    "User " + BukkitUtil.getNameByUniqueId(user) + " is not a member of party " + getName() + ", can't remove him!");
+        }
+        try {
+            int userId = PartyManager.getInstance().getUserId(user);
+            module.getTable(PartyUsersTable.class)
+                    .executeUpdate("UPDATE `{TABLE}` SET `party_id` = ?, `party_rank` = ? WHERE `id` = ?", null, null, userId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getTag() {
+        return getBase().tag;
+    }
+
+    public List<PartyRank> getRanks() {
+        try {
+            List<PartyRank>
+                    rows =
+                    Arrays.asList(module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", getId()));
+            Collections.sort(rows);
+            return rows;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isPublic() {
+        return module.getTable(PartyOptionsTable.class).getOption(PartyOptions.PUBLIC.getIdentifier(), boolean.class, false);
+    }
+
+    public void announce(String message) {
+        for (IngameUser user : getMembers()) {
+            if (user.isOnline()) {
+                user.sendMessage(message);
+            }
+        }
+    }
+
+    public boolean addBalance(double amount) {
+        return addBalance(amount, true);
+    }
+
+    public boolean addBalance(double amount, boolean checkAmount) {
+        if (amount == 0) {
+            return true;
+        }
+
+        amount = MathUtil.round(amount);
+
+        if (checkAmount && amount < 0 && getBalance() < Math.abs(amount)) {
+            return false;
+        }
+
+        double newAmount = getBalance() + amount;
+
+        try {
+            module.getTable(PartyTable.class).executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, getId());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int compareTo(Party o) {
+        if (o == null) {
+            return 1;
+        }
+        return Integer.valueOf(o.getMembers().size()).compareTo(getMembers().size());
     }
 }

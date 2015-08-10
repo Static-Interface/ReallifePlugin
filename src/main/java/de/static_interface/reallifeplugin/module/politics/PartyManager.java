@@ -30,8 +30,6 @@ import org.bukkit.ChatColor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,12 +86,8 @@ public class PartyManager {
         defaultRank.partyId = partyRow.id;
         defaultRank = module.getTable(PartyRanksTable.class).insert(defaultRank);
 
-        for (PartyPermission perm : PartyPermission.values()) {
-            setPermission(defaultRank, perm, perm.getDefaultValue());
-        }
-
         //Lets set it as default rank for new members
-        module.getTable(PartyOptionsTable.class).setOption(PartyOptions.DEFAULT_RANK, defaultRank.id, partyRow.id);
+        module.getTable(PartyOptionsTable.class).setOption(PartyOptions.DEFAULT_RANK.getIdentifier(), defaultRank.id, partyRow.id);
 
         // Ok, now add the founder to the database
         Party party = getParty(partyRow.id);
@@ -102,16 +96,25 @@ public class PartyManager {
 
     public boolean hasPartyPermission(UUID uuid, PartyPermission permission) {
         IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
+
         Party party = getParty(SinkLibrary.getInstance().getIngameUser(uuid));
-        PartyRank rank = party.getUserRank(user);
+        if (party == null) {
+            return false;
+        }
+
+        PartyRank rank = party.getRank(user);
+        return hasPartyPermission(rank, permission);
+    }
+
+    public boolean hasPartyPermission(PartyRank rank, PartyPermission permission) {
+        if (permission != PartyPermission.ALL && permission.includeInAllPermission() && hasPartyPermission(rank, PartyPermission.ALL)) {
+            return true;
+        }
+
         PartyRankPermissionsTable permsTable = module.getTable(PartyRankPermissionsTable.class);
 
         if (permission.getValueType() != boolean.class && permission.getValueType() != Boolean.class) {
             return permsTable.getOption(permission.getPermissionString(), rank.id, Object.class, null) != null;
-        }
-
-        if (permsTable.getOption(PartyPermission.ALL.getPermissionString(), rank.id, boolean.class, false)) {
-            return true;
         }
 
         return permsTable.getOption(permission.getPermissionString(), rank.id, boolean.class, false);
@@ -137,9 +140,14 @@ public class PartyManager {
 
     @Nullable
     public Party getParty(String name) {
+        return getParty(name, true);
+    }
+
+    @Nullable
+    public Party getParty(String name, boolean searchForTagToo) {
         name = ChatColor.stripColor(name).replace(" ", "_");
         for (Party p : getParties()) {
-            if (p.getName().equalsIgnoreCase(name)) {
+            if (p.getName().equalsIgnoreCase(name) || (searchForTagToo && p.getTag().equalsIgnoreCase(name))) {
                 return p;
             }
         }
@@ -156,18 +164,6 @@ public class PartyManager {
         }
 
         return null;
-    }
-
-    public List<PartyRank> getRanks(PartyRow party) {
-        try {
-            List<PartyRank>
-                    rows =
-                    Arrays.asList(module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", party.id));
-            Collections.sort(rows);
-            return rows;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public List<Party> getParties() {
@@ -212,7 +208,20 @@ public class PartyManager {
             return null;
         }
 
-        int partyId = rows[0].partyId;
+        Integer partyId = rows[0].partyId;
+        if (partyId == null) {
+            return null;
+        }
         return getParty(partyId);
+    }
+
+    public String getFormattedName(PartyUser user) {
+        IngameUser ingameUser = SinkLibrary.getInstance().getIngameUser(UUID.fromString(user.uuid));
+        Party party = getParty(ingameUser);
+        if (party == null) {
+            return ChatColor.GOLD + ChatColor.stripColor(ingameUser.getDisplayName()) + ChatColor.RESET;
+        }
+        PartyRank rank = party.getRank(ingameUser);
+        return ChatColor.translateAlternateColorCodes('&', rank.prefix) + ChatColor.stripColor(ingameUser.getDisplayName()) + ChatColor.RESET;
     }
 }

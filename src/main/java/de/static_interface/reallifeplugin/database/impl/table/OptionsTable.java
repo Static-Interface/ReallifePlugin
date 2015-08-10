@@ -20,6 +20,7 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.CascadeAction;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.database.impl.row.OptionsRow;
+import de.static_interface.sinklibrary.util.StringUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,6 +42,10 @@ public abstract class OptionsTable extends AbstractTable<OptionsRow> {
     }
 
     public void setOption(String key, Object value, @Nullable Integer foreignTarget) {
+        if (value != null && value.equals("null")) {
+            value = null;
+        }
+
         OptionsRow row;
         String parsedValue;
         try {
@@ -64,7 +69,12 @@ public abstract class OptionsTable extends AbstractTable<OptionsRow> {
     }
 
     public Object getOption(String key, Integer foreignId) {
-        return getOptionInternal("SELECT * FROM {TABLE} WHERE `key`=? AND `foreignTarget`=?", Object.class, false, key, foreignId);
+        return getOptionInternal("SELECT * FROM `{TABLE}` WHERE `key`=? AND `foreignTarget`=?", Object.class, false, key, foreignId);
+    }
+
+    @Override
+    public Class<OptionsRow> getRowClass() {
+        return OptionsRow.class;
     }
 
     public <K> K getOption(String key, Class<K> clazz, K defaultValue) {
@@ -93,7 +103,7 @@ public abstract class OptionsTable extends AbstractTable<OptionsRow> {
                 }
                 return null;
             }
-            s = result[0].toString();
+            s = result[0].value;
             if (s == null) {
                 return null;
             }
@@ -108,7 +118,8 @@ public abstract class OptionsTable extends AbstractTable<OptionsRow> {
             ois.close();
             return (K) o;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(
+                    "Error deserializing \"" + s + "\" on query: " + query + ", params: [" + StringUtil.formatArrayToString(bindings, ", ") + "]", e);
         }
     }
 

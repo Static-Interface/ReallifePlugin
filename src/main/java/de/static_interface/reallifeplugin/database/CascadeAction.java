@@ -20,7 +20,7 @@ public enum CascadeAction {
     RESTRICT,
     CASCADE,
     SET_NULL,
-    NO_ACTION, onDelete, onDelete;
+    NO_ACTION;
 
     public String toSql() {
         return name().replace("_", " ");

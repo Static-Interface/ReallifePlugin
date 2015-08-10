@@ -31,6 +31,7 @@ import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.insurance.InsuranceModule;
 import de.static_interface.reallifeplugin.module.level.LevelModule;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
+import de.static_interface.reallifeplugin.module.politics.PoliticsModule;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import org.bukkit.Bukkit;
@@ -110,6 +111,7 @@ public class ReallifeMain extends JavaPlugin {
         new CorporationModule(this, db).enable();
         new StockMarketModule(this, db).enable();
         new LevelModule(this, db).enable();
+        new PoliticsModule(this, db).enable();
 
         registerCommands();
 

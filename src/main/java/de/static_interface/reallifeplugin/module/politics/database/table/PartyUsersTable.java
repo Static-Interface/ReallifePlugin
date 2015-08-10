@@ -22,7 +22,7 @@ import de.static_interface.reallifeplugin.module.politics.database.row.PartyUser
 
 public class PartyUsersTable extends AbstractTable<PartyUser> {
 
-    public static final String TABLE_NAME = "party_user";
+    public static final String TABLE_NAME = "party_users";
 
     public PartyUsersTable(Database db) {
         super(TABLE_NAME, db);

@@ -50,6 +50,9 @@ commands:
   level:
     description: Level command
     permission: reallifeplugin.levelcommand
+  party:
+    description: Party command
+    permission: reallifeplugin.party
 
 permissions:
   reallifeplugin.command:
@@ -67,4 +70,6 @@ permissions:
   reallifeplugin.contract:
      default: true
   reallifeplugin.levelcommand:
+     default: true
+  reallifeplugin.party:
      default: true

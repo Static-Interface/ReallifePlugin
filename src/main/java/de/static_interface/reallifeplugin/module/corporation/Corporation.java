@@ -77,7 +77,7 @@ public class Corporation {
 
         amount = MathUtil.round(amount);
 
-        if (checkAmount && amount < 0 && getBalance() < amount) {
+        if (checkAmount && amount < 0 && getBalance() < Math.abs(amount)) {
             return false;
         }
 
