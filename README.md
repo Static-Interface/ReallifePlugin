@@ -9,6 +9,7 @@ Features
 * Insurances
 * Taxes
 * Corporations
+* Parties (political ones...)
 * Stocks & StockMarket based on the corporations
 
 Supported databases
@@ -20,8 +21,8 @@ Dependencies
 ------
 * <a href="https://github.com/Hidendra/LWC">LWC</a> (optional)
 * <a href="https://github.com/Static-Interface/Sink-Plugins">SinkLibrary</a>
-* <a href="https://github.com/MilkBowl/Vault">Vault</a>
-* <a href="https://github.com/sk89q/WorldGuard">WorldGuard</a>
+* <a href="https://github.com/MilkBowl/Vault">Vault</a> (for money transactions)
+* <a href="https://github.com/sk89q/WorldGuard">WorldGuard</a> (for corporations)
 
 License
 -------

@@ -52,6 +52,21 @@ public enum PartyPermission {
         this.includeInAllPerms = includeInAllPerms;
     }
 
+    public static PartyPermission getPermission(String s) {
+        if (s == null) {
+            return null;
+        }
+        s = s.trim();
+
+        for (PartyPermission perm : values()) {
+            if (perm.name().trim().equalsIgnoreCase(s) || perm.getPermissionString().trim().equalsIgnoreCase(s)) {
+                return perm;
+            }
+        }
+
+        return null;
+    }
+
     public String getDescription() {
         return description;
     }

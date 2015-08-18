@@ -22,6 +22,7 @@ import static de.static_interface.reallifeplugin.database.CascadeAction.SET_NULL
 import de.static_interface.reallifeplugin.database.Row;
 import de.static_interface.reallifeplugin.database.annotation.Column;
 import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
+import de.static_interface.reallifeplugin.database.annotation.Index;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyTable;
 
@@ -37,6 +38,7 @@ public class PartyUser implements Row {
 
     @Column(name = "party_id")
     @ForeignKey(table = PartyTable.class, column = "id", onUpdate = CASCADE, onDelete = SET_NULL)
+    @Index
     @Nullable
     public Integer partyId;
 

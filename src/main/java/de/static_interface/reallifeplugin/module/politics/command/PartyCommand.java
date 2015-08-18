@@ -166,7 +166,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.INVITE)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 2) {
@@ -174,7 +174,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1], true);
-                if (!target.isOnline()) {
+                if (!isExplicitForceMode && !target.isOnline()) {
                     throw new UserNotOnlineException(target.getDisplayName());
                 }
 
@@ -208,7 +208,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.KICK)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1], true);
@@ -228,7 +228,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "new":
                 if (!sender.hasPermission("ReallifePlugin.Party.New")) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -273,7 +273,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DELETE)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 //Todo
@@ -373,7 +373,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "new": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -417,7 +417,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "delete": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 3) {
@@ -451,7 +451,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "priority": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -483,7 +483,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "prefix": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -507,7 +507,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "description": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -533,7 +533,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "rename": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -558,7 +558,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "set": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.SET_RANK)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 4) {
@@ -584,7 +584,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
             }
             case "setpermission":
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permission.General"));
+                    sender.sendMessage(m("Permissions.General"));
                     break;
                 }
                 if (args.length < 5) {
@@ -595,9 +595,14 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 if (rank == null) {
                     break;
                 }
-                PartyPermission permission = PartyPermission.valueOf(args[3].toUpperCase());
+                PartyPermission permission = PartyPermission.getPermission(args[3].toUpperCase());
                 if (permission == null) {
                     sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UnknownPermission", args[3].toUpperCase()));
+                    break;
+                }
+
+                if(!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, permission)) {
+                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughPriority"));
                     break;
                 }
 
@@ -609,6 +614,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
                 Object value = parseValue(valueArgs);
                 getModule().getTable(PartyRankPermissionsTable.class).setOption(permission.getPermissionString(), value, rank.id);
+                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", Objects.toString(value)));
                 break;
 
             default:
@@ -717,17 +723,19 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
         boolean membersFound = false;
         List<PartyRank> ranks = party.getRanks();
         for (PartyRank rank : ranks) {
-            sender.sendMessage("");
             List<PartyUser> rankUsers = party.getRankUsers(rank);
             if (rankUsers.size() < 1) {
                 continue;
             }
             membersFound = true;
-            sender.sendMessage(ChatColor.GOLD + rank.name + ":");
+
             String users = "";
 
+            sender.sendMessage("");
             if (!StringUtil.isEmptyOrNull(rank.description)) {
-                sender.sendMessage(ChatColor.GRAY + "    Beschreibung: " + ChatColor.RESET + rank.description);
+                sender.sendMessage(ChatColor.GOLD + rank.name + ChatColor.GRAY + ": " + rank.description);
+            } else {
+                sender.sendMessage(ChatColor.GOLD + rank.name);
             }
 
             int index = 0;
@@ -739,7 +747,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
                 String formattedName = PartyManager.getInstance().getFormattedName(user);
                 if (users.equals("")) {
-                    users = ChatColor.GRAY + "    -> " + formattedName;
+                    users = ChatColor.GRAY + "    " + formattedName;
                     continue;
                 }
 
