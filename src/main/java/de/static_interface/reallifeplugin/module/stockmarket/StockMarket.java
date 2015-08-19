@@ -19,8 +19,8 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
+import de.static_interface.reallifeplugin.module.corporation.CorporationManager;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
-import de.static_interface.reallifeplugin.module.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
@@ -60,6 +60,10 @@ public class StockMarket {
         return instance;
     }
 
+    public static void unload() {
+        instance = null;
+    }
+
     @Nullable
     public Stock getStock(StockMarketModule module, CorporationModule corpModule, int id) {
         for (Stock stock : getAllStocks(module, corpModule)) {
@@ -87,16 +91,11 @@ public class StockMarket {
     }
 
     public Collection<Stock> getAllStocks(StockMarketModule module, CorporationModule corpModule) {
-        StockRow[] rows;
-        try {
-            rows = Module.getTable(module, StocksTable.class).get("SELECT * FROM `{TABLE}`");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        StockRow[] rows = Module.getTable(module, StocksTable.class).get("SELECT * FROM `{TABLE}`");
 
         List<Stock> parsedRows = new ArrayList<>();
         for (StockRow row : rows) {
-            Corporation corp = CorporationUtil.getCorporation(corpModule, row.corp_id);
+            Corporation corp = CorporationManager.getInstance().getCorporation(row.corp_id);
             if (corp == null) {
                 ReallifeMain.getInstance().getLogger().warning("Corp ID not found: " + row.corp_id);
                 continue;
@@ -114,16 +113,9 @@ public class StockMarket {
             stockfilter = " AND stock_id = " + stock.getId();
         }
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
-        if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, user, null);
-        }
+        CorpUserRow tmp = CorporationManager.getInstance().getCorpUser(user);
 
-        try {
-            rows = Module.getTable(module, StockUsersTable.class).get("SELECT * FROM `{TABLE}` where `user_id` = ?" + stockfilter + ";", tmp.id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        rows = Module.getTable(module, StockUsersTable.class).get("SELECT * FROM `{TABLE}` where `user_id` = ?" + stockfilter + ";", tmp.id);
 
         List<StockUserRow> parsedRows = new ArrayList<>();
         for (StockUserRow row : rows) {
@@ -285,21 +277,12 @@ public class StockMarket {
         return 0;
     }
 
-
     public int getStocksAmount(StockMarketModule module, CorporationModule corpModule, Stock stock, IngameUser user) {
-        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
-        if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, user, null);
-        }
+        CorpUserRow tmp = CorporationManager.getInstance().getCorpUser(user);
 
         StockUsersTable usersTable = Module.getTable(module, StockUsersTable.class);
         StockUserRow[] rows;
-        try {
-            rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, stock.getId());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 0;
-        }
+        rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, stock.getId());
         if (rows.length > 0) {
             return rows[0].amount;
         }

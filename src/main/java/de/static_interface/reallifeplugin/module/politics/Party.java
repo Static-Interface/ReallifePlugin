@@ -29,7 +29,6 @@ import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import org.bukkit.ChatColor;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,15 +53,11 @@ public class Party implements Comparable<Party> {
     }
 
     private PartyRow getBase() {
-        try {
-            PartyRow[] result = module.getTable(PartyTable.class).get("SELECT * FROM `{TABLE}` WHERE `id`=?", id);
-            if (result == null || result.length < 1) {
-                return null;
-            }
-            return result[0];
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        PartyRow[] result = module.getTable(PartyTable.class).get("SELECT * FROM `{TABLE}` WHERE `id`=?", id);
+        if (result == null || result.length < 1) {
+            return null;
         }
+        return result[0];
     }
 
     @Nullable
@@ -88,12 +83,7 @@ public class Party implements Comparable<Party> {
         if (rankId == null) {
             return null;
         }
-        PartyRank[] result;
-        try {
-            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", rankId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        PartyRank[] result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", rankId);
         if (result == null || result.length < 1) {
             return null;
         }
@@ -101,13 +91,8 @@ public class Party implements Comparable<Party> {
     }
 
     public List<PartyUser> getRankUsers(PartyRank rank) {
-        PartyUser[] result;
-        try {
-            result =
-                    module.getTable(PartyUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ? AND `party_rank` = ?", getId(), rank.id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        PartyUser[] result =
+                module.getTable(PartyUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ? AND `party_rank` = ?", getId(), rank.id);
         if (result == null || result.length < 1) {
             return new ArrayList<>();
         }
@@ -117,12 +102,7 @@ public class Party implements Comparable<Party> {
 
     @Nullable
     public PartyRank getRank(String name) {
-        PartyRank[] result;
-        try {
-            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `name` = ? AND `party_id` = ?", name, getId());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        PartyRank[] result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `name` = ? AND `party_id` = ?", name, getId());
         if (result == null || result.length < 1) {
             return null;
         }
@@ -131,12 +111,7 @@ public class Party implements Comparable<Party> {
 
     @Nullable
     public PartyRank getRank(int id) {
-        PartyRank[] result;
-        try {
-            result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        PartyRank[] result = module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", id);
         if (result == null || result.length < 1) {
             return null;
         }
@@ -150,11 +125,7 @@ public class Party implements Comparable<Party> {
     }
 
     private List<PartyUser> getUsersInternal() {
-        try {
-            return Arrays.asList(module.getTable(PartyUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", getBase().id));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return Arrays.asList(module.getTable(PartyUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", getBase().id));
     }
 
     @Nullable
@@ -183,14 +154,10 @@ public class Party implements Comparable<Party> {
         return getBase().balance;
     }
 
-    public void addMember(UUID user, int rankId) {
-        try {
-            int userId = PartyManager.getInstance().getUserId(user);
-            module.getTable(PartyUsersTable.class)
-                    .executeUpdate("UPDATE `{TABLE}` SET `party_id` = ?, `party_rank` = ? WHERE `id` = ?", getId(), rankId, userId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public void addMember(UUID user, PartyRank rank) {
+        int userId = PartyManager.getInstance().getUserId(user);
+        module.getTable(PartyUsersTable.class)
+                .executeUpdate("UPDATE `{TABLE}` SET `party_id` = ?, `party_rank` = ? WHERE `id` = ?", getId(), rank.id, userId);
     }
 
     public boolean isMember(UUID user) {
@@ -208,13 +175,9 @@ public class Party implements Comparable<Party> {
             throw new IllegalArgumentException(
                     "User " + BukkitUtil.getNameByUniqueId(user) + " is not a member of party " + getName() + ", can't remove him!");
         }
-        try {
-            int userId = PartyManager.getInstance().getUserId(user);
-            module.getTable(PartyUsersTable.class)
-                    .executeUpdate("UPDATE `{TABLE}` SET `party_id` = ?, `party_rank` = ? WHERE `id` = ?", null, null, userId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        int userId = PartyManager.getInstance().getUserId(user);
+        module.getTable(PartyUsersTable.class)
+                .executeUpdate("UPDATE `{TABLE}` SET `party_id` = ?, `party_rank` = ? WHERE `id` = ?", null, null, userId);
     }
 
     public String getTag() {
@@ -222,15 +185,11 @@ public class Party implements Comparable<Party> {
     }
 
     public List<PartyRank> getRanks() {
-        try {
-            List<PartyRank>
-                    rows =
-                    Arrays.asList(module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", getId()));
-            Collections.sort(rows);
-            return rows;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        List<PartyRank>
+                rows =
+                Arrays.asList(module.getTable(PartyRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `party_id` = ?", getId()));
+        Collections.sort(rows);
+        return rows;
     }
 
     public boolean isPublic() {
@@ -262,12 +221,7 @@ public class Party implements Comparable<Party> {
 
         double newAmount = getBalance() + amount;
 
-        try {
-            module.getTable(PartyTable.class).executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, getId());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        module.getTable(PartyTable.class).executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, getId());
         return true;
     }
 
@@ -277,5 +231,13 @@ public class Party implements Comparable<Party> {
             return 1;
         }
         return Integer.valueOf(o.getMembers().size()).compareTo(getMembers().size());
+    }
+
+    public void setRank(IngameUser target, PartyRank rank) {
+        if (!isMember(target.getUniqueId())) {
+            throw new IllegalArgumentException("Couldn't set rank for player: " + target.getName() + " is not a member of " + getName());
+        }
+        int userId = PartyManager.getInstance().getUserId(target.getUniqueId());
+        module.getTable(PartyUsersTable.class).executeUpdate("UPDATE `{TABLE}` SET `party_rank`=? WHERE `id` = ?", rank.id, userId);
     }
 }

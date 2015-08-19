@@ -17,33 +17,44 @@
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
 import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
-import static de.static_interface.reallifeplugin.database.CascadeAction.SET_NULL;
 
 import de.static_interface.reallifeplugin.database.Row;
 import de.static_interface.reallifeplugin.database.annotation.Column;
 import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
-import de.static_interface.reallifeplugin.database.annotation.Index;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 
 import javax.annotation.Nullable;
 
-public class CorpUserRow implements Row {
+public class CorpRank implements Row, Comparable<CorpRank> {
 
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
+    @Column(uniqueKey = true)
+    public String name;
+
+    @Column
+    @Nullable
+    public String description;
+
+    @Column
+    @Nullable
+    public String prefix;
+
+    @Column
+    public int priority;
+
     @Column(name = "corp_id")
-    @ForeignKey(table = CorpsTable.class, column = "id", onUpdate = CASCADE, onDelete = SET_NULL)
-    @Index
+    @ForeignKey(table = CorpsTable.class, column = "id", onUpdate = CASCADE, onDelete = CASCADE)
     @Nullable
     public Integer corpId;
 
-    @Column(name = "corp_rank")
-    @ForeignKey(table = CorpRanksTable.class, column = "id", onUpdate = CASCADE, onDelete = SET_NULL)
-    @Nullable
-    public Integer corpRank;
 
-    @Column(uniqueKey = true)
-    public String uuid;
+    @Override
+    public int compareTo(CorpRank o) {
+        if (o == null) {
+            return 1;
+        }
+        return Integer.valueOf(priority).compareTo(o.priority);
+    }
 }

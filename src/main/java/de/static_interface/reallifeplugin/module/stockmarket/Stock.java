@@ -18,24 +18,20 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
+import de.static_interface.reallifeplugin.module.corporation.CorporationManager;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
-import de.static_interface.reallifeplugin.module.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 
-import java.sql.SQLException;
-
 public class Stock {
 
     private final int id;
     private StocksTable stocksTable;
-    private CorporationModule corpModule;
 
     public Stock(StockMarketModule module, CorporationModule corpModule, int id) {
         this.id = id;
-        this.corpModule = corpModule;
         stocksTable = Module.getTable(module, StocksTable.class);
     }
 
@@ -44,15 +40,11 @@ public class Stock {
     }
 
     private StockRow getBase() {
-        try {
-            return stocksTable.get("SELECT * FROM `{TABLE}` WHERE `id`=?", id)[0];
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return stocksTable.get("SELECT * FROM `{TABLE}` WHERE `id`=?", id)[0];
     }
 
     public Corporation getCorporation() {
-        return CorporationUtil.getCorporation(corpModule, getBase().corp_id);
+        return CorporationManager.getInstance().getCorporation(getBase().corp_id);
     }
 
     public final int getId() {
@@ -72,7 +64,7 @@ public class Stock {
     }
 
     public boolean canSellStocks(IngameUser user) {
-        return CorporationUtil.hasCeoPermissions(user, getCorporation()) || getBase().allow_buy_stocks;
+        return CorporationManager.getInstance().hasCorpPermission(user, StockPermissions.FORCE_SELL) || getBase().allow_buy_stocks;
     }
 
     public double getShare() {

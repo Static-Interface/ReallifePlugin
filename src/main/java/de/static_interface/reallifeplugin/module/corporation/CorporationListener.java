@@ -19,6 +19,7 @@ package de.static_interface.reallifeplugin.module.corporation;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.database.permission.Permission;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
@@ -269,6 +270,10 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
                 continue;
             }
 
+            if (invStack.getAmount() <= amount && stack != null && stack.getAmount() < invStack.getAmount()) {
+                continue;
+            }
+
             if (equalsItemStack(invStack, itemName) && invStack.getAmount() >= stackamount) {
                 if (preferNotSold && isTagged(invStack)) {
                     soldItemStack = invStack;
@@ -287,14 +292,23 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private boolean validateSign(SignChangeEvent event, String[] lines, Location location, IngameUser user) {
-        Corporation corp = CorporationUtil.getUserCorporation(getModule(), user);
+        Corporation corp = CorporationManager.getInstance().getUserCorporation(user);
         if (corp == null) {
             user.sendMessage(m("Corporation.NotInCorporation"));
             return false;
         }
 
-        if (!CorporationUtil.hasCeoPermissions(user, corp)) {
-            user.sendMessage(m("Corporation.NotCEO"));
+        Permission perm;
+        if (ChatColor.stripColor(lines[0]).equals("[CBuy]")) {
+            perm = CorporationPermissions.CBUY_SIGN;
+        } else if (ChatColor.stripColor(lines[0]).equals("[CSell]")) {
+            perm = CorporationPermissions.CSELL_SIGN;
+        } else {
+            throw new IllegalStateException("This shouldn't happen");
+        }
+
+        if (!CorporationManager.getInstance().hasCorpPermission(user, perm)) {
+            user.sendMessage(m("Permissions.General"));
             return false;
         }
 
@@ -335,7 +349,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             }
 
             //Validate location
-            Corporation locationCorporation = CorporationUtil.getCorporation(getModule(), location);
+            Corporation locationCorporation = CorporationManager.getInstance().getCorporation(location);
 
             if (locationCorporation.getId() != corp.getId()) {
                 user.sendMessage(m("Corporation.Sign.InvalidCreateLocation"));
@@ -373,7 +387,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             return;
         }
 
-        Chest chest = CorporationUtil.findConnectedChest(signBlock);
+        Chest chest = CorporationManager.getInstance().findConnectedChest(signBlock);
         if (chest == null) {
             user.sendMessage(m("Corporation.Sign.InvalidChest"));
             event.setLine(0, ChatColor.DARK_RED + ChatColor.stripColor(lines[0]));
@@ -434,14 +448,14 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
             sign.update(true);
 
-            Corporation corp = CorporationUtil.getCorporation(getModule(), event.getClickedBlock().getLocation());
+            Corporation corp = CorporationManager.getInstance().getCorporation(event.getClickedBlock().getLocation());
             if (corp == null) {
                 user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
                 sign.setLine(0, ChatColor.DARK_RED + "[CSell]");
                 return;
             }
 
-            Corporation userCorp = CorporationUtil.getUserCorporation(getModule(), user);
+            Corporation userCorp = CorporationManager.getInstance().getUserCorporation(user);
 
             if (userCorp == null) {
                 user.sendMessage(m("Corporation.NotInCorporation"));
@@ -449,13 +463,13 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             }
 
             if (userCorp.getId() != corp.getId()) {
-                user.sendMessage(CorporationUtil.getUserCorporation(getModule(), user).getName() + ":" + corp.getName());
+                user.sendMessage(CorporationManager.getInstance().getUserCorporation(user).getName() + ":" + corp.getName());
                 user.sendMessage(m("Corporation.Sign.InvalidSellCorporation"));
                 return;
             }
 
-            if (CorporationUtil.hasCeoPermissions(user, userCorp)) {
-                user.sendMessage(m("Corporation.Sign.IsCeo"));
+            if (CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.CSELL_SIGN)) {
+                user.sendMessage(m("Corporation.Sign.CantSell"));
                 return;
             }
 
@@ -477,13 +491,13 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
                 return;
             }
 
-            Chest chest = CorporationUtil.findConnectedChest(sign.getBlock());
+            Chest chest = CorporationManager.getInstance().findConnectedChest(sign.getBlock());
             if (chest == null) {
                 user.sendMessage(m("Corporation.Sign.InvalidChest"));
                 return;
             }
 
-            if (!CorporationUtil.canAddItemStack(chest.getInventory())) {
+            if (!CorporationManager.getInstance().canAddItemStack(chest.getInventory())) {
                 user.sendMessage(m("Corporation.Sign.ChestFull"));
                 return;
             }
@@ -551,7 +565,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             row.changedAmount = stack.getAmount();
             row.time = System.currentTimeMillis();
             row.type = 0;
-            row.userId = CorporationUtil.getUserId(getModule(), user);
+            row.userId = CorporationManager.getInstance().getUserId(user);
             getModule().getTable(CorpTradesTable.class).insert(row);
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
@@ -586,14 +600,14 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             }
             sign.update(true);
 
-            Corporation signCorp = CorporationUtil.getCorporation(getModule(), event.getClickedBlock().getLocation());
+            Corporation signCorp = CorporationManager.getInstance().getCorporation(event.getClickedBlock().getLocation());
             if (signCorp == null) {
                 user.sendMessage(ChatColor.DARK_RED + "Invalid Sign"); //Todo
                 sign.setLine(0, ChatColor.DARK_RED + "[CBuy]");
                 return;
             }
 
-            Corporation userCorp = CorporationUtil.getUserCorporation(getModule(), user);
+            Corporation userCorp = CorporationManager.getInstance().getUserCorporation(user);
 
             if (userCorp == null) {
                 user.sendMessage(m("Corporation.NotInCorporation"));
@@ -605,20 +619,20 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
                 return;
             }
 
-            if (CorporationUtil.hasCeoPermissions(user, userCorp)) {
-                user.sendMessage(m("Corporation.Sign.IsCeo"));
+            if (CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.CBUY_SIGN)) {
+                user.sendMessage(m("Corporation.Sign.CantBuy"));
                 return;
             }
 
             int amount = Integer.valueOf(sign.getLine(1));
             double price = Double.valueOf(sign.getLine(2).split(" ")[0]);
 
-            if (!CorporationUtil.canAddItemStack(user.getPlayer().getInventory())) {
+            if (!CorporationManager.getInstance().canAddItemStack(user.getPlayer().getInventory())) {
                 user.sendMessage(m("Corporation.Sign.CantPickup"));
                 return;
             }
 
-            Chest chest = CorporationUtil.findConnectedChest(sign.getBlock());
+            Chest chest = CorporationManager.getInstance().findConnectedChest(sign.getBlock());
             if (chest == null) {
                 user.sendMessage(m("Corporation.Sign.InvalidChest"));
                 return;
@@ -680,7 +694,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             row.signAmount = amount;
             row.time = System.currentTimeMillis();
             row.type = 1;
-            row.userId = CorporationUtil.getUserId(getModule(), user);
+            row.userId = CorporationManager.getInstance().getUserId(user);
 
             getModule().getTable(CorpTradesTable.class).insert(row);
         } catch (Exception e) {

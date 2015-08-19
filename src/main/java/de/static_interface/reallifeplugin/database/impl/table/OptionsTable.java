@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.sql.SQLException;
 import java.util.Base64;
 
 import javax.annotation.Nullable;
@@ -95,20 +94,16 @@ public abstract class OptionsTable extends AbstractTable<OptionsRow> {
 
     private <K> K getOptionInternal(String query, Class<K> clazz, boolean throwExceptionOnNull, Object... bindings) {
         String s;
-        try {
-            OptionsRow[] result = get(query, bindings);
-            if (result == null || result.length < 1) {
-                if (throwExceptionOnNull) {
-                    throw new NullPointerException();
-                }
-                return null;
+        OptionsRow[] result = get(query, bindings);
+        if (result == null || result.length < 1) {
+            if (throwExceptionOnNull) {
+                throw new NullPointerException();
             }
-            s = result[0].value;
-            if (s == null) {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return null;
+        }
+        s = result[0].value;
+        if (s == null) {
+            return null;
         }
         try {
             byte[] data = Base64.getDecoder().decode(s);

@@ -23,7 +23,6 @@ import de.static_interface.reallifeplugin.module.contract.database.table.Contrac
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 
-import java.sql.SQLException;
 import java.util.UUID;
 
 public class Contract {
@@ -37,12 +36,7 @@ public class Contract {
     }
 
     public static IngameUser getUserFromUserId(ContractModule module, int id) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(module.getTable(ContractUsersTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = ?", id)[0].uuid);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        UUID uuid = UUID.fromString(module.getTable(ContractUsersTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = ?", id)[0].uuid);
         return SinkLibrary.getInstance().getIngameUser(uuid);
     }
 
@@ -56,21 +50,13 @@ public class Contract {
         } catch (Exception e) {
             row = new ContractUserRow();
             row.uuid = user.getUniqueId().toString();
-            try {
-                row = module.getTable(ContractUsersTable.class).insert(row);
-            } catch (SQLException e1) {
-                throw new RuntimeException(e1);
-            }
+            row = module.getTable(ContractUsersTable.class).insert(row);
         }
         return row.id;
     }
 
     private ContractRow getBase() {
-        try {
-            return getModule().getTable(ContractsTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = " + id)[0];
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        return getModule().getTable(ContractsTable.class).get("SELECT FROM `{TABLE}` WHERE `id` = " + id)[0];
     }
 
     private ContractModule getModule() {

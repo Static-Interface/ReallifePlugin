@@ -21,6 +21,7 @@ import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
+import de.static_interface.reallifeplugin.module.corporation.CorporationPermissions;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockPricesTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockTradesTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
@@ -71,11 +72,14 @@ public class StockMarketModule extends Module<ReallifeMain> {
 
     @Override
     protected void onEnable() {
-        if (!Module.isEnabled(CorporationModule.NAME)) {
+        if (!Module.isEnabled(CorporationModule.class)) {
             getPlugin().getLogger().warning("Corporation module not active, deactivating...");
             disable();
             return;
         }
+
+        StockPermissions.init();
+        CorporationPermissions.getInstance().merge(StockPermissions.getInstance());
 
         final CorporationModule corpModule = Module.getModule(CorporationModule.class);
         stocksTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), new Runnable() {
@@ -93,5 +97,9 @@ public class StockMarketModule extends Module<ReallifeMain> {
         if (stocksTask != null) {
             stocksTask.cancel();
         }
+
+        CorporationPermissions.getInstance().unmerge(StockPermissions.getInstance());
+        StockMarket.unload();
+        StockPermissions.unload();
     }
 }

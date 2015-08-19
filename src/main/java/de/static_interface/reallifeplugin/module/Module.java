@@ -108,6 +108,11 @@ public abstract class Module<T extends Plugin> {
         return m != null && m.isEnabled();
     }
 
+    public static boolean isEnabled(Class<? extends Module> clazz) {
+        Module m = getModule(clazz);
+        return m != null && m.isEnabled();
+    }
+
     public static <T extends Module> T getModule(Class<T> classOfT) {
         for (Module module : modules) {
             if (module.getClass().getName().equals(classOfT.getName())) {

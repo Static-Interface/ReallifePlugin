@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - 2014 <http://static-interface.de> and contributors
+ * Copyright (c) 2013 - 2015 <http://static-interface.de> and contributors
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
@@ -14,12 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.corporation;
+package de.static_interface.reallifeplugin.util;
 
-import org.bukkit.ChatColor;
+import java.util.ArrayList;
+import java.util.Collections;
 
-public class CorporationRanks {
-    public static final String RANK_DEFAULT = ChatColor.GOLD.toString();
-    public static final String RANK_CEO = ChatColor.DARK_RED + "CEO" + ChatColor.RED;
-    public static final String RANK_CO_CEO = ChatColor.DARK_GREEN + "Co-CEO" + ChatColor.GREEN;
+public class ArrayUtil {
+
+    public static <T> ArrayList<T> createArrayList(T... elements) {
+        ArrayList<T> list = new ArrayList<>();
+        Collections.addAll(list, elements);
+        return list;
+    }
 }

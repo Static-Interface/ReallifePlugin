@@ -20,9 +20,13 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.AbstractTable;
 import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
+import de.static_interface.reallifeplugin.module.corporation.command.CorporationCommand;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpOptionsTable;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
+import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,12 +51,28 @@ public class CorporationModule extends Module<ReallifeMain> {
         tables.add(table);
         table = new CorpTradesTable(getDatabase());
         tables.add(table);
+        table = new CorpRanksTable(getDatabase());
+        tables.add(table);
+        table = new CorpOptionsTable(getDatabase());
+        tables.add(table);
         return tables;
     }
 
     @Override
     protected void onEnable() {
+        CorporationManager.init(this);
+        CorporationPermissions.init();
         registerModuleListener(new CorporationListener(this));
         registerModuleCommand("corporation", new CorporationCommand(this));
+    }
+
+    @Override
+    protected void onDisable() {
+        if (Module.isEnabled(StockMarketModule.class)) {
+            getModule(StockMarketModule.class).disable();
+        }
+
+        CorporationPermissions.unload();
+        CorporationManager.unload();
     }
 }

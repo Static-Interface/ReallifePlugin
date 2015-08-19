@@ -14,21 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.politics;
+package de.static_interface.reallifeplugin.database.permission;
 
 import javax.annotation.Nonnull;
 
-public enum PartyPermission {
-    ALL("*", "All permissions", false),
-    SET_RANK("setrank", "Set ranks", false),
-    MANAGE_RANKS("manageranks", "Create and configure ranks", false),
-    DEPOSIT("deposit", "Deposit money", true),
-    WITHDRAW("withdraw", "Withdraw money", false),
-    INVITE("invite", "Invite people to the party", false),
-    KICK("kick", "Kick members from a party", false),
-    MEMBER_FEE("memberfee", "Fee for beeing member", Integer.class, null, false),
-    MEMBER_FEE_PERIOD("memberfeeperiod", "Period for fee in days", Integer.class, null, false),
-    DELETE("delete", "Delete this party", false),;
+public final class Permission {
 
     private final String description;
     private final Class valueType;
@@ -36,7 +26,7 @@ public enum PartyPermission {
     private String permissionString;
     private Object defaultValue;
 
-    PartyPermission(String permissionString, String description, @Nonnull Object defaultValue) {
+    public Permission(String permissionString, String description, @Nonnull Object defaultValue) {
         this.permissionString = permissionString;
         this.description = description;
         this.defaultValue = defaultValue;
@@ -44,27 +34,12 @@ public enum PartyPermission {
         includeInAllPerms = true;
     }
 
-    PartyPermission(String permissionString, String description, Class valueType, Object defaultValue, boolean includeInAllPerms) {
+    public Permission(String permissionString, String description, Class valueType, Object defaultValue, boolean includeInAllPerms) {
         this.permissionString = permissionString;
         this.description = description;
         this.defaultValue = defaultValue;
         this.valueType = valueType;
         this.includeInAllPerms = includeInAllPerms;
-    }
-
-    public static PartyPermission getPermission(String s) {
-        if (s == null) {
-            return null;
-        }
-        s = s.trim();
-
-        for (PartyPermission perm : values()) {
-            if (perm.name().trim().equalsIgnoreCase(s) || perm.getPermissionString().trim().equalsIgnoreCase(s)) {
-                return perm;
-            }
-        }
-
-        return null;
     }
 
     public String getDescription() {

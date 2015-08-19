@@ -82,6 +82,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.CEOSet", "&6CEO has been updated!");
         addDefault("Corporation.NotInCorporation", "&4Error: &cYou're not a member of any corporation!");
         addDefault("Corporation.NotCEO", "&4Error: &cYou're not the CEO!");
+        addDefault("Corporation.CorporationNotFound", "&4Corporation {0} not found");
         addDefault("Corporation.CEOAdded", "{0} &ehas been added to the corporation!");
         addDefault("Corporation.Added", "&eYou've been added to the {0} corporation!");
         addDefault("Corporation.CEOKicked", "{DISPLAYNAME} &4has been kicked from the corporation!");
@@ -109,6 +110,13 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.NotInCorporation", "&4Error:&c You aren't in any corporation!");
         addDefault("Corporation.Sign.ItemAlreadySold", "&4This item has been already sold. You can't re-sell it");
         addDefault("Corporation.ItemsSold", "&6{0} has sold {1} items in the last {2}");
+        addDefault("Corporation.UserHasBeenInvited", "&3{0}&r&3 has been invited");
+        addDefault("Corporation.GotInvited", "&3You've got invited for corporation: {1}&r&3 by {0}.&r&3 Use /corporation join {2}&r&3 to accept.");
+        addDefault("Corporation.NotInvited", "&4Error: &cYou're not invited to {0}&r&c!");
+        addDefault("Corporation.AlreadyInvited", "&4Error: &c{0}&r&c is already invited!");
+        addDefault("Corporation.AlreadyInCorporation", "&4Error: &cYou're already in a corporation: {0}");
+        addDefault("Corporation.UserAlreadyInCorporation", "&4Error: &c{0}&r&c is already in a corporation: {1}&r&c!");
+        addDefault("Corporation.Joined", "&3{0}&r&3 joined the corporation!");
 
         addDefault("Corporation.Sign.CantPickup", "&4Error:&c Your inventory is full!");
         addDefault("Corporation.Sign.Bought", "&aSuccessfully bought {0} {1} for {2}{CURRENCY}!");
@@ -121,8 +129,14 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Sign.ChestFull", "&cThe chest is full!");
         addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
         addDefault("Corporation.Sign.SoldWatermark", "&4- &oSold");
-        addDefault("Corporation.Sign.IsCeo", "&cCEO or co-CEOs can't sell items!");
+        addDefault("Corporation.Sign.CantSell", "&cYou can't sell items!");
+        addDefault("Corporation.Sign.CanBuy", "&cYou can't buy items!");
 
+        addDefault("Corporation.UnknownPermission", "&4Error: &cUnknown permission: {0}&c!");
+        addDefault("Corporation.DeletingDefaultRank",
+                   "&4Can't delete a default rank. Please set an other rank as default rank before deleting this one!");
+        addDefault("Corporation.RankNotFound", "&4Rank &c\"{0}\"&r&4 not found");
+        addDefault("Corporation.NotEnoughPriority", "&4You can't modify or assign a rank with a higher priorty!");
         addDefault("StockMarket.NotEnoughStocksLeft", "&cNot enough stocks left!");
         addDefault("StockMarket.ForceFailed", "&4Couldn't update stocks");
         addDefault("StockMarket.PendingTransferNotDone", "&4User already has a pending transfer");

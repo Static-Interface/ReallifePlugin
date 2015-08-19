@@ -18,11 +18,12 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
+import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
+import de.static_interface.reallifeplugin.module.corporation.CorporationManager;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
-import de.static_interface.reallifeplugin.module.corporation.CorporationUtil;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockUserRow;
@@ -34,6 +35,8 @@ import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -62,7 +65,23 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         pendingTransfers = new ArrayList<>();
         transferCooldown = new HashMap<>();
         pendingCooldown = (int) getModule().getConfig().get("Transfer.Cooldown");
+        getCommandOptions().setCmdLineSyntax("{PREFIX}{ALIAS} <options> [-c <corp>] [-f]");
+        getCommandOptions().setCliOptions(new Options());
+        Option corpOption = Option.builder("c")
+                .hasArg()
+                .longOpt("corp")
+                .desc("Force as given corporation member")
+                .type(String.class)
+                .argName("corp name")
+                .build();
+        Option forceOption = Option.builder("f")
+                .longOpt("force")
+                .desc("Force command, even if you don't have permission for it")
+                .build();
+        getCommandOptions().getCliOptions().addOption(corpOption);
+        getCommandOptions().getCliOptions().addOption(forceOption);
     }
+
 
     @Override
     protected boolean onExecute(CommandSender commandSender, String label, String[] args) throws ParseException {
@@ -74,8 +93,19 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         }
 
         String subcommand = args[0];
-
         String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
+
+        Corporation corp = CorporationManager.getInstance().getUserCorporation(user);
+        boolean isForceMode = sender.hasPermission("reallifeplugin.corporations.forcecommand") && getCommandLine().hasOption('f');
+
+        if (sender.hasPermission("reallifeplugin.corporations.admin") && getCommandLine().hasOption('p')) {
+            isForceMode = true;
+            corp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('p'));
+            if (corp == null) {
+                sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('p')));
+                return true;
+            }
+        }
 
         switch (subcommand.toLowerCase()) {
             case "gopublic": {
@@ -84,10 +114,8 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     break;
                 }
 
-                Corporation corp = CorporationUtil.getUserCorporation(corpModule, user);
-
-                if (corp == null || !corp.isCeo(user)) {
-                    user.sendMessage(m("Corporation.NotCEO"));
+                if (corp == null || (!isForceMode && CorporationManager.getInstance().hasCorpPermission(user, StockPermissions.GOPUBLIC))) {
+                    user.sendMessage(m("Permissions.General"));
                     return true;
                 }
 
@@ -152,33 +180,19 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 row.time = System.currentTimeMillis();
                 row.allow_buy_stocks = true;
 
-                try {
-                    row = Module.getTable(getModule(), StocksTable.class).insert(row);
-                } catch (SQLException e) {
-                    user.sendMessage(ChatColor.RED + "An internal error occured");
-                    e.printStackTrace();
-                    return true;
-                }
+                row = Module.getTable(getModule(), StocksTable.class).insert(row);
 
                 int ceoAmount = (int) ((amount * (100 - share)) / share);
 
-                try {
-                    addStocks(user, row.id, row.amount, ceoAmount, false);
-                } catch (SQLException e) {
-                    user.sendMessage(ChatColor.RED + "An internal error occured");
-                    e.printStackTrace();
-                    return true;
-                }
+                addStocks(user, row.id, row.amount, ceoAmount, false);
 
                 user.sendMessage(m("General.Success"));
                 break;
             }
 
             case "enablebuying": {
-                Corporation corp = CorporationUtil.getUserCorporation(corpModule, user);
-
-                if (CorporationUtil.hasCeoPermissions(user, corp)) {
-                    user.sendMessage(m("Corporation.NotCEO"));
+                if (CorporationManager.getInstance().hasCorpPermission(user, StockPermissions.TOGGLE_BUY)) {
+                    user.sendMessage(m("Permissions.General"));
                     return true;
                 }
 
@@ -189,20 +203,14 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 StocksTable StocksTable = Module.getTable(getModule(), StocksTable.class);
-                try {
-                    StocksTable.executeUpdate("UPDATE `{TABLE}` SET `allow_buy_stocks` = ? WHERE `corp_id` = ?", true, corp.getId());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                StocksTable.executeUpdate("UPDATE `{TABLE}` SET `allow_buy_stocks` = ? WHERE `corp_id` = ?", true, corp.getId());
                 user.sendMessage(m("General.Success"));
                 break;
             }
 
             case "disablebuying": {
-                Corporation corp = CorporationUtil.getUserCorporation(corpModule, user);
-
-                if (CorporationUtil.hasCeoPermissions(user, corp)) {
-                    user.sendMessage(m("Corporation.NotCEO"));
+                if (CorporationManager.getInstance().hasCorpPermission(user, StockPermissions.TOGGLE_BUY)) {
+                    user.sendMessage(m("Permissions.General"));
                     return true;
                 }
 
@@ -213,11 +221,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 StocksTable StocksTable = Module.getTable(getModule(), StocksTable.class);
-                try {
-                    StocksTable.executeUpdate("UPDATE `{TABLE}` SET `allow_buy_stocks` = ? WHERE `corp_id` = ?", false, corp.getId());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                StocksTable.executeUpdate("UPDATE `{TABLE}` SET `allow_buy_stocks` = ? WHERE `corp_id` = ?", false, corp.getId());
 
                 user.sendMessage(m("General.Success"));
                 break;
@@ -250,13 +254,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 stock.getCorporation().addBalance(price);
 
-                try {
-                    addStocks(user, stock.getId(), stock.getAmount(), amount, true);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
-                    return true;
-                }
+                addStocks(user, stock.getId(), stock.getAmount(), amount, true);
 
                 user.sendMessage(m("General.Success"));
                 break;
@@ -606,10 +604,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         IngameUser seller = SinkLibrary.getInstance().getIngameUser(transfer.seller);
         IngameUser buyer = SinkLibrary.getInstance().getIngameUser(transfer.buyer);
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, seller);
-        if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, seller, null);
-        }
+        CorpUserRow tmp = CorporationManager.getInstance().getCorpUser(seller);
 
         StockUserRow[] rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, transfer.stock.getId());
         if (rows.length > 0) {
@@ -623,10 +618,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             throw new IllegalStateException("Seller doesn't have any stocks");
         }
 
-        tmp = CorporationUtil.getCorpUser(corpModule, buyer);
-        if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, buyer, null);
-        }
+        tmp = CorporationManager.getInstance().getCorpUser(buyer);
 
         rows = usersTable.get("SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `stock_id` = ?", tmp.id, transfer.stock.getId());
         if (rows.length > 0) {
@@ -650,10 +642,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stockId);
         }
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
-        if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, user, null);
-        }
+        CorpUserRow tmp = CorporationManager.getInstance().getCorpUser(user);
 
         StockUsersTable usersTable = Module.getTable(getModule(), StockUsersTable.class);
 
@@ -672,21 +661,17 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
     public int getStocksAmount(Stock stock) {
         int allStocks = stock.getAmount();
-        try {
-            StockUserRow[]
-                    rows =
-                    Module.getTable(getModule(), StockUsersTable.class)
-                            .get("SELECT * FROM `{TABLE}` where `stock_id` = ?", stock.getId());
-            for (StockUserRow row : rows) {
-                allStocks += row.amount;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        StockUserRow[]
+                rows =
+                Module.getTable(getModule(), StockUsersTable.class)
+                        .get("SELECT * FROM `{TABLE}` where `stock_id` = ?", stock.getId());
+        for (StockUserRow row : rows) {
+            allStocks += row.amount;
         }
         return allStocks;
     }
 
-    private void addStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) throws SQLException {
+    private void addStocks(IngameUser user, int stockId, int stockAmount, int amount, boolean removeFromStock) {
         int newAmount = stockAmount - amount;
         if (removeFromStock && newAmount < 0) {
             throw new IllegalStateException("Corporation doesn't have enough stocks");
@@ -696,10 +681,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             table.executeUpdate("UPDATE `{TABLE}` SET `amount` = ? WHERE `id` = ?", newAmount, stockId);
         }
 
-        CorpUserRow tmp = CorporationUtil.getCorpUser(corpModule, user);
-        if (tmp == null) {
-            tmp = CorporationUtil.insertUser(corpModule, user, null);
-        }
+        CorpUserRow tmp = CorporationManager.getInstance().getCorpUser(user);
 
         StockUsersTable usersTable = Module.getTable(getModule(), StockUsersTable.class);
 

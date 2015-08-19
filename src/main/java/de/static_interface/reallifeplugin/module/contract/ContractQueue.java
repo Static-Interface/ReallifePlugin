@@ -22,7 +22,6 @@ import de.static_interface.reallifeplugin.module.contract.database.row.ContractR
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
 import de.static_interface.sinklibrary.user.IngameUser;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,11 +111,7 @@ public class ContractQueue {
 
         deniedRequests.remove(row);
 
-        try {
-            module.getTable(ContractUsersTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", row.id);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        module.getTable(ContractUsersTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", row.id);
     }
 
     @Nullable

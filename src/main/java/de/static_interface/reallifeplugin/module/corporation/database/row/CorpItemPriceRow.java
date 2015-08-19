@@ -16,34 +16,17 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
-import static de.static_interface.reallifeplugin.database.CascadeAction.SET_NULL;
-
 import de.static_interface.reallifeplugin.database.Row;
 import de.static_interface.reallifeplugin.database.annotation.Column;
-import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
-import de.static_interface.reallifeplugin.database.annotation.Index;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 
-import javax.annotation.Nullable;
-
-public class CorpUserRow implements Row {
+public class CorpItemPriceRow implements Row {
 
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
-    @Column(name = "corp_id")
-    @ForeignKey(table = CorpsTable.class, column = "id", onUpdate = CASCADE, onDelete = SET_NULL)
-    @Index
-    @Nullable
-    public Integer corpId;
-
-    @Column(name = "corp_rank")
-    @ForeignKey(table = CorpRanksTable.class, column = "id", onUpdate = CASCADE, onDelete = SET_NULL)
-    @Nullable
-    public Integer corpRank;
-
     @Column(uniqueKey = true)
-    public String uuid;
+    public String material;
+
+    @Column
+    public double price;
 }

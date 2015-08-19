@@ -30,6 +30,7 @@ import de.static_interface.reallifeplugin.module.politics.database.row.PartyUser
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
+import de.static_interface.reallifeplugin.util.CommandUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
@@ -46,9 +47,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -58,18 +56,18 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
     public PartyCommand(PoliticsModule module) {
         super(module);
         getCommandOptions().setPlayerOnly(true);
-        getCommandOptions().setCmdLineSyntax("{PREFIX}{ALIAS} <options> [-p <party>]");
+        getCommandOptions().setCmdLineSyntax("{PREFIX}{ALIAS} <options> [-p <party>] [-f]");
         getCommandOptions().setCliOptions(new Options());
         Option partyOption = Option.builder("p")
                 .hasArg()
                 .longOpt("party")
-                .desc("Force as party")
+                .desc("Force as given party member")
                 .type(String.class)
                 .argName("party name")
                 .build();
         Option forceOption = Option.builder("f")
                 .longOpt("force")
-                .desc("Force command")
+                .desc("Force command, even if you don't have permission for it")
                 .build();
         getCommandOptions().getCliOptions().addOption(partyOption);
         getCommandOptions().getCliOptions().addOption(forceOption);
@@ -149,12 +147,12 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
 
-                if (!party.isPublic() && !PartyInviteQueue.hasInvite(uuid, party)) {
+                if (!party.isPublic() && !PartyInviteQueue.hasInvite(uuid, party) && !isExplicitForceMode) {
                     sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInvited", party.getFormattedName()));
                     break;
                 }
 
-                party.addMember(uuid, party.getDefaultRank().id);
+                party.addMember(uuid, party.getDefaultRank());
                 party.announce(ReallifeLanguageConfiguration.m("Party.Joined", ((Player) sender).getDisplayName()));
                 PartyInviteQueue.remove(uuid, party);
                 break;
@@ -178,7 +176,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new UserNotOnlineException(target.getDisplayName());
                 }
 
-                if (PartyInviteQueue.hasInvite(uuid, party)) {
+                if (PartyInviteQueue.hasInvite(target.getUniqueId(), party)) {
                     sender.sendMessage(ReallifeLanguageConfiguration.m("Party.AlreadyInvited", target.getDisplayName()));
                     break;
                 }
@@ -197,7 +195,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
 
-                party.addMember(target.getUniqueId(), party.getDefaultRank().id);
+                party.addMember(target.getUniqueId(), party.getDefaultRank());
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
                 break;
             }
@@ -242,11 +240,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
                 String founder = args[3];
                 UUID founderUuid = BukkitUtil.getUniqueIdByName(founder);
-                try {
-                    PartyManager.getInstance().createNewPary(name, tag, founderUuid);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                PartyManager.getInstance().createNewPary(name, tag, founderUuid);
                 sender.sendMessage(ChatColor.GREEN + "Partei erfolgreich erstellt!");
                 break;
 
@@ -405,11 +399,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 rank.priority = priortiy;
                 rank.partyId = party.getId();
 
-                try {
-                    getModule().getTable(PartyRanksTable.class).insert(rank);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                getModule().getTable(PartyRanksTable.class).insert(rank);
 
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
                 break;
@@ -435,15 +425,11 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
 
-                try {
-                    //Set all with this rank to default rank before deleting
-                    getModule().getTable(PartyUsersTable.class)
-                            .executeUpdate("UPDATE `{TABLE}` SET `party_rank` = ? WHERE `party_id` = ? AND `party_rank` = ?", defaultRankId,
-                                           party.getId(), rank.id);
-                    getModule().getTable(PartyRanksTable.class).executeUpdate("DELETE FROM {TABLE} WHERE id = ?", rank.id);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                //Set all with this rank to default rank before deleting
+                getModule().getTable(PartyUsersTable.class)
+                        .executeUpdate("UPDATE `{TABLE}` SET `party_rank` = ? WHERE `party_id` = ? AND `party_rank` = ?", defaultRankId,
+                                       party.getId(), rank.id);
+                getModule().getTable(PartyRanksTable.class).executeUpdate("DELETE FROM {TABLE} WHERE id = ?", rank.id);
 
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
                 break;
@@ -572,12 +558,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
 
-                try {
-                    int userId = PartyManager.getInstance().getUserId(target.getUniqueId());
-                    getModule().getTable(PartyUsersTable.class).executeUpdate("UPDATE `{TABLE}` SET `party_rank`=? WHERE `id` = ?", rank.id, userId);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                party.setRank(target, rank);
 
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", rank.name));
                 break;
@@ -612,7 +593,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     valueArgs[valuePosition] = args[i];
                     valuePosition++;
                 }
-                Object value = parseValue(valueArgs);
+                Object value = CommandUtil.parseValue(valueArgs);
                 getModule().getTable(PartyRankPermissionsTable.class).setOption(permission.getPermissionString(), value, rank.id);
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", Objects.toString(value)));
                 break;
@@ -621,68 +602,6 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 sender.sendMessage("Unknown subcommand: " + args[1]);
                 break;
         }
-    }
-
-    private Object parseValue(String[] args) {
-        String arg = args[0].trim();
-
-        if (arg.equalsIgnoreCase("null")) {
-            return null;
-        }
-
-        try {
-            Long l = Long.parseLong(arg);
-            if (l <= Byte.MAX_VALUE) {
-                return Byte.parseByte(arg);
-            } else if (l <= Short.MAX_VALUE) {
-                return Short.parseShort(arg); // Value is a Short
-            } else if (l <= Integer.MAX_VALUE) {
-                return Integer.parseInt(arg); // Value is an Integer
-            }
-            return l; // Value is a Long
-        } catch (NumberFormatException ignored) {
-        }
-
-        try {
-            return Float.parseFloat(arg); // Value is Float
-        } catch (NumberFormatException ignored) {
-        }
-
-        try {
-            return Double.parseDouble(arg); // Value is Double
-        } catch (NumberFormatException ignored) {
-        }
-
-        //Parse Booleans
-        if (arg.equalsIgnoreCase("true")) {
-            return true;
-        } else if (arg.equalsIgnoreCase("false")) {
-            return false;
-        }
-
-        if (arg.startsWith("'") && arg.endsWith("'") && arg.length() == 3) {
-            return arg.toCharArray()[1]; // Value is char
-        }
-
-        String tmp = "";
-        for (String s : args) {
-            if (tmp.equals("")) {
-                tmp = s;
-            } else {
-                tmp += " " + s;
-            }
-        }
-
-        if (tmp.startsWith("[") && tmp.endsWith("]")) {
-            List<String> list = Arrays.asList(tmp.substring(1, tmp.length() - 1).split(", "));
-            List<Object> arrayList = new ArrayList<>();
-            for (String s : list) {
-                arrayList.add(parseValue(s.split(" ")));
-            }
-            return arrayList.toArray(new Object[arrayList.size()]);
-        }
-
-        return tmp; //is string
     }
 
     private PartyRank handleRank(CommandSender sender, Party party, String rankName, boolean checkPriority) {

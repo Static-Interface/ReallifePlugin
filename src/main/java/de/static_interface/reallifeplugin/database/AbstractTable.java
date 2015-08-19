@@ -20,6 +20,7 @@ import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.database.annotation.Column;
 import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
 import de.static_interface.reallifeplugin.database.annotation.Index;
+import de.static_interface.reallifeplugin.database.exception.InvalidSqlColumnException;
 import de.static_interface.reallifeplugin.database.impl.table.OptionsTable;
 import de.static_interface.reallifeplugin.util.ReflectionUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
@@ -100,14 +101,25 @@ public abstract class AbstractTable<T extends Row> {
             sql += bt + name + bt + " " + db.toDatabaseType(f.getType(), column);
 
             if (column.zerofill()) {
+                if (!ReflectionUtil.isNumber(f.getType())) {
+                    throw new InvalidSqlColumnException(this, f, name, "column was annotated as ZEROFILL but wrapper type is not a number");
+                }
                 sql += " ZEROFILL";
             }
 
             if (column.unsigned()) {
+                if (!ReflectionUtil.isNumber(f.getType())) {
+                    throw new InvalidSqlColumnException(this, f, name,
+                                                        "column was annotated as UNSIGNED but wrapper type is not a number");
+                }
                 sql += " UNSIGNED";
             }
 
             if (column.autoIncrement()) {
+                if (!ReflectionUtil.isNumber(f.getType())) {
+                    throw new InvalidSqlColumnException(this, f, name,
+                                                        "column was annotated as AUTO_INCREMENT but wrapper type is not a number");
+                }
                 sql += " AUTO_INCREMENT";
             }
 
@@ -125,6 +137,10 @@ public abstract class AbstractTable<T extends Row> {
 
             if (f.getAnnotation(Nullable.class) == null) {
                 sql += " NOT NULL";
+            } else if (ReflectionUtil.isPrimitiveClass(f.getType())) {
+                // The column is nullable but the wrapper type is a primitive value, which can't be null
+                throw new InvalidSqlColumnException(this, f, name,
+                                                    "column was annotated as NULLABLE but wrapper type is a primitive type");
             }
 
             if (!StringUtil.isEmptyOrNull(column.defaultValue())) {
@@ -192,8 +208,6 @@ public abstract class AbstractTable<T extends Row> {
         executeUpdate(sql);
     }
 
-
-
     protected String addForeignKey(String sql, String name, Class<? extends AbstractTable> targetClass, String columnName, CascadeAction onUpdate, CascadeAction onDelete) {
         char bt = db.getBacktick();
 
@@ -217,14 +231,14 @@ public abstract class AbstractTable<T extends Row> {
     }
 
     public String getEngine() {
-        return "InnoDB";
+        return "InnoDB"; // Table implemetations may override this
     }
 
-    public ResultSet serialize(T row) throws SQLException {
+    public ResultSet serialize(T row) {
         String columns = "";
         char bt = db.getBacktick();
         int i = 0;
-        List<Field> fields = ReflectionUtil.getAllFields(new ArrayList<Field>(), getRowClass());
+        List<Field> fields = ReflectionUtil.getAllFields(getRowClass());
         for(Field f : fields) {
             Column column = f.getAnnotation(Column.class);
             if (column == null) {
@@ -274,21 +288,26 @@ public abstract class AbstractTable<T extends Row> {
         return result.toArray(array);
     }
 
-    public T[] get(String query, Object... paramObjects) throws SQLException {
-        query = query.replaceAll("\\Q{TABLE}\\E", getName());
-        PreparedStatement statement = db.getConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        if (paramObjects != null && paramObjects.length > 0) {
-            int i = 1;
-            for (Object s : paramObjects) {
-                statement.setObject(i, s);
-                i++;
+    public T[] get(String query, Object... paramObjects) {
+        try {
+            query = query.replaceAll("\\Q{TABLE}\\E", getName());
+            PreparedStatement statement = db.getConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            if (paramObjects != null && paramObjects.length > 0) {
+                int i = 1;
+                for (Object s : paramObjects) {
+                    statement.setObject(i, s);
+                    i++;
+                }
             }
-        }
 
-        return deserialize(statement.executeQuery());
+            return deserialize(statement.executeQuery());
+        } catch (SQLException e) {
+            ReallifeMain.getInstance().getLogger().severe("Couldn't execute SQL query: " + sqlToString(query, paramObjects));
+            throw new RuntimeException(e);
+        }
     }
 
-    public T insert(T row) throws SQLException {
+    public T insert(T row) {
         Validate.notNull(row);
         return deserialize(serialize(row))[0];
     }
@@ -331,7 +350,7 @@ public abstract class AbstractTable<T extends Row> {
             throw new RuntimeException("Deserializing failed: ", e);
         }
 
-        List<Field> fields = ReflectionUtil.getAllFields(new ArrayList<Field>(), getRowClass());
+        List<Field> fields = ReflectionUtil.getAllFields(getRowClass());
         for (Field f : fields) {
             Column column = f.getAnnotation(Column.class);
             if (column == null) {
@@ -378,7 +397,7 @@ public abstract class AbstractTable<T extends Row> {
                     throw new RuntimeException("Deserializing failed: ", e);
                 }
 
-                List<Field> fields = ReflectionUtil.getAllFields(new ArrayList<Field>(), getRowClass());
+                List<Field> fields = ReflectionUtil.getAllFields(getRowClass());
                 for (Field f : fields) {
                     Column column = f.getAnnotation(Column.class);
                     if (column == null) {
@@ -434,7 +453,7 @@ public abstract class AbstractTable<T extends Row> {
         throw new IllegalStateException("Unknown type: " + type.getTypeName());
     }
 
-    public ResultSet executeQuery(String sql, @Nullable Object... paramObjects) throws SQLException {
+    public ResultSet executeQuery(String sql, @Nullable Object... paramObjects) {
         sql = sql.replaceAll("\\Q{TABLE}\\E", getName());
         try {
             PreparedStatement statment = db.getConnection().prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -449,11 +468,11 @@ public abstract class AbstractTable<T extends Row> {
             return statment.executeQuery();
         } catch (SQLException e) {
             ReallifeMain.getInstance().getLogger().severe("Couldn't execute SQL query: " + sqlToString(sql, paramObjects));
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
-    public void executeUpdate(String sql, @Nullable Object... paramObjects) throws SQLException {
+    public void executeUpdate(String sql, @Nullable Object... paramObjects) {
         sql = sql.replaceAll("\\Q{TABLE}\\E", getName());
         try {
             PreparedStatement statment = db.getConnection().prepareStatement(sql);
@@ -467,7 +486,7 @@ public abstract class AbstractTable<T extends Row> {
             statment.executeUpdate();
         } catch (SQLException e) {
             ReallifeMain.getInstance().getLogger().severe("Couldn't execute SQL update: " + sqlToString(sql, paramObjects));
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 

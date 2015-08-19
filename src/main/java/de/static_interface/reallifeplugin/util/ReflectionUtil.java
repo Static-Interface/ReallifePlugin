@@ -18,19 +18,22 @@ package de.static_interface.reallifeplugin.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ReflectionUtil {
 
-    public static List<Field> getAllFields(List<Field> fields, Class<?> type) {
-        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+    public static List<Field> getAllFields(Class<?> type) {
+        List<Field> fieldz = new ArrayList<>();
+        fieldz.addAll(Arrays.asList(type.getDeclaredFields()));
 
-        if (type.getSuperclass() != null) {
-            fields = getAllFields(fields, type.getSuperclass());
+        while (type.getSuperclass() != null) {
+            fieldz.addAll(Arrays.asList(type.getDeclaredFields()));
+            type = type.getSuperclass();
         }
 
-        return fields;
+        return fieldz;
     }
 
     public static <T> T Invoke(Object object, String methodName, Class<T> returnClass, Object... args) {
@@ -51,5 +54,20 @@ public class ReflectionUtil {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean isPrimitiveClass(Class clazz) {
+        return clazz == byte.class
+               || clazz == short.class
+               || clazz == int.class
+               || clazz == long.class
+               || clazz == float.class
+               || clazz == double.class
+               || clazz == boolean.class
+               || clazz == char.class;
+    }
+
+    public static boolean isNumber(Class<?> type) {
+        return Number.class.isAssignableFrom(type);
     }
 }
