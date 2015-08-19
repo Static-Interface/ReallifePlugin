@@ -92,11 +92,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         boolean isExplicitForceMode = sender.hasPermission("reallifeplugin.corporations.forcecommand") && getCommandLine().hasOption('f');
 
         boolean isForceMode = isExplicitForceMode;
-        if (sender.hasPermission("reallifeplugin.corporations.admin") && getCommandLine().hasOption('p')) {
+        if (sender.hasPermission("reallifeplugin.corporations.admin") && getCommandLine().hasOption('c')) {
             isForceMode = true;
-            userCorp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('p'));
+            userCorp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('c'));
             if (userCorp == null) {
-                sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('p')));
+                sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('c')));
                 return true;
             }
         }
@@ -360,12 +360,17 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
         switch (args[1].toLowerCase().trim()) {
             case "permissionslist": {
-                CorpRank rank = corp.getRank(SinkLibrary.getInstance().getIngameUser((Player) sender));
+                CorpRank rank;
                 if (args.length >= 3) {
                     rank = handleRank(sender, corp, args[2], false);
                     if (rank == null) {
                         break;
                     }
+                } else {
+                    if (isForceMode) {
+                        throw new NotEnoughArgumentsException();
+                    }
+                    rank = corp.getRank(SinkLibrary.getInstance().getIngameUser((Player) sender));
                 }
                 sender.sendMessage(
                         ChatColor.GRAY + "Permissions: " + ChatColor.GOLD + rank.name + ChatColor.GRAY + " (" + ChatColor.GOLD + rank.priority

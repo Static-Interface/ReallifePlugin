@@ -325,12 +325,17 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
         switch (args[1].toLowerCase().trim()) {
             case "permissionslist": {
-                PartyRank rank = party.getRank(SinkLibrary.getInstance().getIngameUser((Player) sender));
+                PartyRank rank;
                 if (args.length >= 3) {
                     rank = handleRank(sender, party, args[2], false);
                     if (rank == null) {
                         break;
                     }
+                } else {
+                    if (isForceMode) {
+                        throw new NotEnoughArgumentsException();
+                    }
+                    rank = party.getRank(SinkLibrary.getInstance().getIngameUser((Player) sender));
                 }
                 sender.sendMessage(
                         ChatColor.GRAY + "Permissions: " + ChatColor.GOLD + rank.name + ChatColor.GRAY + " (" + ChatColor.GOLD + rank.priority
