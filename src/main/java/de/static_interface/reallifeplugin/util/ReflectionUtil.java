@@ -29,8 +29,8 @@ public class ReflectionUtil {
         fieldz.addAll(Arrays.asList(type.getDeclaredFields()));
 
         while (type.getSuperclass() != null) {
-            fieldz.addAll(Arrays.asList(type.getDeclaredFields()));
             type = type.getSuperclass();
+            fieldz.addAll(Arrays.asList(type.getDeclaredFields()));
         }
 
         return fieldz;

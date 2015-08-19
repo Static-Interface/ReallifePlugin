@@ -98,7 +98,9 @@ public class StockMarketModule extends Module<ReallifeMain> {
             stocksTask.cancel();
         }
 
-        CorporationPermissions.getInstance().unmerge(StockPermissions.getInstance());
+        if (CorporationPermissions.getInstance() != null) {
+            CorporationPermissions.getInstance().unmerge(StockPermissions.getInstance());
+        }
         StockMarket.unload();
         StockPermissions.unload();
     }

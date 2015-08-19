@@ -30,7 +30,7 @@ public class PartyRank implements Row, Comparable<PartyRank> {
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
-    @Column(uniqueKey = true)
+    @Column
     public String name;
 
     @Column

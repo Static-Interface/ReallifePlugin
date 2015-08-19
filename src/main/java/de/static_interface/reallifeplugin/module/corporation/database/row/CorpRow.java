@@ -44,9 +44,6 @@ public class CorpRow implements Row {
     @Index
     public String corpName;
 
-    @Column
-    public boolean isDeleted;
-
     @Column(uniqueKey = true)
     @Index
     @Nullable

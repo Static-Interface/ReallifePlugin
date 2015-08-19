@@ -22,6 +22,7 @@ import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.command.CorporationCommand;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpOptionsTable;
+import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
@@ -52,6 +53,8 @@ public class CorporationModule extends Module<ReallifeMain> {
         table = new CorpTradesTable(getDatabase());
         tables.add(table);
         table = new CorpRanksTable(getDatabase());
+        tables.add(table);
+        table = new CorpRankPermissionsTable(getDatabase());
         tables.add(table);
         table = new CorpOptionsTable(getDatabase());
         tables.add(table);

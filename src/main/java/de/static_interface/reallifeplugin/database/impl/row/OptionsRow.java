@@ -34,5 +34,5 @@ public final class OptionsRow implements Row {
 
     @Column
     @Nullable
-    public int foreignTarget;
+    public Integer foreignTarget;
 }

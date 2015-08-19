@@ -30,7 +30,7 @@ public class InvalidSqlColumnException extends RuntimeException {
      * @param reason The reason why it failed
      */
     public InvalidSqlColumnException(AbstractTable table, Field columnField, String columName, String reason) {
-        super("Column \"" + columName + "\" " + "(wrapper:" + columnField.getClass().getName() + ") on table \"" + table.getName() + "\" (wrapper: "
+        super("Column \"" + columName + "\" " + "(wrapper: " + columnField.getType().getName() + ") on table \"" + table.getName() + "\" (wrapper: "
               + table.getClass().getName() + ") couldn't be created: " + reason);
     }
 }

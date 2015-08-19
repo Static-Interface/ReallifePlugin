@@ -42,7 +42,6 @@ import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
-import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -58,9 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Level;
 
 public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
@@ -596,13 +593,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     break;
                 }
 
-                try {
-                    int userId = CorporationManager.getInstance().getUserId(target);
-                    getModule().getTable(CorpUsersTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_rank`=? WHERE `id` = ?", rank.id, userId);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
+                corp.setRank(target, rank)
+                ;
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", rank.name));
                 break;
             }
@@ -966,6 +958,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             sender.sendMessage(users);
         }
 
+        sender.sendMessage("");
+
         if (!membersFound) {
             sender.sendMessage(ChatColor.RED + "Keine Mitglieder gefunden");
         }
@@ -975,32 +969,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         }
 
         user.sendMessage(ChatColor.GRAY + "Money: " + ChatColor.GOLD + MathUtil.round(corporation.getBalance()) + " " + VaultBridge.getCurrenyName());
-        Set<IngameUser> members = corporation.getMembers();
-        String membersFormatted = "-";
-        if (members.size() > 0) {
-            for (IngameUser member : members) {
-                try {
-                    String name = CorporationManager.getInstance().getFormattedName(member);
-                    if (StringUtil.isEmptyOrNull(name)) {
-                        Debug.log(Level.WARNING, "Empty or null name at CorporationCommand: " + name);
-                        continue;
-                    }
-                    if (!member.hasPlayedBefore()) {
-                        Debug.log(Level.WARNING, "Couldn't find user: " + member.toString() + ": Wrong UUID?");
-                        continue;
-                    }
-
-                    if (membersFormatted.equals("-")) {
-                        membersFormatted = name;
-                        continue;
-                    }
-                    membersFormatted += ChatColor.GRAY + ", " + name;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        user.sendMessage(ChatColor.GRAY + "Members: " + ChatColor.GOLD + membersFormatted);
         user.sendMessage(divider);
         user.sendMessage("");
     }

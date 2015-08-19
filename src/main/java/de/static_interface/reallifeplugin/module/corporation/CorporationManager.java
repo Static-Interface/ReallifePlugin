@@ -241,7 +241,6 @@ public class CorporationManager {
         row.ceoUuid = ceo.getUniqueId().toString();
         row.corpName = name;
         row.time = System.currentTimeMillis();
-        row.isDeleted = false;
         row = module.getTable(CorpsTable.class).insert(row);
 
         Corporation corp = getCorporation(row.id);
@@ -310,7 +309,7 @@ public class CorporationManager {
             return false;
         }
 
-        module.getTable(CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `isdeleted`=1 WHERE `id`=?", corporation.getId());
+        module.getTable(CorpsTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id`=?", corporation.getId());
 
         return true;
     }
@@ -320,7 +319,7 @@ public class CorporationManager {
             return new ArrayList<>();
         }
 
-        CorpRow[] rows = module.getTable(CorpsTable.class).get("SELECT * FROM `{TABLE}` WHERE `isdeleted`=0");
+        CorpRow[] rows = module.getTable(CorpsTable.class).get("SELECT * FROM `{TABLE}`");
         List<Corporation> corporations = new ArrayList<>();
         for (CorpRow row : rows) {
             Corporation corp = new Corporation(module, row.id);
