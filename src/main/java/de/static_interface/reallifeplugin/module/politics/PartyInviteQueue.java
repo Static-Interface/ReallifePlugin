@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.Nonnull;
-
 public class PartyInviteQueue {
 
     private static Map<UUID, List<Integer>> invites = new HashMap<>();
@@ -52,20 +50,6 @@ public class PartyInviteQueue {
     }
 
     public static boolean hasInvite(UUID user, Party party) {
-        return getInvites(user).contains(party);
-    }
-
-    @Nonnull
-    public static List<Party> getInvites(UUID user) {
-        List<Integer> inviteIds = invites.get(user);
-        if (inviteIds == null || inviteIds.size() < 1) {
-            return new ArrayList<>();
-        }
-
-        List<Party> parties = new ArrayList<>();
-        for (Integer id : inviteIds) {
-            parties.add(PartyManager.getInstance().getParty(id));
-        }
-        return parties;
+        return invites.get(user) != null && invites.get(user).contains(Integer.valueOf(party.getId()));
     }
 }
