@@ -426,6 +426,36 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 break;
             }
 
+            case "delete": {
+                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
+                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
+                    break;
+                }
+                if (args.length < 3) {
+                    throw new NotEnoughArgumentsException();
+                }
+
+                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+                if (rank == null) {
+                    break;
+                }
+
+                int defaultRankId = corp.getDefaultRank().id;
+                if (defaultRankId == rank.id) {
+                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.DeletingDefaultRank"));
+                    break;
+                }
+
+                for (CorpUserRow row : corp.getRankUsers(rank)) {
+                    IngameUser rankUser = SinkLibrary.getInstance().getIngameUser(UUID.fromString(row.uuid));
+                    corp.setRank(rankUser, corp.getDefaultRank());
+                }
+
+                getModule().getTable(CorpRanksTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", rank.id);
+                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                break;
+            }
+
             case "new": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
                     sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
