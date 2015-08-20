@@ -39,6 +39,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -570,6 +571,41 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+        Corporation corp = CorporationManager.getInstance().getCorporation(event.getBlock().getLocation());
+        if (corp == null) {
+            return;
+        }
+
+        if (!corp.isMember(user)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.REGION_OWNER)) {
+            return;
+        }
+
+        List<String> restrictedBlocks = corp.getOption(CorporationOptions.RESTRICTED_BLOCKS, ArrayList.class, new ArrayList());
+        List<String> allowedBlocks = corp.getOption(CorporationOptions.ALLOWED_BLOCKS, ArrayList.class, new ArrayList());
+
+        Material m = event.getBlock().getType();
+
+        if (restrictedBlocks.isEmpty()) {
+            return;
+        }
+
+        if (restrictedBlocks.contains("ALL") && !allowedBlocks.contains(m.name().toUpperCase())) {
+            event.setCancelled(true);
+        }
+
+        if (restrictedBlocks.contains(m.name().toUpperCase())) {
+            event.setCancelled(true);
         }
     }
 

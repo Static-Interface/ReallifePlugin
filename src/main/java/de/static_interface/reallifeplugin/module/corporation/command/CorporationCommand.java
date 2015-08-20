@@ -25,6 +25,7 @@ import de.static_interface.reallifeplugin.module.corporation.Corporation;
 import de.static_interface.reallifeplugin.module.corporation.CorporationInviteQueue;
 import de.static_interface.reallifeplugin.module.corporation.CorporationManager;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
+import de.static_interface.reallifeplugin.module.corporation.CorporationOptions;
 import de.static_interface.reallifeplugin.module.corporation.CorporationPermissions;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRank;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpTradesRow;
@@ -48,6 +49,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -216,6 +218,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     break;
                 }
 
+                if (corp.getMemberLimit() > 0 && corp.getMembers().size() >= (corp.getMemberLimit() + 1)) {
+                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationFull"));
+                    break;
+                }
+
                 corp.addMember((IngameUser) user, corp.getDefaultRank());
                 corp.announce(ReallifeLanguageConfiguration.m("Corporation.Joined", ((Player) sender).getDisplayName()));
                 CorporationInviteQueue.remove(((IngameUser) user).getUniqueId(), corp);
@@ -241,6 +248,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
+                }
+
+                if (userCorp.getMemberLimit() > 0 && userCorp.getMembers().size() >= (userCorp.getMemberLimit() + 1)) {
+                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationFull"));
+                    break;
                 }
 
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1], true);
@@ -614,6 +626,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
                 Object value = CommandUtil.parseValue(valueArgs);
                 getModule().getTable(CorpRankPermissionsTable.class).setOption(permission.getPermissionString(), value, rank.id);
+
+                for (CorpUserRow row : corp.getRankUsers(rank)) {
+                    IngameUser rankUser = SinkLibrary.getInstance().getIngameUser(UUID.fromString(row.uuid));
+                    corp.onUpdateRank(rankUser, rank);
+                }
+
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", Objects.toString(value)));
                 break;
 
@@ -689,10 +707,125 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 break;
             }
 
-            case "setbase": {
-                if (args.length < 3 || (!(user instanceof IngameUser) && args.length < 4)) {
+            case "setmemberlimit": {
+                if (args.length < 3) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
                     return;
+                }
+
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
+
+                int limit = Integer.valueOf(args[2]);
+                corporation.setMemberLimit(limit);
+                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet"));
+                break;
+            }
+
+            case "restrictblocks": {
+                if (args.length < 4) {
+                    throw new NotEnoughArgumentsException();
+                }
+
+                Corporation corp = CorporationManager.getInstance().getCorporation(args[2]);
+                if (corp == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[2]));
+                    return;
+                }
+
+                List<String>
+                        restrictedBlocks =
+                        corp.getOption(CorporationOptions.RESTRICTED_BLOCKS, ArrayList.class, new ArrayList<String>());
+
+                switch (args[1].toLowerCase()) {
+                    case "add": {
+                        String name = args[3];
+                        if (!name.equalsIgnoreCase("all")) {
+                            name = Material.getMaterial(args[3]).name();
+                        }
+                        restrictedBlocks.add(name.toUpperCase());
+                        corp.setOption(CorporationOptions.RESTRICTED_BLOCKS, restrictedBlocks);
+                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        break;
+                    }
+
+                    case "remove": {
+                        String name = args[3];
+                        if (!name.equalsIgnoreCase("all")) {
+                            name = Material.getMaterial(args[3]).name();
+                        }
+                        restrictedBlocks.remove(name.toUpperCase());
+                        corp.setOption(CorporationOptions.RESTRICTED_BLOCKS, restrictedBlocks);
+                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        break;
+                    }
+
+                    case "list":
+                        user.sendMessage("Restricted Blocks: " + StringUtil
+                                .formatArrayToString(restrictedBlocks.toArray(new String[restrictedBlocks.size()]), ", "));
+                        break;
+
+                    default:
+                        user.sendMessage(m("General.UnknownSubCommand", args[1]));
+                        break;
+                }
+            }
+
+            case "allowedblocks": {
+                if (args.length < 4) {
+                    throw new NotEnoughArgumentsException();
+                }
+
+                Corporation corp = CorporationManager.getInstance().getCorporation(args[2]);
+                if (corp == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[2]));
+                    return;
+                }
+
+                List<String>
+                        allowedBlocks =
+                        corp.getOption(CorporationOptions.ALLOWED_BLOCKS, ArrayList.class, new ArrayList<String>());
+
+                switch (args[1].toLowerCase()) {
+                    case "add": {
+                        String name = args[3];
+                        if (!name.equalsIgnoreCase("all")) {
+                            name = Material.getMaterial(args[3]).name();
+                        }
+                        allowedBlocks.add(name.toUpperCase());
+                        corp.setOption(CorporationOptions.ALLOWED_BLOCKS, allowedBlocks);
+                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        break;
+                    }
+
+                    case "remove": {
+                        String name = args[3];
+                        if (!name.equalsIgnoreCase("all")) {
+                            name = Material.getMaterial(args[3]).name();
+                        }
+                        allowedBlocks.remove(name.toUpperCase());
+                        corp.setOption(CorporationOptions.ALLOWED_BLOCKS, allowedBlocks);
+                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        break;
+                    }
+
+                    case "list":
+                        user.sendMessage(
+                                "Allowed Blocks: " + StringUtil.formatArrayToString(allowedBlocks.toArray(new String[allowedBlocks.size()]), ", "));
+                        break;
+
+                    default:
+                        user.sendMessage(m("General.UnknownSubCommand", args[1]));
+                        break;
+                }
+            }
+
+            case "setbase": {
+                if (args.length < 3 || (!(user instanceof IngameUser) && args.length < 4)) {
+                    throw new NotEnoughArgumentsException();
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);

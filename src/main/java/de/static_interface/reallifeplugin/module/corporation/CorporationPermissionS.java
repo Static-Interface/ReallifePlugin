@@ -43,14 +43,14 @@ public class CorporationPermissions extends Permissions {
     public static final Permission WITHDRAW = new Permission("withdraw", "Withdraw money", false);
     public static final Permission INVITE = new Permission("invite", "Invite people to the corporation", false);
     public static final Permission KICK = new Permission("kick", "Kick members from the corporation", false);
-    public static final Permission MEMBER_FEE = new Permission("memberfee", "Fee for beeing member", Integer.class, null, false);
-    public static final Permission MEMBER_FEE_PERIOD = new Permission("memberfeeperiod", "Period for fee in days", Integer.class, null, false);
     public static final Permission DELETE = new Permission("delete", "Delete this corporation", false);
     public static final Permission CSELL_SIGN = new Permission("csellsign", "Create csell signs", false);
     public static final Permission CBUY_SIGN = new Permission("cbuysign", "Create cbuy signs", false);
+    public static final Permission REGION_OWNER = new Permission("regionowner", "Makes the user region owner", false);
+
     private static CorporationPermissions instance;
     private CorporationPermissions() {
-        add(ALL, SET_RANK, MANAGE_RANKS, DEPOSIT, WITHDRAW, INVITE, KICK, MEMBER_FEE, MEMBER_FEE_PERIOD, DELETE, CSELL_SIGN, CBUY_SIGN);
+        add(ALL, SET_RANK, MANAGE_RANKS, DEPOSIT, WITHDRAW, INVITE, KICK, DELETE, CSELL_SIGN, CBUY_SIGN);
     }
 
     public static void init() {

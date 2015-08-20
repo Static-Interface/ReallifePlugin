@@ -117,7 +117,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.AlreadyInCorporation", "&4Error: &cYou're already in a corporation: {0}");
         addDefault("Corporation.UserAlreadyInCorporation", "&4Error: &c{0}&r&c is already in a corporation: {1}&r&c!");
         addDefault("Corporation.Joined", "&3{0}&r&3 joined the corporation!");
-
+        addDefault("Corporation.CorporationFull", "&4The corporation is full!");
         addDefault("Corporation.Sign.CantPickup", "&4Error:&c Your inventory is full!");
         addDefault("Corporation.Sign.Bought", "&aSuccessfully bought {0} {1} for {2}{CURRENCY}!");
         addDefault("Corporation.Sign.Sold", "&aSuccessfully sold {0} {1} for {2}{CURRENCY}!");

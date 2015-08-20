@@ -67,6 +67,14 @@ public class Corporation {
         corpUsersTable = Module.getTable(module, CorpUsersTable.class);
     }
 
+    public int getMemberLimit() {
+        return getOption(CorporationOptions.MEMBER_LIMIT, Integer.class, -1);
+    }
+
+    public void setMemberLimit(int limit) {
+        setOption(CorporationOptions.MEMBER_LIMIT, limit);
+    }
+
     public final int getId() {
         return id;
     }
@@ -98,6 +106,8 @@ public class Corporation {
         corpUsersTable
                 .executeUpdate("UPDATE `{TABLE}` SET `corp_id` = ?, `corp_rank` = ? WHERE `id` = ?", getId(), rank.id, userId);
 
+        onUpdateRank(user, rank);
+
         if (getBaseRegion() != null) {
             DefaultDomain rgMembers = getBaseRegion().getMembers();
             rgMembers.addPlayer(user.getUniqueId());
@@ -107,6 +117,8 @@ public class Corporation {
 
     public void removeMember(IngameUser user) {
         resetUser(user);
+        onUpdateRank(user, null);
+
         if (getBaseRegion() != null && getBaseRegion().getMembers() != null) {
             DefaultDomain rgMembers = getBaseRegion().getMembers();
             rgMembers.removePlayer(user.getUniqueId());
@@ -114,7 +126,7 @@ public class Corporation {
         }
     }
 
-    public void resetUser(IngameUser user) {
+    private void resetUser(IngameUser user) {
         corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `corp_rank`=NULL, `corp_id`=NULL WHERE `id`=?", CorporationManager
                 .getInstance().getUserId(user));
     }
@@ -256,8 +268,39 @@ public class Corporation {
         if (!isMember(target)) {
             throw new IllegalArgumentException("Couldn't set rank for player: " + target.getName() + " is not a member of " + getName());
         }
+
+        onUpdateRank(target, rank);
+
         int userId = CorporationManager.getInstance().getUserId(target);
         module.getTable(CorpUsersTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_rank`=? WHERE `id` = ?", rank.id, userId);
+    }
+
+    public void onUpdateRank(IngameUser user, @Nullable CorpRank rank) {
+        if (rank != null && CorporationManager.getInstance().hasCorpPermission(rank, CorporationPermissions.REGION_OWNER)) {
+            addRegionOwner(user);
+        } else {
+            removeRegionOwner(user);
+        }
+    }
+
+    private void addRegionOwner(IngameUser user) {
+        if (getBaseRegion() != null) {
+            DefaultDomain rgOwners = getBaseRegion().getOwners();
+            rgOwners.addPlayer(user.getUniqueId());
+            getBaseRegion().setOwners(rgOwners);
+        }
+    }
+
+    private void removeRegionOwner(IngameUser user) {
+        if (getBaseRegion() != null) {
+            DefaultDomain rgOwners = getBaseRegion().getOwners();
+            rgOwners.removePlayer(user.getUniqueId());
+            getBaseRegion().setOwners(rgOwners);
+        }
+    }
+
+    public boolean isRegionOwner(IngameUser user) {
+        return getBaseRegion() != null && CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.REGION_OWNER);
     }
 
     public void announce(String message) {
@@ -282,13 +325,12 @@ public class Corporation {
     }
 
     public CorpRank getDefaultRank() {
-        int defaultRankId = module.getTable(CorpOptionsTable.class)
-                .getOption(CorporationOptions.DEFAULT_RANK.getIdentifier(), getId(), Integer.class, null);
+        int defaultRankId = getOption(CorporationOptions.DEFAULT_RANK, Integer.class, null);
         return getRank(defaultRankId);
     }
 
     public boolean isPublic() {
-        return module.getTable(CorpOptionsTable.class).getOption(CorporationOptions.PUBLIC.getIdentifier(), boolean.class, false);
+        return getOption(CorporationOptions.PUBLIC, boolean.class, false);
     }
 
     public List<CorpUserRow> getRankUsers(CorpRank rank) {
@@ -299,5 +341,13 @@ public class Corporation {
         }
 
         return Arrays.asList(result);
+    }
+
+    public <T> T getOption(CorporationOptions option, Class<T> returnClazz, T defaultValue) {
+        return module.getTable(CorpOptionsTable.class).getOption(option.getIdentifier(), getId(), returnClazz, defaultValue);
+    }
+
+    public void setOption(CorporationOptions option, Object value) {
+        module.getTable(CorpOptionsTable.class).setOption(option.getIdentifier(), value, getId());
     }
 }

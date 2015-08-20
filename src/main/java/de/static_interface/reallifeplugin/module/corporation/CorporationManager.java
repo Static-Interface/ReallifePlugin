@@ -26,7 +26,6 @@ import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRank;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRow;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpOptionsTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
@@ -152,8 +151,13 @@ public class CorporationManager {
 
     @Nullable
     public Corporation getCorporation(String name) {
+        return getCorporation(name, false);
+    }
+
+    @Nullable
+    public Corporation getCorporation(String name, boolean exact) {
         for (Corporation corporation : getCorporations()) {
-            if (corporation.getName().equalsIgnoreCase(name)) {
+            if (corporation.getName().equalsIgnoreCase(name) || (!exact && corporation.getName().startsWith(name))) {
                 return corporation;
             }
         }
@@ -165,6 +169,9 @@ public class CorporationManager {
     public Corporation getCorporation(Location location) {
         for (Corporation corporation : getCorporations()) {
             ProtectedRegion region = corporation.getBaseRegion();
+            if (region == null) {
+                continue;
+            }
             Vector vec = BukkitUtil.toVector(location);
             if (region.contains(vec)) {
                 return corporation;
@@ -268,7 +275,7 @@ public class CorporationManager {
         defaultRank = module.getTable(CorpRanksTable.class).insert(defaultRank);
 
         //Lets set it as default rank for new members
-        module.getTable(CorpOptionsTable.class).setOption(CorporationOptions.DEFAULT_RANK.getIdentifier(), defaultRank.id, row.id);
+        corp.setOption(CorporationOptions.DEFAULT_RANK, defaultRank.id);
 
         corp.addMember(ceo, ceoRank);
         return true;
