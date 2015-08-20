@@ -594,6 +594,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", rank.name));
                 break;
             }
+
             case "setpermission":
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
                     sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
@@ -722,6 +723,22 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 int limit = Integer.valueOf(args[2]);
                 corporation.setMemberLimit(limit);
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet"));
+                break;
+            }
+
+            case "getmemberlimit": {
+                if (args.length < 2) {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
+                }
+
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
+
+                sender.sendMessage("Limit: " + corporation.getMemberLimit());
                 break;
             }
 
