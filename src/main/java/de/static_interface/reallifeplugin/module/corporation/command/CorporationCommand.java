@@ -32,7 +32,6 @@ import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUs
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
-import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.util.CommandUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
@@ -142,8 +141,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         break;
                     }
                     if (moreArgs.length < 1) {
-                        user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                        break;
+                        throw new NotEnoughArgumentsException();
                     }
                     handleAdminCommand(user, moreArgs);
                     break;
@@ -259,7 +257,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     CorporationInviteQueue.add(target.getUniqueId(), userCorp);
                     sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.UserHasBeenInvited", target.getDisplayName()));
                     target.sendMessage(
-                            ReallifeLanguageConfiguration.m("Corporation.GotInvited", user.getDisplayName(), userCorp.getFormattedName()));
+                            ReallifeLanguageConfiguration
+                                    .m("Corporation.GotInvited", user.getDisplayName(), userCorp.getFormattedName(), userCorp.getName()));
                     break;
                 }
 
@@ -289,6 +288,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 for (IngameUser u : userCorp.getMembers()) {
                     if (ChatColor.stripColor(u.getDisplayName()).equalsIgnoreCase(args[1])
                         || u.getName().equalsIgnoreCase(args[1])) {
+
+                        if (user instanceof IngameUser && userCorp.getRank(u).priority >= userCorp.getRank((IngameUser) user).priority
+                            && !isForceMode) {
+                            user.sendMessage(m("Corporation.NotEnoughPriority"));
+                            return true;
+                        }
                         userCorp.removeMember(u);
                         if (u.isOnline()) {
                             u.sendMessage(StringUtil.format(m("Corporation.Kicked"), userCorp.getName()));
@@ -356,6 +361,10 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         if (!(sender instanceof Player)) {
             return;
         }
+        if (args.length < 1) {
+            throw new NotEnoughArgumentsException();
+        }
+
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
 
         switch (args[1].toLowerCase().trim()) {
@@ -440,36 +449,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 rank.corpId = corp.getId();
 
                 getModule().getTable(CorpRanksTable.class).insert(rank);
-
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
-                break;
-            }
-
-            case "delete": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
-                }
-                if (args.length < 3) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
-                if (rank == null) {
-                    break;
-                }
-
-                int defaultRankId = corp.getDefaultRank().id;
-                if (defaultRankId == rank.id) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.DeletingDefaultRank"));
-                    break;
-                }
-
-                //Set all with this rank to default rank before deleting
-                getModule().getTable(CorpUsersTable.class)
-                        .executeUpdate("UPDATE `{TABLE}` SET `corp_rank` = ? WHERE `corp_id` = ? AND `corp_rank` = ?", defaultRankId,
-                                       corp.getId(), rank.id);
-                getModule().getTable(CorpRanksTable.class).executeUpdate("DELETE FROM {TABLE} WHERE id = ?", rank.id);
 
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
                 break;
@@ -826,9 +805,13 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         user.sendMessage(ChatColor.GOLD + "/corp help");
         user.sendMessage(ChatColor.GOLD + "/corp leave");
         user.sendMessage(ChatColor.GOLD + "/corp user <user>");
+        user.sendMessage(ChatColor.GOLD + "/corp invite <user>");
         user.sendMessage(ChatColor.GOLD + "/corp list");
         user.sendMessage(ChatColor.GOLD + "/corp deposit <amount>");
-        user.sendMessage(ChatColor.GOLD + "/corp ceo help");
+        user.sendMessage(ChatColor.GOLD + "/corp kick <user>");
+        user.sendMessage(ChatColor.GOLD + "/corp withdraw <amount>");
+        user.sendMessage(ChatColor.GOLD + "/corp delete <user>");
+        user.sendMessage(ChatColor.GOLD + "/corp rank <subcommand> <options>");
 
         if (user.hasPermission("reallifeplugin.corporations.admin")) {
             user.sendMessage(ChatColor.GOLD + "/corp admin help");
@@ -840,7 +823,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         user.sendMessage(ChatColor.GOLD + "/corp admin new <corp> <ceo> <base>");
         user.sendMessage(ChatColor.GOLD + "/corp admin delete <corp>");
         user.sendMessage(ChatColor.GOLD + "/corp admin setbase <corp> <region>");
-        user.sendMessage(ChatColor.GOLD + "/corp admin setceo <corp> <player>");
         user.sendMessage(ChatColor.GOLD + "/corp admin give <corp> <amount>");
         user.sendMessage(ChatColor.GOLD + "/corp admin take <corp> <amount>");
         user.sendMessage(ChatColor.GOLD + "/corp admin rename <oldname> <newname>");
