@@ -566,7 +566,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     break;
                 }
 
-                String description = StringUtil.formatArrayToString(args, " ", 3, args.length);
+                String description = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 3, args.length));
+                if (description.trim().equalsIgnoreCase("null") || description.trim().equalsIgnoreCase("off") || description.trim()
+                        .equalsIgnoreCase("remove")) {
+                    description = null;
+                }
+
                 try {
                     getModule().getTable(CorpRanksTable.class)
                             .executeUpdate("UPDATE `{TABLE}` SET `description`=? WHERE `id` = ?", description, rank.id);
