@@ -761,6 +761,40 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 break;
             }
 
+            case "enablefishing": {
+                if (args.length < 2) {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
+                }
+
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
+
+                corporation.setOption(CorporationOptions.FISHING, true);
+                sender.sendMessage(m("General.Success"));
+                break;
+            }
+
+            case "disablefishing": {
+                if (args.length < 2) {
+                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
+                    return;
+                }
+
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
+                    return;
+                }
+
+                corporation.setOption(CorporationOptions.FISHING, false);
+                sender.sendMessage(m("General.Success"));
+                break;
+            }
+
             case "getmemberlimit": {
                 if (args.length < 2) {
                     user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));

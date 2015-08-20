@@ -42,6 +42,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -605,6 +606,24 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         }
 
         if (restrictedBlocks.contains(m.name().toUpperCase())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerFish(PlayerFishEvent event) {
+        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
+        Corporation corp = CorporationManager.getInstance().getCorporation(event.getPlayer().getLocation());
+        if (corp == null) {
+            return;
+        }
+
+        if (CorporationManager.getInstance().getUserCorporation(user).getId() != corp.getId()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!corp.getOption(CorporationOptions.FISHING, Boolean.class, true)) {
             event.setCancelled(true);
         }
     }
