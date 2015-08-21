@@ -158,6 +158,10 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         if (stack != null && isTagged(stack)) {
             event.setCancelled(true);
         }
+
+        if (isInteractionRestricted(SinkLibrary.getInstance().getIngameUser(event.getPlayer()), event.getBlock())) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -259,6 +263,48 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
     public static boolean isTagged(ItemStack stack) {
         return stack != null && stack.getItemMeta().hasLore() && stack.getItemMeta().getLore().contains(m("Corporation.Sign.SoldWatermark"));
+    }
+
+    @EventHandler
+    public static void onBlockBreak(BlockBreakEvent event) {
+        if (isInteractionRestricted(SinkLibrary.getInstance().getIngameUser(event.getPlayer()), event.getBlock())) {
+            event.setCancelled(true);
+        }
+    }
+
+    public static boolean isInteractionRestricted(IngameUser user, Block block) {
+        Corporation corp = CorporationManager.getInstance().getCorporation(block.getLocation());
+        if (corp == null) {
+            return false;
+        }
+
+        if (user.hasPermission("reallifeplugin.corporations.admin")) {
+            return false;
+        }
+
+        if (!corp.isMember(user)) {
+            return true;
+        }
+
+        if (CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.REGION_OWNER)) {
+            return false;
+        }
+
+        List<String> restrictedBlocks = corp.getOption(CorporationOptions.RESTRICTED_BLOCKS, ArrayList.class, new ArrayList());
+        List<String> allowedBlocks = corp.getOption(CorporationOptions.ALLOWED_BLOCKS, ArrayList.class, new ArrayList());
+
+        Material m = block.getType();
+
+        if (restrictedBlocks.isEmpty()) {
+            return false;
+        }
+
+        if (restrictedBlocks.contains("ALL") && !allowedBlocks.contains(m.name().toUpperCase())) {
+            return true;
+        }
+
+        return restrictedBlocks.contains(m.name().toUpperCase());
+
     }
 
     @Nullable
@@ -572,41 +618,6 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         } catch (Exception e) {
             user.sendMessage(ChatColor.DARK_RED + "Error: " + ChatColor.RED + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
-        Corporation corp = CorporationManager.getInstance().getCorporation(event.getBlock().getLocation());
-        if (corp == null) {
-            return;
-        }
-
-        if (!corp.isMember(user)) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.REGION_OWNER)) {
-            return;
-        }
-
-        List<String> restrictedBlocks = corp.getOption(CorporationOptions.RESTRICTED_BLOCKS, ArrayList.class, new ArrayList());
-        List<String> allowedBlocks = corp.getOption(CorporationOptions.ALLOWED_BLOCKS, ArrayList.class, new ArrayList());
-
-        Material m = event.getBlock().getType();
-
-        if (restrictedBlocks.isEmpty()) {
-            return;
-        }
-
-        if (restrictedBlocks.contains("ALL") && !allowedBlocks.contains(m.name().toUpperCase())) {
-            event.setCancelled(true);
-        }
-
-        if (restrictedBlocks.contains(m.name().toUpperCase())) {
-            event.setCancelled(true);
         }
     }
 
