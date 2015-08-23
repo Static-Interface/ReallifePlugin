@@ -130,7 +130,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.Sign.NotEnoughMoney", "&cYou don't have enough money");
         addDefault("Corporation.Sign.SoldWatermark", "&4- &oSold");
         addDefault("Corporation.Sign.CantSell", "&cYou can't sell items!");
-        addDefault("Corporation.Sign.CanBuy", "&cYou can't buy items!");
+        addDefault("Corporation.Sign.CantBuy", "&cYou can't buy items!");
 
         addDefault("Corporation.UnknownPermission", "&4Error: &cUnknown permission: {0}&c!");
         addDefault("Corporation.DeletingDefaultRank",
