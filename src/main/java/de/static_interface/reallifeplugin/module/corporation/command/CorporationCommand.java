@@ -373,7 +373,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         if (!(sender instanceof Player)) {
             return;
         }
-        if (args.length < 1) {
+
+        if (args.length < 2) {
             throw new NotEnoughArgumentsException();
         }
 

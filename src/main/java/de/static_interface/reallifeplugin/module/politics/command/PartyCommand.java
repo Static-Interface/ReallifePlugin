@@ -321,6 +321,10 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
     }
 
     private void handleRankCommand(CommandSender sender, Party party, String[] args, boolean isForceMode) {
+        if (args.length < 2) {
+            throw new NotEnoughArgumentsException();
+        }
+
         UUID uuid = ((Player) sender).getUniqueId();
 
         switch (args[1].toLowerCase().trim()) {
