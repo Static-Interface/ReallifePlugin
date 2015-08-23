@@ -619,6 +619,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[2]);
+                if (!corp.isMember(target)) {
+                    sender.sendMessage(
+                            ReallifeLanguageConfiguration.m("Corporation.UserNotMember", target.getDisplayName(), corp.getFormattedName()));
+                    break;
+                }
 
                 CorpRank rank = handleRank(sender, corp, args[3], !isForceMode);
                 if (rank == null) {

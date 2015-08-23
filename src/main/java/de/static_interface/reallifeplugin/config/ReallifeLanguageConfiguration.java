@@ -96,6 +96,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
         addDefault("Corporation.AlreadyMember", "&c{0} is already a member of your corporation!");
         addDefault("Corporation.AlreadyMemberOther", "&c{0} is already a member of another corporation!");
         addDefault("Corporation.NotMember", "&c{0} is not a member of your corporation!");
+        addDefault("Corporation.UserNotMember", "&4Error: &c{0}&r&c is not a member of {1}&r&c!");
         addDefault("Corporation.RankSet", "&2Succesfully set {0}'s rank to {1}&2!");
         addDefault("Corporation.NotCoCEO", "&4{0} is not a Co CEO!");
         addDefault("Corporation.AlreadyCoCEO", "&4{0} is already a Co CEO!");

@@ -566,6 +566,10 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[2]);
+                if (!party.isMember(target.getUniqueId())) {
+                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UserNotMember", target.getDisplayName(), party.getFormattedName()));
+                    break;
+                }
 
                 PartyRank rank = handleRank(sender, party, args[3], !isForceMode);
                 if (rank == null) {
