@@ -266,7 +266,7 @@ public class Corporation {
 
     public void setRank(IngameUser target, CorpRank rank) {
         if (!isMember(target)) {
-            throw new IllegalArgumentException("Couldn't set rank for player: " + target.getName() + " is not a member of " + getName());
+            throw new IllegalStateException("Couldn't set rank for player: " + target.getName() + " is not a member of " + getName());
         }
 
         onUpdateRank(target, rank);

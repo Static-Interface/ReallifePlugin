@@ -630,8 +630,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     break;
                 }
 
-                corp.setRank(target, rank)
-                ;
+                corp.setRank(target, rank);
                 sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", rank.name));
                 break;
             }
