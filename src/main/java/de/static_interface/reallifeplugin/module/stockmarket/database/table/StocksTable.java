@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket.database.table;
 
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockRow;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 
 public class StocksTable extends AbstractTable<StockRow> {
 

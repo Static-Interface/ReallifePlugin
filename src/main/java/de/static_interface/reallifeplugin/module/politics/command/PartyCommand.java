@@ -30,13 +30,13 @@ import de.static_interface.reallifeplugin.module.politics.database.row.PartyUser
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
-import de.static_interface.reallifeplugin.util.CommandUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.util.CommandUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;

@@ -16,8 +16,8 @@
 
 package de.static_interface.reallifeplugin.module;
 
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.database.Database;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 

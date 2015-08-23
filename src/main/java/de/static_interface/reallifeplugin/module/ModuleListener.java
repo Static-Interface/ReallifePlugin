@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module;
 
-import de.static_interface.reallifeplugin.database.Database;
+import de.static_interface.sinklibrary.database.Database;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;

@@ -19,7 +19,6 @@ package de.static_interface.reallifeplugin.module.corporation.command;
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
-import de.static_interface.reallifeplugin.database.permission.Permission;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
 import de.static_interface.reallifeplugin.module.corporation.CorporationInviteQueue;
@@ -33,15 +32,16 @@ import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUs
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
-import de.static_interface.reallifeplugin.util.CommandUtil;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
+import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
+import de.static_interface.sinklibrary.util.CommandUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;

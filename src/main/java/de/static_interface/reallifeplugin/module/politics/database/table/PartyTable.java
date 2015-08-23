@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.politics.database.table;
 
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.politics.database.row.PartyRow;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 
 public class PartyTable extends AbstractTable<PartyRow> {
 

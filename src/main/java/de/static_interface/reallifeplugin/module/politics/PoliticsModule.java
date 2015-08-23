@@ -17,8 +17,6 @@
 package de.static_interface.reallifeplugin.module.politics;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.politics.command.PartyCommand;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyOptionsTable;
@@ -26,6 +24,8 @@ import de.static_interface.reallifeplugin.module.politics.database.table.PartyRa
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 
 import java.util.ArrayList;
 import java.util.Collection;

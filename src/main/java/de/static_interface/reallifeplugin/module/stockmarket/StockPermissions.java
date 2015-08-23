@@ -16,8 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket;
 
-import de.static_interface.reallifeplugin.database.permission.Permission;
-import de.static_interface.reallifeplugin.database.permission.Permissions;
+import de.static_interface.sinklibrary.database.permission.Permission;
+import de.static_interface.sinklibrary.database.permission.Permissions;
 
 public class StockPermissions extends Permissions {
 

@@ -17,8 +17,6 @@
 package de.static_interface.reallifeplugin.module.stockmarket;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
 import de.static_interface.reallifeplugin.module.corporation.CorporationPermissions;
@@ -27,6 +25,8 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.table.Stoc
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 

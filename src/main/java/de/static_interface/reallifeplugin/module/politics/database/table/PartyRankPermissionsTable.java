@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.politics.database.table;
 
-import de.static_interface.reallifeplugin.database.CascadeAction;
-import de.static_interface.reallifeplugin.database.Database;
-import de.static_interface.reallifeplugin.database.impl.table.OptionsTable;
+import de.static_interface.sinklibrary.database.CascadeAction;
+import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinklibrary.database.impl.table.OptionsTable;
 
 public class PartyRankPermissionsTable extends OptionsTable {
 

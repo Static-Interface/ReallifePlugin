@@ -17,13 +17,13 @@
 package de.static_interface.reallifeplugin.module.level;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.level.condition.LevelConditions;
 import de.static_interface.reallifeplugin.module.level.hook.VaultPermissionsHook;
 import de.static_interface.reallifeplugin.module.level.listener.LevelCommandListener;
 import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

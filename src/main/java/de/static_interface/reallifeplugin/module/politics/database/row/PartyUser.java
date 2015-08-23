@@ -16,15 +16,15 @@
 
 package de.static_interface.reallifeplugin.module.politics.database.row;
 
-import static de.static_interface.reallifeplugin.database.CascadeAction.CASCADE;
-import static de.static_interface.reallifeplugin.database.CascadeAction.SET_NULL;
+import static de.static_interface.sinklibrary.database.CascadeAction.CASCADE;
+import static de.static_interface.sinklibrary.database.CascadeAction.SET_NULL;
 
-import de.static_interface.reallifeplugin.database.Row;
-import de.static_interface.reallifeplugin.database.annotation.Column;
-import de.static_interface.reallifeplugin.database.annotation.ForeignKey;
-import de.static_interface.reallifeplugin.database.annotation.Index;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyTable;
+import de.static_interface.sinklibrary.database.Row;
+import de.static_interface.sinklibrary.database.annotation.Column;
+import de.static_interface.sinklibrary.database.annotation.ForeignKey;
+import de.static_interface.sinklibrary.database.annotation.Index;
 
 import javax.annotation.Nullable;
 

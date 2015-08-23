@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.table;
 
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRank;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 
 public class CorpRanksTable extends AbstractTable<CorpRank> {
 

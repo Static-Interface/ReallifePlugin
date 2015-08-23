@@ -21,7 +21,6 @@ import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfigur
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import de.static_interface.reallifeplugin.database.permission.Permission;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRank;
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpRow;
@@ -32,6 +31,7 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.user.SinkUser;
+import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.ChatColor;

@@ -17,8 +17,6 @@
 package de.static_interface.reallifeplugin.module.corporation;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.corporation.command.CorporationCommand;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpOptionsTable;
@@ -28,6 +26,8 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 
 import java.util.ArrayList;
 import java.util.Collection;

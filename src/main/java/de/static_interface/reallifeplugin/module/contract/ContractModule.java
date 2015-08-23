@@ -17,8 +17,6 @@
 package de.static_interface.reallifeplugin.module.contract;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.AbstractTable;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.contract.command.CAcceptCommand;
 import de.static_interface.reallifeplugin.module.contract.command.CCancelCommand;
@@ -27,6 +25,8 @@ import de.static_interface.reallifeplugin.module.contract.command.ContractComman
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUserOptionsTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
+import de.static_interface.sinklibrary.database.AbstractTable;
+import de.static_interface.sinklibrary.database.Database;
 
 import java.util.ArrayList;
 import java.util.Collection;
