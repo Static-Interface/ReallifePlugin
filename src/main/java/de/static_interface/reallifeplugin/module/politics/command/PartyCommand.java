@@ -219,6 +219,11 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
 
+                if (!isForceMode && user instanceof IngameUser && party.getRank(target).priority >= party.getRank((IngameUser) user).priority) {
+                    user.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughPriority"));
+                    return true;
+                }
+
                 party.announce(ReallifeLanguageConfiguration.m("Party.Kicked", target.getDisplayName(), ((Player) sender).getDisplayName()));
                 party.removeMember(target.getUniqueId());
                 break;

@@ -17,7 +17,6 @@
 package de.static_interface.reallifeplugin.module.payday;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.database.Database;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.payday.entry.PayDayEntry;
 import de.static_interface.reallifeplugin.module.payday.entry.TaxesEntry;
@@ -26,6 +25,7 @@ import de.static_interface.reallifeplugin.module.payday.model.Entry;
 import de.static_interface.reallifeplugin.module.payday.model.EntryResult;
 import de.static_interface.reallifeplugin.module.payday.model.Group;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;

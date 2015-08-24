@@ -32,8 +32,8 @@ package de.static_interface.reallifeplugin.module.corporation;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import de.static_interface.reallifeplugin.database.permission.Permission;
-import de.static_interface.reallifeplugin.database.permission.Permissions;
+import de.static_interface.sinklibrary.database.permission.Permission;
+import de.static_interface.sinklibrary.database.permission.Permissions;
 
 public class CorporationPermissions extends Permissions {
     public static final Permission ALL = new Permission("*", "All permissions", false);
