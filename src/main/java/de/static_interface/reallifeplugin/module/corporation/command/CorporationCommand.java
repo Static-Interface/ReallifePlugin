@@ -301,7 +301,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     if (ChatColor.stripColor(u.getDisplayName()).equalsIgnoreCase(args[1])
                         || u.getName().equalsIgnoreCase(args[1])) {
 
-                        if (!isForceMode && user instanceof IngameUser && userCorp.getRank(u).priority >= userCorp
+                        if (!isForceMode && user instanceof IngameUser && userCorp.getRank(u).priority <= userCorp
                                 .getRank((IngameUser) user).priority) {
                             user.sendMessage(m("Corporation.NotEnoughPriority"));
                             return true;
