@@ -39,6 +39,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jooq.SQLDialect;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
@@ -86,7 +87,7 @@ public class ReallifeMain extends JavaPlugin {
         }
         switch (type) {
             case H2:
-                db = new H2Database(config, this);
+                db = new H2Database(new File(getDataFolder(), "database.h2"), config.getTablePrefix(), this);
                 break;
             case MYSQL:
                 db = new MySqlDatabase(config, this);
@@ -95,7 +96,6 @@ public class ReallifeMain extends JavaPlugin {
 
         if (db != null) {
             try {
-                db.setupConfig();
                 db.connect();
             } catch (SQLException e) {
                 getLogger().log(Level.SEVERE, "Database connection failed. Disabling database-based features.");
