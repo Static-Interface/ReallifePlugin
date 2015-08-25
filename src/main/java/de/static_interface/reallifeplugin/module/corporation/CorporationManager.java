@@ -81,17 +81,7 @@ public class CorporationManager {
             return null;
         }
 
-        for (Corporation corporation : getCorporations()) {
-            for (IngameUser member : corporation.getMembers()) {
-                if (member == null) {
-                    continue;
-                }
-                if (member.getUniqueId().equals(user.getUniqueId())) {
-                    return corporation;
-                }
-            }
-        }
-        return null;
+        return getCorporation(getCorpUser(user).corpId);
     }
 
     /**

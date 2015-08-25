@@ -283,6 +283,10 @@ public class Corporation {
         }
     }
 
+    public int getMemberCount() {
+        return module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` where `corp_id` = ?", getId()).length;
+    }
+
     private void addRegionOwner(IngameUser user) {
         if (getBaseRegion() != null) {
             DefaultDomain rgOwners = getBaseRegion().getOwners();
@@ -305,7 +309,7 @@ public class Corporation {
 
     public void announce(String message) {
         message = ChatColor.GRAY + "[" + getFormattedName() + ChatColor.GRAY + "] " + message;
-        for (IngameUser user : getMembers()) {
+        for (IngameUser user : getOnlineMembers()) {
             Player p = Bukkit.getPlayer(user.getUniqueId());
             if (p == null) {
                 continue;
@@ -314,6 +318,17 @@ public class Corporation {
         }
 
         SinkLibrary.getInstance().getConsoleUser().sendMessage(message);
+    }
+
+    public List<IngameUser> getOnlineMembers() {
+        List<IngameUser> onlineMembers = new ArrayList<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            IngameUser user = SinkLibrary.getInstance().getIngameUser(p);
+            if (isMember(user)) {
+                onlineMembers.add(user);
+            }
+        }
+        return onlineMembers;
     }
 
     public List<CorpRank> getRanks() {

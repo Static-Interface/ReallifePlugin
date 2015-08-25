@@ -218,7 +218,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     break;
                 }
 
-                if (corp.getMemberLimit() > 0 && corp.getMembers().size() >= (corp.getMemberLimit() + 1)) {
+                if (corp.getMemberLimit() > 0 && corp.getMemberCount() >= (corp.getMemberLimit() + 1)) {
                     sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationFull"));
                     break;
                 }
@@ -250,7 +250,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new NotEnoughArgumentsException();
                 }
 
-                if (userCorp.getMemberLimit() > 0 && userCorp.getMembers().size() >= (userCorp.getMemberLimit() + 1)) {
+                if (userCorp.getMemberLimit() > 0 && userCorp.getMemberCount() >= (userCorp.getMemberLimit() + 1)) {
                     sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationFull"));
                     break;
                 }
@@ -296,30 +296,21 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new NotEnoughArgumentsException();
                 }
 
-                boolean success = false;
-                for (IngameUser u : userCorp.getMembers()) {
-                    if (ChatColor.stripColor(u.getDisplayName()).equalsIgnoreCase(args[1])
-                        || u.getName().equalsIgnoreCase(args[1])) {
-
-                        if (!isForceMode && user instanceof IngameUser && userCorp.getRank(u).priority <= userCorp
-                                .getRank((IngameUser) user).priority) {
-                            user.sendMessage(m("Corporation.NotEnoughPriority"));
-                            return true;
-                        }
-                        userCorp.removeMember(u);
-                        if (u.isOnline()) {
-                            u.sendMessage(StringUtil.format(m("Corporation.Kicked"), userCorp.getName()));
-                            user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationManager.getInstance().getFormattedName(u)));
-                        }
-                        success = true;
-                        break;
-                    }
-                }
-                if (!success) {
+                IngameUser u = SinkLibrary.getInstance().getIngameUser(args[1]);
+                if (!userCorp.isMember(u)) {
                     user.sendMessage(StringUtil.format(m("Corporation.NotMember"), args[1]));
                     break;
                 }
-
+                if (!isForceMode && user instanceof IngameUser && userCorp.getRank(u).priority <= userCorp
+                        .getRank((IngameUser) user).priority) {
+                    user.sendMessage(m("Corporation.NotEnoughPriority"));
+                    return true;
+                }
+                userCorp.removeMember(u);
+                if (u.isOnline()) {
+                    u.sendMessage(StringUtil.format(m("Corporation.Kicked"), userCorp.getName()));
+                    user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationManager.getInstance().getFormattedName(u)));
+                }
                 break;
             }
 
@@ -1060,7 +1051,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             if (listByMoney) {
                 data = (int) corporation.getBalance();
             } else {
-                data = corporation.getMembers().size();
+                data = corporation.getMemberCount();
             }
             String formattedName = corporation.getFormattedName() + ChatColor.WHITE + "[" +
                                    data + "]" + ChatColor.RESET;
