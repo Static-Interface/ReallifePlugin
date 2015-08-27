@@ -108,6 +108,10 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 sendPartyList(sender);
                 break;
             case "deposit":
+                if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DEPOSIT)) {
+                    sender.sendMessage(m("Permissions.General"));
+                    break;
+                }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
                 }
@@ -123,6 +127,10 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 break;
 
             case "withdraw":
+                if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DEPOSIT)) {
+                    sender.sendMessage(m("Permissions.General"));
+                    break;
+                }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
                 }
