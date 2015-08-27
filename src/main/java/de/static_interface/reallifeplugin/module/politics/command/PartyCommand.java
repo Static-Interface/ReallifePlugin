@@ -127,7 +127,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 break;
 
             case "withdraw":
-                if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DEPOSIT)) {
+                if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.WITHDRAW)) {
                     sender.sendMessage(m("Permissions.General"));
                     break;
                 }
