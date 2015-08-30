@@ -629,7 +629,8 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             return;
         }
 
-        if (CorporationManager.getInstance().getUserCorporation(user).getId() != corp.getId()) {
+        Corporation userCorp = CorporationManager.getInstance().getUserCorporation(user);
+        if (userCorp == null || userCorp.getId() != corp.getId()) {
             event.setCancelled(true);
             return;
         }
