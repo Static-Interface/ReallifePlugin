@@ -16,8 +16,6 @@
 
 package de.static_interface.reallifeplugin.module.politics.command;
 
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.m;
-
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.politics.Party;
@@ -32,6 +30,7 @@ import de.static_interface.reallifeplugin.module.politics.database.table.PartyRa
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
+import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.user.IngameUser;
@@ -109,8 +108,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 break;
             case "deposit":
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DEPOSIT)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -128,8 +126,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "withdraw":
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.WITHDRAW)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -172,8 +169,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.INVITE)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -214,8 +210,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.KICK)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1], true);
                 if (!target.isOnline()) {
@@ -239,8 +234,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "new":
                 if (!sender.hasPermission("ReallifePlugin.Party.New")) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -280,8 +274,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     break;
                 }
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DELETE)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 //Todo
                 break;
@@ -389,8 +382,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "new": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -429,8 +421,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "delete": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 3) {
                     throw new NotEnoughArgumentsException();
@@ -459,8 +450,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "priority": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -491,8 +481,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "prefix": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -515,8 +504,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "description": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -546,8 +534,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "rename": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -571,8 +558,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "set": {
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.SET_RANK)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -596,8 +582,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
             }
             case "setpermission":
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.MANAGE_RANKS)) {
-                    sender.sendMessage(m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 5) {
                     throw new NotEnoughArgumentsException();

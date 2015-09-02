@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.module.corporation.command;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.TIMEUNIT_DAYS;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
@@ -34,10 +35,10 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
+import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
@@ -139,8 +140,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             case "admin": {
                 if (user instanceof IngameUser || (user instanceof IrcUser && user.isOp())) {
                     if (!user.hasPermission("reallifeplugin.corporations.admin")) {
-                        user.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                        break;
+                        throw new NotEnoughPermissionsException();
                     }
                     if (moreArgs.length < 1) {
                         throw new NotEnoughArgumentsException();
@@ -176,8 +176,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "deposit": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.DEPOSIT)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (!(user instanceof IngameUser)) {
                     break;
@@ -243,8 +242,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     break;
                 }
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.KICK)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -289,8 +287,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "kick": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.INVITE)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -316,8 +313,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "delete": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.DELETE)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -334,8 +330,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "withdraw":
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.WITHDRAW)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 2) {
                     throw new NotEnoughArgumentsException();
@@ -420,8 +415,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "delete": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 3) {
                     throw new NotEnoughArgumentsException();
@@ -450,8 +444,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "new": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -490,8 +483,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "priority": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -522,8 +514,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "prefix": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -546,8 +537,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "description": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -577,8 +567,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "rename": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -602,8 +591,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "set": {
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.SET_RANK)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 4) {
                     throw new NotEnoughArgumentsException();
@@ -628,8 +616,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "setpermission":
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    sender.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    break;
+                    throw new NotEnoughPermissionsException();
                 }
                 if (args.length < 5) {
                     throw new NotEnoughArgumentsException();
@@ -716,11 +703,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "new": {
                 if ((user instanceof IngameUser && args.length < 4) || (!(user instanceof IngameUser) && args.length < 5)) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
-                //Todo: remove ceo_user_id from any corporation
-                //Todo cancel if ceo_user_id is already a ceo_user_id of another corporation
 
                 String name = args[1];
                 String base = args[3];
@@ -741,8 +725,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "setmemberlimit": {
                 if (args.length < 3) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
@@ -759,8 +742,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "enablefishing": {
                 if (args.length < 2) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
@@ -776,8 +758,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "disablefishing": {
                 if (args.length < 2) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
@@ -793,8 +774,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "getmemberlimit": {
                 if (args.length < 2) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
@@ -930,8 +910,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "give": {
                 if (args.length < 3) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
                 if (corporation == null) {
@@ -961,8 +940,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "rename": {
                 if (args.length < 3) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
@@ -979,8 +957,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "take": {
                 if (args.length < 3) {
-                    user.sendMessage(LanguageConfiguration.m("General.CommandMisused.Arguments.TooFew"));
-                    return;
+                    throw new NotEnoughArgumentsException();
                 }
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
                 if (corporation == null) {
@@ -1102,7 +1079,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     }
                     i += row.changedAmount;
                 }
-                soldItems = m("Corporation.ItemsSold", target.getDisplayName(), i, days + " " + LanguageConfiguration.m("TimeUnit.Days"));
+                soldItems = m("Corporation.ItemsSold", target.getDisplayName(), i, days + " " + TIMEUNIT_DAYS.format());
             }
         }
         user.sendMessage(ChatColor.GRAY + "Items sold: " + ChatColor.GOLD + soldItems);

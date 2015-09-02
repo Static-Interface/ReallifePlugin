@@ -32,12 +32,12 @@ import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.database.DatabaseConfiguration;
+import de.static_interface.sinklibrary.database.SQLDialect;
 import de.static_interface.sinklibrary.database.impl.database.H2Database;
 import de.static_interface.sinklibrary.database.impl.database.MySqlDatabase;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jooq.SQLDialect;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -89,7 +89,7 @@ public class ReallifeMain extends JavaPlugin {
             case H2:
                 db = new H2Database(new File(getDataFolder(), "database.h2"), config.getTablePrefix(), this);
                 break;
-            case MYSQL:
+            case MySQL:
                 db = new MySqlDatabase(config, this);
                 break;
         }

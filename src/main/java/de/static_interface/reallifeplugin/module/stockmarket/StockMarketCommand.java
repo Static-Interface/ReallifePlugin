@@ -30,8 +30,8 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockU
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -307,8 +307,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
             case "forceupdate": {
                 if (!user.hasPermission("ReallifePlugin.StockMarket.ForceUpdate")) {
-                    user.sendMessage(LanguageConfiguration.m("Permissions.General"));
-                    return false;
+                    throw new NotEnoughPermissionsException();
                 }
 
                 if (StockMarket.getInstance().onStocksUpdate(getModule(), corpModule)) {

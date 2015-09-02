@@ -273,6 +273,10 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
     }
 
     public static boolean isInteractionRestricted(IngameUser user, Block block) {
+        if (true) {
+            return false;
+        }
+
         Corporation corp = CorporationManager.getInstance().getCorporation(block.getLocation());
         if (corp == null) {
             return false;
