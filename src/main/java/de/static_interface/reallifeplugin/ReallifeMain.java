@@ -74,7 +74,7 @@ public class ReallifeMain extends JavaPlugin {
 
         settings = new Settings(this);
 
-        DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder());
+        DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder(), "ReallifePlugin", "RP_");
 
         SQLDialect type;
         try {

@@ -16,6 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.politics.command;
 
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_INVALID_VALUE;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
+
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.politics.Party;
@@ -33,6 +37,7 @@ import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
+import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.CommandUtil;
@@ -120,7 +125,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     }
                     deposit((Player) sender, party, Double.valueOf(args[1]));
                 } catch (NumberFormatException ignored) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("General.InvalidValue", args[1]));
+                    sender.sendMessage(GENERAL_INVALID_VALUE.format(args[1]));
                 }
                 break;
 
@@ -134,7 +139,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 try {
                     withdraw((Player) sender, party, Double.valueOf(args[1]));
                 } catch (NumberFormatException ignored) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("General.InvalidValue", args[1]));
+                    sender.sendMessage(GENERAL_INVALID_VALUE.format(args[1]));
                 }
                 break;
 
@@ -200,7 +205,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 party.addMember(target.getUniqueId(), party.getDefaultRank());
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -294,12 +299,12 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
     private void deposit(Player player, Party party, double amount) {
         if (amount <= 1) {
-            player.sendMessage(ReallifeLanguageConfiguration.m("General.InvalidValue", amount));
+            player.sendMessage(GENERAL_INVALID_VALUE.format(amount));
             return;
         }
 
         if (VaultBridge.getBalance(player) < amount) {
-            player.sendMessage(ReallifeLanguageConfiguration.m("General.NotEnoughMoney"));
+            player.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
             return;
         }
 
@@ -311,7 +316,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
     private void withdraw(Player player, Party party, double amount) {
         if (amount < 1) {
-            player.sendMessage(ReallifeLanguageConfiguration.m("General.InvalidValue", amount));
+            player.sendMessage(GENERAL_INVALID_VALUE.format(amount));
             return;
         }
 
@@ -415,7 +420,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
                 getModule().getTable(PartyRanksTable.class).insert(rank);
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -444,7 +449,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                                        party.getId(), rank.id);
                 getModule().getTable(PartyRanksTable.class).executeUpdate("DELETE FROM {TABLE} WHERE id = ?", rank.id);
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -475,7 +480,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -498,7 +503,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", prefix));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Prefix", prefix));
                 break;
             }
 
@@ -528,7 +533,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", description));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Description", description));
                 break;
             }
 
@@ -552,7 +557,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", args[3]));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Name", args[3]));
                 break;
             }
 
@@ -577,7 +582,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
                 party.setRank(target, rank);
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", rank.name));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
                 break;
             }
             case "setpermission":
@@ -611,7 +616,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
                 Object value = CommandUtil.parseValue(valueArgs);
                 getModule().getTable(PartyRankPermissionsTable.class).setOption(permission.getPermissionString(), value, rank.id);
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", Objects.toString(value)));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
                 break;
 
             default:

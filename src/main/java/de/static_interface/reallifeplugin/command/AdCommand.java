@@ -18,6 +18,7 @@ package de.static_interface.reallifeplugin.command;
 
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.sinklibrary.SinkLibrary;
@@ -50,7 +51,7 @@ public class AdCommand extends SinkCommand {
 
         double price = ReallifeMain.getInstance().getSettings().getAdPrice();
         if (user.getBalance() < price) {
-            user.sendMessage(m("General.NotEnoughMoney"));
+            user.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
             return true;
         }
 

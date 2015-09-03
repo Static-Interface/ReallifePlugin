@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.module.stockmarket;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.Module;
@@ -32,6 +33,7 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.table.Stoc
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
+import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -186,7 +188,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 addStocks(user, row.id, row.amount, ceoAmount, false);
 
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -204,7 +206,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 StocksTable StocksTable = Module.getTable(getModule(), StocksTable.class);
                 StocksTable.executeUpdate("UPDATE `{TABLE}` SET `allow_buy_stocks` = ? WHERE `corp_id` = ?", true, corp.getId());
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -223,7 +225,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 StocksTable StocksTable = Module.getTable(getModule(), StocksTable.class);
                 StocksTable.executeUpdate("UPDATE `{TABLE}` SET `allow_buy_stocks` = ? WHERE `corp_id` = ?", false, corp.getId());
 
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -248,7 +250,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 double price = amount * stock.getPrice();
                 if (!VaultBridge.addBalance(user.getPlayer(), -price)) {
-                    user.sendMessage(m("General.NotEnoughMoney"));
+                    user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
                     return true;
                 }
 
@@ -256,7 +258,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 addStocks(user, stock.getId(), stock.getAmount(), amount, true);
 
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -301,7 +303,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                     return true;
                 }
 
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -311,7 +313,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 if (StockMarket.getInstance().onStocksUpdate(getModule(), corpModule)) {
-                    user.sendMessage(m("General.Success"));
+                    user.sendMessage(GENERAL_SUCCESS.format());
                 } else {
                     user.sendMessage(m("StockMarket.ForceFailed"));
                 }
@@ -399,7 +401,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 pendingTransfers.remove(transfer);
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -424,7 +426,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 if (!user.addBalance(-transfer.price)) {
-                    user.sendMessage(m("General.NotEnoughMoney"));
+                    user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
                     return true;
                 }
 
@@ -432,7 +434,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 try {
                     processTransfer(transfer);
                     pendingTransfers.remove(transfer);
-                    user.sendMessage(m("General.Success"));
+                    user.sendMessage(GENERAL_SUCCESS.format());
                     seller.sendMessage(m("StockMarket.TransferAccepted", user.getDisplayName(), transfer.amount));
                 } catch (Exception e) {
                     e.printStackTrace();

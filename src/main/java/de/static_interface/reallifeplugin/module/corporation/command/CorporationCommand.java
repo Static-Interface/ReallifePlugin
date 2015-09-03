@@ -17,6 +17,9 @@
 package de.static_interface.reallifeplugin.module.corporation.command;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_INVALID_VALUE;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
 import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.TIMEUNIT_DAYS;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
@@ -39,6 +42,7 @@ import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsExcepti
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
+import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
@@ -192,7 +196,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     }
                     deposit((IngameUser) user, userCorp, Double.valueOf(args[1]));
                 } catch (NumberFormatException ignored) {
-                    user.sendMessage(m("General.InvalidValue", args[1]));
+                    user.sendMessage(LanguageConfiguration.GENERAL_INVALID_VALUE.format(args[1]));
                 }
                 break;
             }
@@ -281,7 +285,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 userCorp.addMember(target, userCorp.getDefaultRank());
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -341,7 +345,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 try {
                     withdraw((IngameUser) user, userCorp, Double.valueOf(args[1]));
                 } catch (NumberFormatException ignored) {
-                    user.sendMessage(m("General.InvalidValue", args[1]));
+                    user.sendMessage(LanguageConfiguration.GENERAL_INVALID_VALUE.format(args[1]));
                 }
                 break;
 
@@ -438,7 +442,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 getModule().getTable(CorpRanksTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", rank.id);
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -477,7 +481,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 getModule().getTable(CorpRanksTable.class).insert(rank);
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -508,7 +512,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -531,7 +535,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", prefix));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Prefix", prefix));
                 break;
             }
 
@@ -561,7 +565,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", description));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Description", description));
                 break;
             }
 
@@ -585,7 +589,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", args[3]));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Name", args[3]));
                 break;
             }
 
@@ -610,7 +614,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 corp.setRank(target, rank);
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", rank.name));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
                 break;
             }
 
@@ -651,7 +655,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     corp.onUpdateRank(rankUser, rank);
                 }
 
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet", Objects.toString(value)));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
                 break;
 
             default:
@@ -662,12 +666,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
     private void deposit(IngameUser user, Corporation corp, double amount) {
         if (amount < 1) {
-            user.sendMessage(m("General.InvalidValue", amount));
+            user.sendMessage(GENERAL_INVALID_VALUE.format(amount));
             return;
         }
 
         if (VaultBridge.getBalance(user.getPlayer()) < amount) {
-            user.sendMessage(m("General.NotEnoughMoney"));
+            user.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
             return;
         }
 
@@ -679,7 +683,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
     private void withdraw(IngameUser user, Corporation corp, double amount) {
         if (amount < 1) {
-            user.sendMessage(m("General.InvalidValue", amount));
+            user.sendMessage(LanguageConfiguration.GENERAL_INVALID_VALUE.format(amount));
             return;
         }
 
@@ -736,7 +740,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 int limit = Integer.valueOf(args[2]);
                 corporation.setMemberLimit(limit);
-                sender.sendMessage(ReallifeLanguageConfiguration.m("General.SuccessSet"));
+                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("MemberLimit", limit));
                 break;
             }
 
@@ -752,7 +756,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 corporation.setOption(CorporationOptions.FISHING, true);
-                sender.sendMessage(m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -768,7 +772,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 corporation.setOption(CorporationOptions.FISHING, false);
-                sender.sendMessage(m("General.Success"));
+                sender.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -810,7 +814,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         }
                         restrictedBlocks.add(name.toUpperCase());
                         corp.setOption(CorporationOptions.RESTRICTED_BLOCKS, restrictedBlocks);
-                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        user.sendMessage(GENERAL_SUCCESS.format());
                         break;
                     }
 
@@ -821,7 +825,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         }
                         restrictedBlocks.remove(name.toUpperCase());
                         corp.setOption(CorporationOptions.RESTRICTED_BLOCKS, restrictedBlocks);
-                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        user.sendMessage(GENERAL_SUCCESS.format());
                         break;
                     }
 
@@ -859,7 +863,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         }
                         allowedBlocks.add(name.toUpperCase());
                         corp.setOption(CorporationOptions.ALLOWED_BLOCKS, allowedBlocks);
-                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        user.sendMessage(GENERAL_SUCCESS.format());
                         break;
                     }
 
@@ -870,7 +874,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         }
                         allowedBlocks.remove(name.toUpperCase());
                         corp.setOption(CorporationOptions.ALLOWED_BLOCKS, allowedBlocks);
-                        user.sendMessage(ReallifeLanguageConfiguration.m("General.Success"));
+                        user.sendMessage(GENERAL_SUCCESS.format());
                         break;
                     }
 
@@ -917,20 +921,14 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
                     return;
                 }
-                double amount;
-                try {
-                    amount = Double.valueOf(args[2]);
-                    if (amount < 1) {
-                        user.sendMessage(m("General.InvalidValue", amount));
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    user.sendMessage(m("General.InvalidValue", args[1]));
+                double amount = Double.valueOf(args[2]);
+                if (amount < 1) {
+                    user.sendMessage(GENERAL_INVALID_VALUE.format(amount));
                     return;
                 }
 
                 if (corporation.addBalance(amount)) {
-                    user.sendMessage(m("General.Success"));
+                    user.sendMessage(GENERAL_SUCCESS.format());
                 } else {
                     user.sendMessage(ChatColor.DARK_RED + "Failure"); //Todo
                 }
@@ -950,7 +948,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 if (CorporationManager.getInstance().renameCorporation(user, corporation, args[2])) {
-                    user.sendMessage(m("General.Success"));
+                    user.sendMessage(GENERAL_SUCCESS.format());
                 }
                 break;
             }
@@ -964,20 +962,14 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
                     return;
                 }
-                double amount;
-                try {
-                    amount = Double.valueOf(args[2]);
-                    if (amount < 1) {
-                        user.sendMessage(m("General.InvalidValue", amount));
-                        return;
-                    }
-                    amount = -amount;
-                } catch (NumberFormatException e) {
-                    user.sendMessage(m("General.InvalidValue", args[1]));
+                double amount = Double.valueOf(args[2]);
+                if (amount < 1) {
+                    user.sendMessage(GENERAL_INVALID_VALUE.format(amount));
                     return;
                 }
+                amount = -amount;
                 corporation.addBalance(amount);
-                user.sendMessage(m("General.Success"));
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 

@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.module.corporation;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.ModuleListener;
@@ -190,7 +191,7 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
             untag(stack);
         }
 
-        user.sendMessage(m("General.Success"));
+        user.sendMessage(GENERAL_SUCCESS.format());
     }
 
     public static boolean removeItem(@Nonnull Inventory inv, @Nonnull ItemStack stack, boolean preferNotSold) {
@@ -448,8 +449,8 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
 
         event.setLine(0, ChatColor.BLUE + ChatColor.stripColor(lines[0]));
 
-        user.sendMessage(m("General.Success"));
         registerBlock(chest.getBlock(), event.getPlayer());
+        user.sendMessage(GENERAL_SUCCESS.format());
         registerBlock(signBlock, event.getPlayer());
 
     }

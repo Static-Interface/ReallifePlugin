@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.config;
 
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.api.configuration.option.YamlParentOption;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,6 +27,9 @@ import java.io.File;
 import javax.annotation.Nullable;
 
 public class ReallifeLanguageConfiguration extends Configuration {
+
+    public static YamlParentOption GENERAL_PARENT = new YamlParentOption("General");
+
 
     private static ReallifeLanguageConfiguration instance;
 
@@ -69,11 +73,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
 
     @Override
     public void addDefaults() {
-        addDefault("General.NotEnoughMoney", "&4You don't have enough money.");
         addDefault("General.UnknownSubCommand", "&4Unknown subcommand: {0}");
-        addDefault("General.InvalidValue", "Invalid Value: {0}");
-        addDefault("General.Success", "&aSuccess");
-        addDefault("General.SuccessSet", "&aSuccessfully set to &7\"&f{0}&r&7\"!");
 
         addDefault("Corporation.Corporation", "&6Corporation");
         addDefault("Corporation.Exists", "&4Error: &cCorporation already exists!");
