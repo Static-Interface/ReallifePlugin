@@ -16,29 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract.conversation;
 
-import javax.annotation.Nullable;
-
 public enum ContractEventType {
-    DEFAULT(0),
-    MONEY(1);
-
-    private final int id;
-
-    ContractEventType(int id) {
-        this.id = id;
-    }
-
-    @Nullable
-    public static ContractEventType getById(int id) {
-        for (ContractEventType type : values()) {
-            if (type.getId() == id) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    public int getId() {
-        return id;
-    }
+    DEFAULT,
+    MONEY
 }

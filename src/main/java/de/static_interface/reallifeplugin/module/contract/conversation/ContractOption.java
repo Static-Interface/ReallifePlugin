@@ -17,7 +17,6 @@
 package de.static_interface.reallifeplugin.module.contract.conversation;
 
 public class ContractOption {
-
     public static final String CREATOR = "creator";
     public static final String USERS = "targets";
     public static final String NAME = "name";
