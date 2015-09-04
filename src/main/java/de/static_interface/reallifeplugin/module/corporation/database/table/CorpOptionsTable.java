@@ -16,6 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.table;
 
+import de.static_interface.sinklibrary.database.AbstractTable;
 import de.static_interface.sinklibrary.database.CascadeAction;
 import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.database.impl.table.OptionsTable;
@@ -29,7 +30,7 @@ public class CorpOptionsTable extends OptionsTable {
     }
 
     @Override
-    public Class<?> getForeignTable() {
+    public Class<? extends AbstractTable> getForeignTable() {
         return CorpsTable.class;
     }
 

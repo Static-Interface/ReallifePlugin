@@ -51,5 +51,5 @@ public class ContractUserOptions implements Row {
     public Long lastCheck;
 
     @Column
-    public int moneyFailCount = 0;
+    public double moneyFailedAmount = 0;
 }

@@ -81,7 +81,11 @@ public class CorporationManager {
             return null;
         }
 
-        Integer corpId = getCorpUser(user).corpId;
+        CorpUserRow row = getCorpUser(user);
+        if (row == null) {
+            return null;
+        }
+        Integer corpId = row.corpId;
         if (corpId == null) {
             return null;
         }
