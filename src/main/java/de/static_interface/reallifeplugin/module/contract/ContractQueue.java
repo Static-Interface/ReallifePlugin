@@ -18,116 +18,154 @@ package de.static_interface.reallifeplugin.module.contract;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
 
-import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
-import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
+import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
+import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
+import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
+import de.static_interface.sinklibrary.util.DateUtil;
+import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
 public class ContractQueue {
 
-    private static Map<IngameUser, List<ContractRow>> queue = new HashMap<>();
-    private static Map<ContractRow, List<IngameUser>> deniedRequests = new HashMap<>();
+    private static Map<UUID, Set<Contract>> queue = new HashMap<>();
+    private static Map<Contract, Set<ContractUserOptions>> options = new HashMap<>();
 
-    public static void addToQueue(ContractModule module, ContractRow row) {
+    public static void createQueue(Contract contract, List<ContractUserOptions> optionsRows) {
+        int ownerId = contract.ownerId;
 
-        //Todo: remove users from row
-        for (int id : ContractDatabaseUtil.splitIds(row.userIds)) {
-            IngameUser user = Contract.getUserFromUserId(module, id);
-            List<ContractRow> rows = queue.get(user);
+        for (ContractUserOptions userOption : optionsRows) {
+            IngameUser user = ContractManager.getInstance().getIngameUser(userOption.userId);
+            Set<Contract> rows = queue.get(user.getUniqueId());
             if (rows == null) {
-                rows = new ArrayList<>();
+                rows = new HashSet<>();
             }
-            rows.add(row);
-            queue.put(user, rows);
+            if (!rows.contains(contract)) {
+                rows.add(contract);
+            }
+            queue.put(user.getUniqueId(), rows);
+            if (userOption.userId != ownerId) {
+                user.sendMessage(m("")); // added to contract
+
+                for (String s : contract.content.split("\\Q&n\\E")) {
+                    user.sendMessage(ChatColor.GOLD + s);
+                }
+
+                if (userOption.money == null || userOption.money == 0) {
+                    continue;
+                }
+                String t = "pay";
+                if (userOption.money > 0) {
+                    t = "receive";
+                }
+                user.sendMessage("You will " + t + " " + userOption.money + " every " + DateUtil.formatDateDiff(contract.period));
+                user.sendMessage(m("")); //caccept or cdeny
+            }
         }
     }
 
-    public static void removeFromQueue(IngameUser user, ContractRow row) {
-        List<ContractRow> rows = queue.get(user);
-        if (rows == null) {
-            return;
-        }
-
-        rows.remove(row);
-        if (rows.size() == 0) {
-            queue.remove(user);
-        } else {
-            queue.put(user, rows);
-        }
-
-        boolean queueLeft = false;
-        for (IngameUser queueUser : queue.keySet()) {
-            List<ContractRow> queueRows = queue.get(queueUser);
-
-            if (queueRows == null) {
-                queue.remove(queueUser);
-                continue;
-            }
-            if (queueRows.contains(row)) {
-                queueLeft = true;
+    public static void accept(IngameUser user, Contract contract) {
+        removeFromQueue(user, contract);
+        boolean left = false;
+        for (ContractUserOptions options : getOptions(contract)) {
+            IngameUser optionsUser = ContractManager.getInstance().getIngameUser(options.userId);
+            if (getQueue(optionsUser).contains(contract)) {
+                left = true;
                 break;
             }
         }
-
-        if (!queueLeft) {
-            onQueueFinish(row);
+        if (!left) {
+            ContractManager.getInstance().onAccepted(contract, ContractQueue.getOptions(contract));
         }
     }
 
-    public static List<ContractRow> getQueue(IngameUser user) {
-        List<ContractRow> queueRows = queue.get(user);
+    private static void removeFromQueue(IngameUser user, Contract contract) {
+        Set<Contract> rows = queue.get(user.getUniqueId());
+        if (rows == null) {
+            rows = new HashSet<>();
+        } else {
+            rows.remove(contract);
+        }
+        queue.put(user.getUniqueId(), rows);
+    }
+
+    public static List<Contract> getQueue(IngameUser user) {
+        Set<Contract> queueRows = queue.get(user.getUniqueId());
         if (queueRows == null) {
-            queueRows = new ArrayList<>();
+            return new ArrayList<>();
         }
-        return queueRows;
+        List<Contract> parsedContracts = new ArrayList<>();
+        for (Contract c : queueRows) {
+            if (c != null) {
+                parsedContracts.add(c);
+            }
+        }
+        return parsedContracts;
     }
 
-    public static void addDeny(IngameUser user, ContractRow row) {
-        removeFromQueue(user, row);
-        List<IngameUser> denies = deniedRequests.get(row);
-        if (denies == null) {
-            denies = new ArrayList<>();
+    public static void deny(IngameUser user, Contract contract) {
+        removeFromQueue(user, contract);
+        Integer userId = ContractManager.getInstance().getUserId(user);
+        Set<ContractUserOptions> contractUsers = options.get(contract);
+        for (ContractUserOptions option : contractUsers) {
+            if (option.userId == userId) {
+                contractUsers.remove(option);
+            }
         }
-        denies.add(user);
-        deniedRequests.put(row, denies);
+
+        options.put(contract, contractUsers);
     }
 
-    public static void cancelQueue(ContractModule module, ContractRow row) {
-        for (IngameUser user : queue.keySet()) {
-            List<ContractRow> rows = queue.get(user);
-            if (rows == null || !rows.contains(row)) {
+    public static void cancel(Contract contract) {
+        for (UUID user : queue.keySet()) {
+            Set<Contract> rows = queue.get(user);
+            if (rows == null || !rows.contains(contract)) {
                 queue.remove(user);
                 continue;
             }
-            rows.remove(row);
-            user.sendMessage(m("")); // contract cancelled
+            rows.remove(contract);
+            SinkLibrary.getInstance().getIngameUser(user).sendMessage(ReallifeLanguageConfiguration.CONTRACT_CANCELLED.format(contract.name));
         }
 
-        deniedRequests.remove(row);
+        onQueueFinish(contract);
+    }
 
-        module.getTable(ContractUsersTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", row.id);
+    public static void onQueueFinish(Contract contract) {
+        for (UUID uuid : queue.keySet()) {
+            Set<Contract> qu = queue.get(uuid);
+            qu.remove(contract);
+            queue.put(uuid, qu);
+        }
+
+        options.remove(contract);
+    }
+
+    public static Set<ContractUserOptions> getOptions(Contract contract) {
+        return options.get(contract);
     }
 
     @Nullable
-    public static ContractRow getCreatorContractRow(ContractModule module, IngameUser user) {
-        for (List<ContractRow> rows : queue.values()) {
-            for (ContractRow row : rows) {
-                if (Contract.getUserFromUserId(module, row.creatorId).equals(user)) {
-                    return row;
-                }
+    public static Contract getCreatorContract(IngameUser user) {
+        int userId = ContractManager.getInstance().getUserId(user);
+        for (Contract c : queue.get(user.getUniqueId())) {
+            if (c.ownerId == userId) {
+                return c;
             }
         }
         return null;
     }
 
-    public static void onQueueFinish(ContractRow contract) {
-
-        deniedRequests.remove(contract);
+    public static boolean contains(IngameUser user, Contract c) {
+        return queue.get(user.getUniqueId()).contains(c);
     }
 }

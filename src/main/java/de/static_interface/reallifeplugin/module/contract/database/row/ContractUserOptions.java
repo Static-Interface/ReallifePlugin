@@ -27,7 +27,7 @@ import de.static_interface.sinklibrary.database.annotation.Index;
 
 import javax.annotation.Nullable;
 
-public class ContractUserOptionsRow implements Row {
+public class ContractUserOptions implements Row {
 
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
@@ -47,5 +47,9 @@ public class ContractUserOptionsRow implements Row {
     public Double money;
 
     @Column
-    public boolean isCreator;
+    @Nullable
+    public Long lastCheck;
+
+    @Column
+    public int moneyFailCount = 0;
 }

@@ -16,6 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.contract.conversation;
 
+import de.static_interface.reallifeplugin.module.contract.ContractManager;
+import de.static_interface.reallifeplugin.module.contract.ContractQueue;
+import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
+import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.DateUtil;
@@ -30,19 +34,17 @@ import org.bukkit.conversations.StringPrompt;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 //todo: i18n
 
 public class ContractConversation {
 
-    public final static String DATE_PATTERN = "d.M.yyyy HH:MM";
+    public final static SimpleDateFormat FORMATTER = new SimpleDateFormat("d.M.yyyy HH:MM");
 
     public static void createNewView(Player player, Plugin plugin) {
         ConversationFactory factory = new ConversationFactory(plugin).withModality(true)
@@ -51,9 +53,14 @@ public class ContractConversation {
                 .withEscapeSequence("quit");
         Conversation conv = factory.buildConversation(player);
         conv.getContext().setSessionData(ContractOption.CREATOR, player.getUniqueId().toString());
-        Map<String, Integer> moneyAmount = new HashMap<>();
-        conv.getContext().setSessionData(ContractOption.USERS, new ArrayList<>());
-        conv.getContext().setSessionData(ContractOption.MONEY_AMOUNTS, moneyAmount);
+        List<ContractUserOptions> options = new ArrayList<>();
+
+        ContractUserOptions option = new ContractUserOptions();
+        option.money = null;
+        option.userId = ContractManager.getInstance().getUserId(SinkLibrary.getInstance().getIngameUser(player));
+        options.add(option);
+
+        conv.getContext().setSessionData(ContractOption.USERS, options);
         conv.begin();
     }
 
@@ -139,7 +146,7 @@ public class ContractConversation {
 
             String[] rawPlayers = input.split(",");
 
-            List<String> players = (List<String>) context.getSessionData(ContractOption.USERS);
+            List<ContractUserOptions> options = (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS);
             for (String s : rawPlayers) {
                 s = s.trim();
                 IngameUser user = SinkLibrary.getInstance().getIngameUser(s);
@@ -149,10 +156,13 @@ public class ContractConversation {
                 if (!user.hasPlayedBefore()) {
                     return new ErrorPrompt(this, "Unbekannter Spieler: &c" + s);
                 }
-                players.add(user.getUniqueId().toString());
+
+                ContractUserOptions option = new ContractUserOptions();
+                option.userId = ContractManager.getInstance().getUserId(user);
+                options.add(option);
             }
 
-            context.setSessionData(ContractOption.USERS, players);
+            context.setSessionData(ContractOption.USERS, options);
             return new AddMoreUsersPrompt();
         }
     }
@@ -222,7 +232,7 @@ public class ContractConversation {
             }
 
             try {
-                new SimpleDateFormat(DATE_PATTERN, Locale.GERMAN).parse(input);
+                FORMATTER.parse(input);
             } catch (Exception e) {
                 return new ErrorPrompt(this, "Ungueltiges Datum: &c" + input);
             }
@@ -315,7 +325,7 @@ public class ContractConversation {
         private int index;
 
         public MoneyPrompt() {
-            this(0);
+            this(1); // start with 1 to skip the creator
         }
 
         public MoneyPrompt(int i) {
@@ -324,27 +334,30 @@ public class ContractConversation {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.USERS)).get(index));
-            IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
+            ContractUserOptions option = (((List<ContractUserOptions>) context.getSessionData(ContractOption.USERS)).get(index));
+            IngameUser user = ContractManager.getInstance().getIngameUser(option.userId);
 
             return ChatColor.translateAlternateColorCodes('&',
                                                           "&8>&7>&6>&Wie viel Geld soll von " + user.getDisplayName() +
-                                                          " &r&7abgezogen oder hinzugefügt werden?\n" +
+                                                          " &r&7hinzugefügt oder abgezogen werden?\n" +
                                                           "&8>&7&6Beispiel: &6500 &7oder auch &6-500 &7(oder &60&7 für keine Transaktionen)" +
                                                           "&8>&7Das Geld wird dem Konto des Vertragserstellers hinzugefügt oder davon entfernt.");
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, Number number) {
-            UUID uuid = UUID.fromString(((List<String>) context.getSessionData(ContractOption.USERS)).get(index));
-            IngameUser user = SinkLibrary.getInstance().getIngameUser(uuid);
+            List<ContractUserOptions> options = (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS);
+            ContractUserOptions option = options.get(index);
 
-            Map<String, Integer> money_amount = (Map<String, Integer>) context.getSessionData(ContractOption.MONEY_AMOUNTS);
-            money_amount.put(user.getUniqueId().toString(), number.intValue());
-            context.setSessionData(ContractOption.MONEY_AMOUNTS, money_amount);
+            option.money = number.doubleValue();
+
+            options.remove(index);
+            options.add(index, option);
+
+            context.setSessionData(ContractOption.USERS, options);
 
             index++;
-            if (index >= ((List<String>) context.getSessionData(ContractOption.USERS)).size()) {
+            if (index >= ((List<ContractUserOptions>) context.getSessionData(ContractOption.USERS)).size()) {
                 return new QuitPrompt();
             }
             return new MoneyPrompt(index);
@@ -352,11 +365,32 @@ public class ContractConversation {
     }
 
     private static class QuitPrompt extends StringPrompt {
-
         @Override
         public String getPromptText(ConversationContext context) {
+            Contract contract = new Contract();
+            contract.content = getContent(getPlayer(context));
+            contract.ownerId = ContractManager.getInstance().getUserId(SinkLibrary.getInstance().getIngameUser(getPlayer(context)));
+            contract.creationTime = System.currentTimeMillis();
+            try {
+                Date d = FORMATTER.parse((String) context.getSessionData(ContractOption.EXPIRE));
+                contract.expireTime = d.getTime();
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+            contract.events = (String) context.getSessionData(ContractOption.EVENTS);
+            contract.name = (String) context.getSessionData(ContractOption.NAME);
+            contract.type = (String) context.getSessionData(ContractOption.TYPE);
+            contract.period = (Long) context.getSessionData(ContractOption.PERIOD);
+
+            ContractQueue.createQueue(contract, (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS));
+
             return ChatColor.translateAlternateColorCodes('&', "&2>&aDer Vertrag \"&6" + ((String) context.getSessionData(ContractOption.NAME))
                     .replace("_", " ") + "&r&a\" wird erstellt, warte auf Bestaetigung der Vertragspartner (&6/caccept&7)!");
+        }
+
+        private String getContent(Player creator) {
+            return null; //Todo
         }
 
         @Override

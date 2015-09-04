@@ -20,39 +20,12 @@ import de.static_interface.sinklibrary.database.Row;
 import de.static_interface.sinklibrary.database.annotation.Column;
 import de.static_interface.sinklibrary.database.annotation.Index;
 
-import javax.annotation.Nullable;
-
-public class ContractRow implements Row {
+public class ContractUser implements Row {
 
     @Column(autoIncrement = true, primaryKey = true)
     public Integer id;
 
     @Column
-    public String name;
-
-    @Column(name = "creator_id")
     @Index
-    public int creatorId;
-
-    @Column
-    public String content;
-
-    @Column
-    public int type;
-
-    @Column
-    public String events;
-
-    @Column(name = "user_ids")
-    public String userIds;
-
-    @Column
-    @Nullable
-    public Long period;
-
-    @Column(name = "creation_time")
-    public long creationTime;
-
-    @Column(name = "expire_time")
-    public long expireTime;
+    public String uuid;
 }

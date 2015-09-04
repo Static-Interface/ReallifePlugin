@@ -17,6 +17,7 @@
 package de.static_interface.reallifeplugin.config;
 
 import de.static_interface.sinklibrary.api.configuration.Configuration;
+import de.static_interface.sinklibrary.api.configuration.option.YamlI18nOption;
 import de.static_interface.sinklibrary.api.configuration.option.YamlParentOption;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.Bukkit;
@@ -28,9 +29,25 @@ import javax.annotation.Nullable;
 
 public class ReallifeLanguageConfiguration extends Configuration {
 
+
+    public static final YamlParentOption CONTRACT_PARENT = new YamlParentOption("Contract");
+    public static final YamlI18nOption CONTRACT_DENIED = new YamlI18nOption(CONTRACT_PARENT, "Denied", "&4The contract has been denied");
+    public static final YamlI18nOption CONTRACT_NO_PENDINGS = new YamlI18nOption(CONTRACT_PARENT, "NoPending", "No pending contracts", true);
+    public static final YamlI18nOption
+            CONTRACT_DENIED_OWNER =
+            new YamlI18nOption(CONTRACT_PARENT, "DeniedOwnerMessage", "&4{DISPLAYNAME}&r&4 has denied your contract: {1}");
+    public static final YamlI18nOption CONTRACT_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "NotFound", "No contract found!", true);
+    public static final YamlI18nOption CONTRACT_ACCEPTED = new YamlI18nOption(CONTRACT_PARENT, "Accepted", "&aThe contract has been accepted");
+    public static final YamlI18nOption
+            CONTRACT_ACCEPTED_OWNER =
+            new YamlI18nOption(CONTRACT_PARENT, "AcceptedOwner", "&2{DISPLAYNAME}&r&2 has accepted your contract: {1}");
+    public static final YamlI18nOption
+            CONTRACT_CANCELLED =
+            new YamlI18nOption(CONTRACT_PARENT, "Cancalled", "&4The contract {0}&r&4 has been cancelled.");
+    public static final YamlI18nOption
+            CONTRACT_CREATED =
+            new YamlI18nOption(CONTRACT_PARENT, "Created", "&2The contract {0} has been accepted by all participants!");
     public static YamlParentOption GENERAL_PARENT = new YamlParentOption("General");
-
-
     private static ReallifeLanguageConfiguration instance;
 
     public ReallifeLanguageConfiguration() {

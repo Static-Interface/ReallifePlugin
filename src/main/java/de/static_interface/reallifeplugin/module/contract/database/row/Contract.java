@@ -14,20 +14,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.contract;
+package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import java.util.ArrayList;
-import java.util.List;
+import de.static_interface.sinklibrary.database.Row;
+import de.static_interface.sinklibrary.database.annotation.Column;
 
-public class ContractDatabaseUtil {
+import javax.annotation.Nullable;
 
-    public static List<Integer> splitIds(String idlist) {
-        String[] rawStrings = idlist.split(",");
-        List<Integer> userIds = new ArrayList<>();
-        for (String s : rawStrings) {
-            s = s.trim();
-            userIds.add(Integer.valueOf(s));
-        }
-        return userIds;
-    }
+public class Contract implements Row {
+    @Column(autoIncrement = true, primaryKey = true)
+    public Integer id;
+
+    @Column(uniqueKey = true)
+    public String name;
+
+    @Column
+    public String content;
+
+    @Column
+    public String type;
+
+    @Column
+    public String events;
+
+    @Column
+    public int ownerId;
+
+    @Column
+    @Nullable
+    public Long period;
+
+    @Column(name = "creation_time")
+    public long creationTime;
+
+    @Column(name = "expire_time")
+    public long expireTime;
 }

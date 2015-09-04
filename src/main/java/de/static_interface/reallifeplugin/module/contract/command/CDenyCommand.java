@@ -16,15 +16,16 @@
 
 package de.static_interface.reallifeplugin.module.contract.command;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-
+import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
+import de.static_interface.reallifeplugin.module.contract.ContractManager;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.contract.ContractQueue;
-import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
+import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.apache.commons.cli.ParseException;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -38,24 +39,27 @@ public class CDenyCommand extends ModuleCommand<ContractModule> {
     }
 
     @Override
-    protected boolean onExecute(CommandSender commandSender, String s, String[] strings) throws ParseException {
+    protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
-        List<ContractRow> queue = ContractQueue.getQueue(user);
+        List<Contract> queue = ContractQueue.getQueue(user);
         if (queue.size() == 0) {
-            user.sendMessage(m("")); // No pending contracts
+            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NO_PENDINGS.format());
             return true;
         }
 
-        ContractRow row = queue.get(0);
-        ContractQueue.addDeny(user, row);
-        queue = ContractQueue.getQueue(user);
-
-        user.sendMessage(m("")); // succesfully accepted contract
-
-        if (queue.size() > 1) {
-            user.sendMessage(m("")); // there are still pending requests
+        int id = getArg(args, 0, Integer.class);
+        Contract c = ContractManager.getInstance().getContract(id);
+        if (c == null || !ContractQueue.contains(user, c)) {
+            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
         }
+        ContractQueue.deny(user, c);
+        user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_DENIED.format());
 
+        IngameUser creator = ContractManager.getInstance().getIngameUser(c.ownerId);
+        if (creator.isOnline()) {
+            creator.sendMessage(
+                    ReallifeLanguageConfiguration.CONTRACT_DENIED_OWNER.format(sender, ChatColor.translateAlternateColorCodes('&', c.name)));
+        }
         return true;
     }
 }

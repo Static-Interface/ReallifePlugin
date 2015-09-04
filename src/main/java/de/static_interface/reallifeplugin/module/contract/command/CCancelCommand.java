@@ -16,12 +16,11 @@
 
 package de.static_interface.reallifeplugin.module.contract.command;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-
+import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.contract.ContractQueue;
-import de.static_interface.reallifeplugin.module.contract.database.row.ContractRow;
+import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.apache.commons.cli.ParseException;
@@ -38,14 +37,13 @@ public class CCancelCommand extends ModuleCommand<ContractModule> {
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
-        ContractRow row = ContractQueue.getCreatorContractRow(getModule(), user);
-        if (row == null) {
-            user.sendMessage(m("")); // no contract found
+        Contract contract = ContractQueue.getCreatorContract(user);
+        if (contract == null) {
+            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
             return true;
         }
 
-        ContractQueue.cancelQueue(getModule(), row);
-        user.sendMessage(m("")); // cancelled
+        ContractQueue.cancel(contract);
         return true;
     }
 }

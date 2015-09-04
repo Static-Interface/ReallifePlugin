@@ -43,12 +43,17 @@ public class ContractModule extends Module<ReallifeMain> {
     @Override
     protected void onEnable() {
         addDefaultValue("creationcost", 500);
+        ContractManager.init(this);
         registerModuleCommand("contract", new ContractCommand(this));
         registerModuleCommand("ccancel", new CCancelCommand(this));
         registerModuleCommand("caccept", new CAcceptCommand(this));
         registerModuleCommand("cdeny", new CDenyCommand(this));
     }
 
+    @Override
+    public void onDisable() {
+        ContractManager.unload();
+    }
     @Override
     protected Collection<AbstractTable> getTables() {
         List<AbstractTable> tables = new ArrayList<>();

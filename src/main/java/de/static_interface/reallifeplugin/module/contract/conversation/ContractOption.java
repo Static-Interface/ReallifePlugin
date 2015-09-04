@@ -24,6 +24,5 @@ public class ContractOption {
     public static final String TYPE = "type";
     public static final String EXPIRE = "expire_date";
     public static final String EVENTS = "events";
-    public static final String MONEY_AMOUNTS = "money_amount";
     public static final String PERIOD = "period";
 }

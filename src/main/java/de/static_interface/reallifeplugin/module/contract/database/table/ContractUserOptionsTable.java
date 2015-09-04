@@ -16,11 +16,11 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.table;
 
-import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptionsRow;
+import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
 import de.static_interface.sinklibrary.database.AbstractTable;
 import de.static_interface.sinklibrary.database.Database;
 
-public class ContractUserOptionsTable extends AbstractTable<ContractUserOptionsRow> {
+public class ContractUserOptionsTable extends AbstractTable<ContractUserOptions> {
 
     public static final String TABLE_NAME = "contract_user_options";
 
