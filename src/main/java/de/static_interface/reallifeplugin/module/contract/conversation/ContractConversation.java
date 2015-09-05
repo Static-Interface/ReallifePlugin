@@ -111,7 +111,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&7Wie soll der Vertrag heißen? (Min. 5 Zeichen)!");
+                                                          "\n&8>&7>&6>&7Wie soll der Vertrag heißen? (Min. 5 Zeichen)!");
         }
 
         @Override
@@ -134,7 +134,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&7Welche Personen willst du hinzufügen ? (Getrennt mit einem Komma) \n" +
+                                                          "\n&8>&7>&6>&7Welche Personen willst du hinzufügen ? (Getrennt mit einem Komma) \n" +
                                                           "&8>&7Beispiel: SpielerA, SpielerB, SpielerC");
         }
 
@@ -172,7 +172,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&7Moechtest du weitere Spieler hinzufuegen? &6[J]a&7/&6[N]ein");
+                                                          "\n&8>&7>&6>&7Moechtest du weitere Spieler hinzufuegen? &6[J]a&7/&6[N]ein");
         }
 
         @Override
@@ -194,7 +194,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte wählen einen Vertragstyp:\n" +
+                                                          "\n&8>&7Bitte wählen einen Vertragstyp:\n" +
                                                           "&8>&7>&6> &6PERIODIC &7- Periodischer Vetrag, mit dem zB wöchentlich Geld abheben kann (zB fuer GS Vermietungen)\n"
                                                           +
                                                           "&8>&7>&6> &6NORMAL &7- Normaler Vertrag, mit dem man zB ein Grundstück verkaufen kann");
@@ -219,7 +219,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&7Wann soll der Vertrag ablaufen?:\n" +
+                                                          "\n&8>&7>&6>&7Wann soll der Vertrag ablaufen?:\n" +
                                                           "&8>&7Beispiel: &625.08.2015 20:00 &7(<-- dieses Format nutzen)");
         }
 
@@ -247,7 +247,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Wähle einen Eventtyp (tritt nach Ablauf des Vertrages oder bei peridoschen Vertraegen nach Ende jeder der Periode ein):\n"
+                                                          "\n&8>&7Wähle einen Eventtyp (tritt nach Ablauf des Vertrages oder bei periodischen Vertraegen nach Ende jeder Periode ein):\n"
                                                           +
                                                           "&8>&7>&6> &6MONEY &7- Geld abheben\n" +
                                                           "&8>&7>&6> &6DEFAULT &7- Nichts tun");
@@ -289,7 +289,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&7Wann soll das Event (zB Abzug des Geldes bei Mieten) stattfinden?:\n" +
+                                                          "\n&8>&7>&6>&7Wann soll das Event (zB Abzug des Geldes bei Mieten) stattfinden?:\n" +
                                                           "&8>&7Beispiel1: &624d 15h &7(alle 24 Tage und 15 Stunden)\n" +
                                                           "&8>&7Beispiel2: &613h 30m &7(alle 13 Stunden und 30 Minuten)");
         }
@@ -338,7 +338,7 @@ public class ContractConversation {
             IngameUser user = ContractManager.getInstance().getIngameUser(option.userId);
 
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7>&6>&Wie viel Geld soll von " + user.getDisplayName() +
+                                                          "\n&8>&7>&6>&7Wie viel Geld soll von " + user.getDisplayName() +
                                                           " &r&7hinzugefügt oder abgezogen werden?\n" +
                                                           "&8>&7&6Beispiel: &6500 &7oder auch &6-500 &7(oder &60&7 für keine Transaktionen)" +
                                                           "&8>&7Das Geld wird dem Konto des Vertragserstellers hinzugefügt oder davon entfernt.");
@@ -385,7 +385,7 @@ public class ContractConversation {
 
             ContractQueue.createQueue(contract, (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS));
 
-            return ChatColor.translateAlternateColorCodes('&', "&2>&aDer Vertrag \"&6" + ((String) context.getSessionData(ContractOption.NAME))
+            return ChatColor.translateAlternateColorCodes('&', "\n&2>&aDer Vertrag \"&6" + ((String) context.getSessionData(ContractOption.NAME))
                     .replace("_", " ") + "&r&a\" wird erstellt, warte auf Bestaetigung der Vertragspartner (&6/caccept&7)!");
         }
 

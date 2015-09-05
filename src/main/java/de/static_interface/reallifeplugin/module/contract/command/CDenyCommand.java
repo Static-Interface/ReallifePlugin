@@ -48,7 +48,7 @@ public class CDenyCommand extends ModuleCommand<ContractModule> {
         }
 
         int id = getArg(args, 0, Integer.class);
-        Contract c = ContractManager.getInstance().getContract(id);
+        Contract c = ContractQueue.getContract(user, id);
         if (c == null || !ContractQueue.contains(user, c)) {
             user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
         }

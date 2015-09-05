@@ -24,6 +24,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.io.File;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -47,7 +48,11 @@ public class ReallifeLanguageConfiguration extends Configuration {
     public static final YamlI18nOption
             CONTRACT_CREATED =
             new YamlI18nOption(CONTRACT_PARENT, "Created", "&2The contract {0} has been accepted by all participants!");
-    public static YamlParentOption GENERAL_PARENT = new YamlParentOption("General");
+    public static final YamlParentOption GENERAL_PARENT = new YamlParentOption("General");
+    public static YamlI18nOption
+            CONTRACT_ACCEPT_MESSAGE =
+            new YamlI18nOption(CONTRACT_PARENT, "AcceptMessage", "&7Use &2/caccept {0}&7 to accept or &4/cdeny {0}&7 to deny!");
+    public static YamlI18nOption CONTRACT_ADDED = new YamlI18nOption(CONTRACT_PARENT, "Added", "&2{0}&r&2 has added you to the {1}&r&2 contract:");
     private static ReallifeLanguageConfiguration instance;
 
     public ReallifeLanguageConfiguration() {
@@ -80,7 +85,8 @@ public class ReallifeLanguageConfiguration extends Configuration {
      * @return Language String
      */
     public static String m(String path, @Nullable Object... paramValues) {
-        String s = (String) getInstance().get(path);
+        Object o = getInstance().get(path);
+        String s = Objects.toString(o);
         if (paramValues != null) {
             s = StringUtil.format(s, paramValues);
         }

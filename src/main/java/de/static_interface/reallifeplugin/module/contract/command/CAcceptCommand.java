@@ -25,6 +25,7 @@ import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.contract.ContractQueue;
 import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.ChatColor;
@@ -42,6 +43,10 @@ public class CAcceptCommand extends ModuleCommand<ContractModule> {
 
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+        if (args.length < 0) {
+            throw new NotEnoughArgumentsException();
+        }
+
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
         List<Contract> queue = ContractQueue.getQueue(user);
         if (queue.size() == 0) {
@@ -49,8 +54,8 @@ public class CAcceptCommand extends ModuleCommand<ContractModule> {
             return true;
         }
 
-        int id = getArg(args, 0, Integer.class);
-        Contract c = ContractManager.getInstance().getContract(id);
+        int id = Integer.valueOf(args[0]);
+        Contract c = ContractQueue.getContract(user, id);
         if (c == null || !ContractQueue.contains(user, c)) {
             user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
         }

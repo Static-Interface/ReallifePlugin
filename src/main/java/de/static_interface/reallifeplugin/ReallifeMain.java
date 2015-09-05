@@ -82,6 +82,7 @@ public class ReallifeMain extends JavaPlugin {
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Warning, an error occured while parsing the config:");
             getLogger().log(Level.SEVERE, "Invalid Database type: " + config.get("Type"));
+            e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -89,6 +90,7 @@ public class ReallifeMain extends JavaPlugin {
             case H2:
                 db = new H2Database(new File(getDataFolder(), "database.h2"), config.getTablePrefix(), this);
                 break;
+            case MariaDB:
             case MySQL:
                 db = new MySqlDatabase(config, this);
                 break;

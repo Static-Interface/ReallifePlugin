@@ -16,8 +16,6 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
@@ -28,9 +26,9 @@ import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,26 +36,24 @@ import javax.annotation.Nullable;
 
 public class ContractQueue {
 
-    private static Map<UUID, Set<Contract>> queue = new HashMap<>();
+    private static Map<UUID, List<Contract>> queue = new HashMap<>();
     private static Map<Contract, Set<ContractUserOptions>> options = new HashMap<>();
 
     public static void createQueue(Contract contract, List<ContractUserOptions> optionsRows) {
         int ownerId = contract.ownerId;
-
+        IngameUser owner = ContractManager.getInstance().getIngameUser(ownerId);
         for (ContractUserOptions userOption : optionsRows) {
             IngameUser user = ContractManager.getInstance().getIngameUser(userOption.userId);
-            Set<Contract> rows = queue.get(user.getUniqueId());
+            List<Contract> rows = queue.get(user.getUniqueId());
             if (rows == null) {
-                rows = new HashSet<>();
+                rows = new ArrayList<>();
             }
-            if (!rows.contains(contract)) {
-                rows.add(contract);
-            }
+            rows.add(contract);
             queue.put(user.getUniqueId(), rows);
             if (userOption.userId != ownerId) {
-                user.sendMessage(m("")); // added to contract
+                user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_ADDED.format(owner.getDisplayName(), contract.name)); // added to contract
 
-                for (String s : contract.content.split("\\Q&n\\E")) {
+                for (String s : Objects.toString(contract.content).split("\\Q&n\\E")) {
                     user.sendMessage(ChatColor.GOLD + s);
                 }
 
@@ -69,9 +65,17 @@ public class ContractQueue {
                     t = "receive";
                 }
                 user.sendMessage("You will " + t + " " + userOption.money + " every " + DateUtil.formatDateDiff(contract.period));
-                user.sendMessage(m("")); //caccept or cdeny
+                user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_ACCEPT_MESSAGE.format(rows.size() - 1));
             }
         }
+    }
+
+    public static Contract getContract(IngameUser user, int id) {
+        List<Contract> rows = queue.get(user.getUniqueId());
+        if (rows == null || rows.size() == 0) {
+            return null;
+        }
+        return rows.get(id);
     }
 
     public static void accept(IngameUser user, Contract contract) {
@@ -90,9 +94,9 @@ public class ContractQueue {
     }
 
     private static void removeFromQueue(IngameUser user, Contract contract) {
-        Set<Contract> rows = queue.get(user.getUniqueId());
+        List<Contract> rows = queue.get(user.getUniqueId());
         if (rows == null) {
-            rows = new HashSet<>();
+            rows = new ArrayList<>();
         } else {
             rows.remove(contract);
         }
@@ -100,7 +104,7 @@ public class ContractQueue {
     }
 
     public static List<Contract> getQueue(IngameUser user) {
-        Set<Contract> queueRows = queue.get(user.getUniqueId());
+        List<Contract> queueRows = queue.get(user.getUniqueId());
         if (queueRows == null) {
             return new ArrayList<>();
         }
@@ -128,7 +132,7 @@ public class ContractQueue {
 
     public static void cancel(Contract contract) {
         for (UUID user : queue.keySet()) {
-            Set<Contract> rows = queue.get(user);
+            List<Contract> rows = queue.get(user);
             if (rows == null || !rows.contains(contract)) {
                 queue.remove(user);
                 continue;
@@ -142,7 +146,7 @@ public class ContractQueue {
 
     public static void onQueueFinish(Contract contract) {
         for (UUID uuid : queue.keySet()) {
-            Set<Contract> qu = queue.get(uuid);
+            List<Contract> qu = queue.get(uuid);
             qu.remove(contract);
             queue.put(uuid, qu);
         }
