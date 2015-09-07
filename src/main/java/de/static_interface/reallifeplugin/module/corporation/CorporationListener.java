@@ -263,7 +263,8 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
     }
 
     public static boolean isTagged(ItemStack stack) {
-        return stack != null && stack.getItemMeta().hasLore() && stack.getItemMeta().getLore().contains(m("Corporation.Sign.SoldWatermark"));
+        return stack != null && stack.getItemMeta() != null && stack.getItemMeta().hasLore() && stack.getItemMeta().getLore()
+                .contains(m("Corporation.Sign.SoldWatermark"));
     }
 
     @EventHandler
