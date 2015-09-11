@@ -17,7 +17,8 @@
 package de.static_interface.reallifeplugin.module.payday;
 
 import de.static_interface.reallifeplugin.module.ModuleListener;
-import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.payday.event.PaydayEvent;
+import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.ChatColor;
@@ -59,25 +60,27 @@ public class PaydayListener extends ModuleListener<PaydayModule> {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPayDay(PayDayEvent event) {
-        long minTime = TimeUnit.MINUTES.toMillis(((PaydayModule) getModule()).getMinOnlineTime());
+    public void onPayDay(PaydayEvent event) {
+        for (PaydayPlayer p : event.getPlayers()) {
+            long minTime = TimeUnit.MINUTES.toMillis(getModule().getMinOnlineTime());
 
-        if (minTime <= 0 || !event.isCheckTimeEnabled()) {
-            return; //Don't check...
-        }
+            if (minTime <= 0 || !p.isCheckTimeEnabled()) {
+                return; //Don't check...
+            }
 
-        long onlineTime = System.currentTimeMillis() - onlineTimes.get(event.getPlayer().getUniqueId());
+            long onlineTime = System.currentTimeMillis() - onlineTimes.get(p.getPlayer().getUniqueId());
 
-        if (onlineTime > minTime) {
-            return;
-        }
+            if (onlineTime > minTime) {
+                return;
+            }
 
-        long timeLeft = TimeUnit.MILLISECONDS.toMinutes(onlineTime - minTime);
+            long timeLeft = TimeUnit.MILLISECONDS.toMinutes(onlineTime - minTime);
 
-        event.getPlayer().sendMessage(ChatColor.DARK_RED + "Du hast kein Geld bekommen, da du nicht mindestens "
+            p.getPlayer().sendMessage(ChatColor.DARK_RED + "Du hast kein Geld bekommen, da du nicht mindestens "
                                       + TimeUnit.MILLISECONDS.toMinutes(minTime) + " Minuten online warst. Du musst noch mindestens " + (
-                Math.abs(timeLeft) + 1) + " Minuten online sein!");
+                                              Math.abs(timeLeft) + 1) + " Minuten online sein!");
 
-        event.setCancelled(true);
+            p.setCancelled(true);
+        }
     }
 }

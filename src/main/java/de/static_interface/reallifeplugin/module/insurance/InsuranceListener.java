@@ -17,7 +17,8 @@
 package de.static_interface.reallifeplugin.module.insurance;
 
 import de.static_interface.reallifeplugin.module.ModuleListener;
-import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.payday.event.PaydayEvent;
+import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.bukkit.ChatColor;
@@ -83,11 +84,13 @@ public class InsuranceListener extends ModuleListener<InsuranceModule> {
     }
 
     @EventHandler
-    public void onPayDay(PayDayEvent event) {
-        if (!InsuranceCommand.isActive(event.getPlayer())) {
-            return;
+    public void onPayDay(PaydayEvent event) {
+        for (PaydayPlayer player : event.getPlayers()) {
+            if (!InsuranceCommand.isActive(player.getPlayer())) {
+                return;
+            }
+            InsuranceEntry entry = new InsuranceEntry(getModule(), player.getPlayer(), player.getGroup());
+            player.addEntry(entry);
         }
-        InsuranceEntry entry = new InsuranceEntry(getModule(), event.getPlayer(), event.getGroup());
-        event.addEntry(entry);
     }
 }

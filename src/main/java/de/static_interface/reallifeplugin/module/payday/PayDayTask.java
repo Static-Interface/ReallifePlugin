@@ -18,12 +18,13 @@ package de.static_interface.reallifeplugin.module.payday;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
-import de.static_interface.reallifeplugin.module.payday.entry.PayDayEntry;
+import de.static_interface.reallifeplugin.module.payday.entry.PaydayEntry;
 import de.static_interface.reallifeplugin.module.payday.entry.TaxesEntry;
-import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.payday.event.PaydayEvent;
 import de.static_interface.reallifeplugin.module.payday.model.Entry;
 import de.static_interface.reallifeplugin.module.payday.model.EntryResult;
 import de.static_interface.reallifeplugin.module.payday.model.Group;
+import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.util.BukkitUtil;
@@ -48,58 +49,65 @@ public class PaydayTask implements Runnable {
         this.module = module;
     }
 
-    public void givePayDay(Player player, Group group, boolean checkTime) {
-        PayDayEvent event = new PayDayEvent(module, player, group, checkTime);
+    public void givePayDay(List<PaydayPlayer> players) {
+        PaydayEvent event = new PaydayEvent(module, players);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
             return;
         }
 
-        List<Entry> entries = new ArrayList<>();
-        entries.add(new PayDayEntry(player, group));
-        entries.add(new TaxesEntry(module, player, group));
-
-        entries.addAll(event.getEntries());
-        List<Entry> queue = PaydayQueue.getPlayerQueue(player.getUniqueId());
-        if (queue != null) {
-            entries.addAll(queue);
-        }
-
-        List<String> out = new ArrayList<>();
-
-        double result = 0;
-        out.add(ChatColor.BLUE + "--------------------" + ChatColor.BLUE + " Zahltag " + ChatColor.BLUE + "--------------------");
-
-        Collections.sort(entries);
-
-        for (Entry entry : entries) {
-            try {
-                EntryResult entryResult = handleEntry(entry);
-                out.add(entryResult.out);
-                result += entryResult.amount;
-            } catch (Exception e) {
-                e.printStackTrace();
+        for (PaydayPlayer player : players) {
+            if (player.isCancelled()) {
+                continue;
             }
+
+            List<Entry> entries = new ArrayList<>();
+            entries.add(new PaydayEntry(player.getPlayer(), player.getGroup()));
+            entries.add(new TaxesEntry(module, player.getPlayer(), player.getGroup()));
+
+            entries.addAll(player.getEntries());
+
+            List<Entry> queue = PaydayQueue.getPlayerQueue(player.getPlayer().getUniqueId());
+            if (queue != null) {
+                entries.addAll(queue);
+            }
+
+            List<String> out = new ArrayList<>();
+
+            double result = 0;
+            out.add(ChatColor.BLUE + "--------------------" + ChatColor.BLUE + " Zahltag " + ChatColor.BLUE + "--------------------");
+
+            Collections.sort(entries);
+
+            for (Entry entry : entries) {
+                try {
+                    EntryResult entryResult = handleEntry(entry);
+                    out.add(entryResult.out);
+                    result += entryResult.amount;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (result == 0) {
+                return;
+            }
+
+            double money = VaultBridge.getBalance(player.getPlayer());
+
+            String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
+            String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
+
+            String curreny = VaultBridge.getCurrenyName();
+
+            out.add(ChatColor.AQUA + StringUtil.format("|- Gesamt: " + resultPrefix + "{0} " + curreny, MathUtil.round(result)));
+            out.add(ChatColor.AQUA + StringUtil.format("|- Geld: " + moneyPrefix + "{0} " + curreny, money));
+
+            String seperator = ChatColor.BLUE + "------------------------------------------------";
+            out.add(seperator);
+            player.getPlayer().sendMessage(out.toArray(new String[out.size()]));
         }
-
-        if (result == 0) {
-            return;
-        }
-
-        double money = VaultBridge.getBalance(player);
-
-        String resultPrefix = (result < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
-        String moneyPrefix = (money < 0 ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + "";
-
-        String curreny = VaultBridge.getCurrenyName();
-
-        out.add(ChatColor.AQUA + StringUtil.format("|- Gesamt: " + resultPrefix + "{0} " + curreny, MathUtil.round(result)));
-        out.add(ChatColor.AQUA + StringUtil.format("|- Geld: " + moneyPrefix + "{0} " + curreny, money));
-
-        String seperator = ChatColor.BLUE + "------------------------------------------------";
-        out.add(seperator);
-        player.sendMessage(out.toArray(new String[out.size()]));
     }
 
     private EntryResult handleEntry(Entry entry) {
@@ -140,23 +148,31 @@ public class PaydayTask implements Runnable {
     }
 
     public void run(boolean checktime) {
-        if (!Module.isEnabled(PaydayModule.NAME)) {
+        if (!Module.isEnabled(PaydayModule.class)) {
             return;
         }
+
+        List<PaydayPlayer> players = new ArrayList<>();
         BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
-        for (Player player : BukkitUtil.getOnlinePlayers()) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            PaydayPlayer p = null;
             boolean isInGroup = false;
             for (Group group : ReallifeMain.getInstance().getSettings().readGroups()) {
                 if (ChatColor.stripColor(SinkLibrary.getInstance().getUser(player).getPrimaryGroup()).equals(group.name)) {
-                    givePayDay(player, group, checktime);
+                    p = new PaydayPlayer(player, group, checktime);
                     isInGroup = true;
                     break;
                 }
             }
             if (!isInGroup) {
-                givePayDay(player, getDefaultGroup(player), checktime);
+                p = new PaydayPlayer(player, getDefaultGroup(player), checktime);
             }
+            if (p == null) {
+                continue;
+            }
+            players.add(p);
         }
+        givePayDay(players);
     }
 
     public Group getDefaultGroup(Player player) {

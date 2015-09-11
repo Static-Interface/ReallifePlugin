@@ -18,7 +18,8 @@ package de.static_interface.reallifeplugin.module.stockmarket;
 
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.corporation.CorporationModule;
-import de.static_interface.reallifeplugin.module.payday.event.PayDayEvent;
+import de.static_interface.reallifeplugin.module.payday.event.PaydayEvent;
+import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockUserRow;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
@@ -36,20 +37,22 @@ public class StockMarketListener extends ModuleListener<StockMarketModule> {
     }
 
     @EventHandler
-    public void onPayday(PayDayEvent event) {
-        IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
-        Collection<StockUserRow> stocks = StockMarket.getInstance().getAllStocks(getModule(), corpModule, user, null);
-        if (stocks.size() < 1) {
-            return;
-        }
+    public void onPayday(PaydayEvent event) {
+        for (PaydayPlayer player : event.getPlayers()) {
+            IngameUser user = SinkLibrary.getInstance().getIngameUser(player.getPlayer());
+            Collection<StockUserRow> stocks = StockMarket.getInstance().getAllStocks(getModule(), corpModule, user, null);
+            if (stocks.size() < 1) {
+                return;
+            }
 
-        for (StockUserRow row : stocks) {
-            Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, row.stockId);
-            //if (stock.getCorporation().getCEO().getUniqueId().equals(user.getUniqueId())) {
-            //    continue;
-            //}
-            StockEntry entry = new StockEntry(user, row, stock);
-            event.addEntry(entry);
+            for (StockUserRow row : stocks) {
+                Stock stock = StockMarket.getInstance().getStock(getModule(), corpModule, row.stockId);
+                //if (stock.getCorporation().getCEO().getUniqueId().equals(user.getUniqueId())) {
+                //    continue;
+                //}
+                StockEntry entry = new StockEntry(user, row, stock);
+                player.addEntry(entry);
+            }
         }
     }
 }

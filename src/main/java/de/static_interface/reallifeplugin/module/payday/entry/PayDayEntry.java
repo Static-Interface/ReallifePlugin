@@ -25,12 +25,12 @@ import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.entity.Player;
 
-public class PayDayEntry extends Entry {
+public class PaydayEntry extends Entry {
 
     Player player;
     Group group;
 
-    public PayDayEntry(Player player, Group group) {
+    public PaydayEntry(Player player, Group group) {
         this.player = player;
         this.group = group;
     }

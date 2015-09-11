@@ -18,44 +18,32 @@ package de.static_interface.reallifeplugin.module.payday.event;
 
 import de.static_interface.reallifeplugin.module.ModuleEvent;
 import de.static_interface.reallifeplugin.module.payday.PaydayModule;
-import de.static_interface.reallifeplugin.module.payday.model.Entry;
-import de.static_interface.reallifeplugin.module.payday.model.Group;
-import org.bukkit.entity.Player;
+import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
 import org.bukkit.event.HandlerList;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 /**
  * This event is fired when a payday starts
  * Its fired seperatly for each player, so not only one time
  */
-public class PayDayEvent extends ModuleEvent<PaydayModule> {
+public class PaydayEvent extends ModuleEvent<PaydayModule> {
 
     private static final HandlerList handlers = new HandlerList();
-    List<Entry> entries = new ArrayList<>();
-    private Player player;
-    private boolean checkTime;
-    private Group group;
-    private boolean cancelled;
 
-    public PayDayEvent(PaydayModule module, Player player, Group group, boolean checkTime) {
+    private boolean cancelled;
+    private List<PaydayPlayer> players;
+
+    public PaydayEvent(PaydayModule module, List<PaydayPlayer> players) {
         super(module);
-        this.player = player;
-        this.group = group;
-        this.checkTime = checkTime;
+        this.players = players;
     }
 
     public static HandlerList getHandlerList() {
         return handlers;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public Group getGroup() {
-        return group;
     }
 
     @Override
@@ -63,12 +51,19 @@ public class PayDayEvent extends ModuleEvent<PaydayModule> {
         return handlers;
     }
 
-    public void addEntry(Entry entry) {
-        entries.add(entry);
+    @Nullable
+    public PaydayPlayer getPaydayPlayer(UUID uuid) {
+        for (PaydayPlayer p : players) {
+            if (p.getPlayer().getUniqueId().equals(uuid)) {
+                return p;
+            }
+        }
+
+        return null;
     }
 
-    public List<Entry> getEntries() {
-        return entries;
+    public List<PaydayPlayer> getPlayers() {
+        return players;
     }
 
     public boolean isCancelled() {
@@ -77,13 +72,5 @@ public class PayDayEvent extends ModuleEvent<PaydayModule> {
 
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
-    }
-
-    public boolean isCheckTimeEnabled() {
-        return checkTime;
-    }
-
-    public void setCheckTimeEnabled(boolean checkTime) {
-        this.checkTime = checkTime;
     }
 }
