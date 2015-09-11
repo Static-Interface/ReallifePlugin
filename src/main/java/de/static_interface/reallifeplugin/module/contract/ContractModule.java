@@ -42,12 +42,14 @@ public class ContractModule extends Module<ReallifeMain> {
 
     @Override
     protected void onEnable() {
-        addDefaultValue("creationcost", 500);
+        addDefaultValue("ContractBookCost", 500.0D);
+        addDefaultValue("ContractCost", 500.0D);
         ContractManager.init(this);
         registerModuleCommand("contract", new ContractCommand(this));
         registerModuleCommand("ccancel", new CCancelCommand(this));
         registerModuleCommand("caccept", new CAcceptCommand(this));
         registerModuleCommand("cdeny", new CDenyCommand(this));
+        registerModuleListener(new ContractListener(this));
     }
 
     @Override

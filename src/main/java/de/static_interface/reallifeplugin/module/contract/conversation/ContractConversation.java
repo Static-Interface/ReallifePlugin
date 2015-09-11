@@ -23,7 +23,9 @@ import de.static_interface.reallifeplugin.module.contract.database.row.ContractU
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.DateUtil;
+import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationFactory;
@@ -32,6 +34,8 @@ import org.bukkit.conversations.NumericPrompt;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.StringPrompt;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.text.ParseException;
@@ -76,12 +80,13 @@ public class ContractConversation {
                                                           "&6-------------------------------\n" +
                                                           "&8>&fWillkommen beim &6Vertragsetup&f!\n" +
                                                           "&8>&7Dieses Setup wird dich beim erstellen eines Vertrages begleiten.\n" +
-                                                          "&8>&7Mit &6&lquit&r&7 im Chat kannst du abbrechen.");
+                                                          "&4>&cWährend des Setups kannst du keine Nachrichten senden oder empfangen!&r\n" +
+                                                          "&8>&7Mit &6&lquit&r&7 im Chat kannst du jederzeit abbrechen.");
         }
 
         @Override
         protected Prompt getNextPrompt(ConversationContext context) {
-            return new NamePrompt();
+            return new ContentPrompt();
         }
     }
 
@@ -106,23 +111,82 @@ public class ContractConversation {
         }
     }
 
+    private static class ContentPrompt extends StringPrompt {
+
+        @Override
+        public String getPromptText(ConversationContext conversationContext) {
+            return ChatColor.translateAlternateColorCodes('&',
+                                                          "&8>&7Bitte nimm dir nun ein Buch mit dem &lInhalt&r&7 des Vertrags in die Hand\n" +
+                                                          "&8>&7Schreib &6&lokay&r&7 im Chat wenn du bereit bist.");
+        }
+
+        @Override
+        public Prompt acceptInput(ConversationContext context, String s) {
+            if (!(s.equalsIgnoreCase("ok") || s.equalsIgnoreCase("okay"))) {
+                return this;
+            }
+
+            if (getContent(getPlayer(context), context)) {
+                return new NamePrompt();
+            }
+
+            return this;
+        }
+
+        private boolean getContent(Player creator, ConversationContext context) {
+            ItemStack book = creator.getItemInHand();
+            if (book.getType() != Material.WRITTEN_BOOK && book.getType() != Material.BOOK_AND_QUILL) {
+                return false;
+            }
+
+            if (!(book.getItemMeta() instanceof BookMeta)) {
+                return false;
+            }
+
+            BookMeta meta = (BookMeta) book.getItemMeta();
+
+            List<String> pages = meta.getPages();
+            if (pages == null || pages.size() == 0) {
+                return false;
+            }
+            String content = "";
+            for (String s : pages) {
+                if (!content.equals("")) {
+                    content += "\n";
+                }
+
+                content += s;
+            }
+
+            if (StringUtil.isEmptyOrNull(ChatColor.stripColor(content))) {
+                return false;
+            }
+
+            context.setSessionData(ContractOption.CONTENT, content);
+
+            return true;
+        }
+    }
+
     private static class NamePrompt extends StringPrompt {
 
         @Override
         public String getPromptText(ConversationContext context) {
             return ChatColor.translateAlternateColorCodes('&',
-                                                          "\n&8>&7>&6>&7Wie soll der Vertrag heißen? (Min. 5 Zeichen)!");
+                                                          "\n&8>&7>&6>&7Wie soll der Vertrag heißen? (&7&lNAME&r&7, nicht Inhalt) (Min. 5 Zeichen)!");
         }
 
         @Override
         public Prompt acceptInput(ConversationContext context, String input) {
             input = input.trim();
-            if (input.equals("") || input.length() < 5) {
+            if (StringUtil.isEmptyOrNull(input) || input.length() < 5) {
                 return this;
             }
 
-            input = input.replace(" ", "_");
-            //Todo: check if name already exists
+            if (ContractManager.getInstance().getContract(input) != null) {
+                getPlayer(context).sendMessage(ChatColor.RED + "Ein Vertrag mit dem Namen \"" + input + "\" existiert schon!");
+                return this;
+            }
 
             context.setSessionData(ContractOption.NAME, input);
             return new AddUserPrompt();
@@ -349,6 +413,10 @@ public class ContractConversation {
             List<ContractUserOptions> options = (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS);
             ContractUserOptions option = options.get(index);
 
+            if (number.longValue() > Double.MAX_VALUE) {
+                return this;
+            }
+
             option.money = number.doubleValue();
 
             options.remove(index);
@@ -368,7 +436,7 @@ public class ContractConversation {
         @Override
         public String getPromptText(ConversationContext context) {
             Contract contract = new Contract();
-            contract.content = getContent(getPlayer(context));
+            contract.content = (String) context.getSessionData(ContractOption.CONTENT);
             contract.ownerId = ContractManager.getInstance().getUserId(SinkLibrary.getInstance().getIngameUser(getPlayer(context)));
             contract.creationTime = System.currentTimeMillis();
             try {
@@ -386,11 +454,8 @@ public class ContractConversation {
             ContractQueue.createQueue(contract, (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS));
 
             return ChatColor.translateAlternateColorCodes('&', "\n&2>&aDer Vertrag \"&6" + ((String) context.getSessionData(ContractOption.NAME))
-                    .replace("_", " ") + "&r&a\" wird erstellt, warte auf Bestaetigung der Vertragspartner (&6/caccept&7)!");
-        }
-
-        private String getContent(Player creator) {
-            return null; //Todo
+                    .replace("_", " ")
+                                                               + "&r&a\" wird erstellt, warte auf Bestaetigung der Vertragspartner (&6/caccept&7)!\n&8>&7Schreibe irgendwas um das Setup zu schließen...");
         }
 
         @Override

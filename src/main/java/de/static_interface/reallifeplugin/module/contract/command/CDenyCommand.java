@@ -29,8 +29,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-
 public class CDenyCommand extends ModuleCommand<ContractModule> {
 
     public CDenyCommand(ContractModule module) {
@@ -41,14 +39,8 @@ public class CDenyCommand extends ModuleCommand<ContractModule> {
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
-        List<Contract> queue = ContractQueue.getQueue(user);
-        if (queue.size() == 0) {
-            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NO_PENDINGS.format());
-            return true;
-        }
 
-        int id = getArg(args, 0, Integer.class);
-        Contract c = ContractQueue.getContract(user, id);
+        Contract c = ContractQueue.getContract(user);
         if (c == null || !ContractQueue.contains(user, c)) {
             user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
         }

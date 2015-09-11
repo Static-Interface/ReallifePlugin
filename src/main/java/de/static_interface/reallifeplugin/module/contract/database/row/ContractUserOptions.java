@@ -47,9 +47,5 @@ public class ContractUserOptions implements Row {
     public Double money;
 
     @Column
-    @Nullable
-    public Long lastCheck;
-
-    @Column
-    public double moneyFailedAmount = 0;
+    public long lastCheck;
 }

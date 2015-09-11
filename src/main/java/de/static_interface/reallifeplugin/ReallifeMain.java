@@ -19,6 +19,7 @@ package de.static_interface.reallifeplugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import de.static_interface.reallifeplugin.command.AdCommand;
 import de.static_interface.reallifeplugin.command.ReallifePluginCommand;
+import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.config.Settings;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.antiescape.AntiEscapeModule;
@@ -73,6 +74,8 @@ public class ReallifeMain extends JavaPlugin {
         instance = this;
 
         settings = new Settings(this);
+
+        new ReallifeLanguageConfiguration().init();
 
         DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder(), "ReallifePlugin", "RP_");
 

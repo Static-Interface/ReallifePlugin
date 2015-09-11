@@ -29,7 +29,6 @@ import de.static_interface.sinklibrary.user.IngameUser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -75,11 +74,16 @@ public class ContractManager {
         return row.id;
     }
 
-    public void onAccepted(Contract contract, Set<ContractUserOptions> users) {
+    public void onAccepted(Contract contract, List<ContractUserOptions> users) {
         ContractQueue.onQueueFinish(contract);
+        if (users.size() == 1) {
+            return;
+        }
+
         contract = module.getTable(ContractsTable.class).insert(contract);
         for (ContractUserOptions option : users) {
             option.contractId = contract.id;
+            option.lastCheck = System.currentTimeMillis();
             module.getTable(ContractUserOptionsTable.class).insert(option);
 
             IngameUser user = getIngameUser(option.userId);
@@ -87,11 +91,6 @@ public class ContractManager {
                 user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_CREATED.format(contract.name));
             }
         }
-    }
-
-    public List<Contract> getAllContracts() {
-        return Arrays.asList(module.getTable(ContractsTable.class)
-                                     .get("SELECT * FROM `{TABLE}` WHERE (`expireTime` < 0 OR `expireTime` > ?)", System.currentTimeMillis()));
     }
 
     public List<Contract> getContracts(IngameUser user) {
@@ -102,10 +101,7 @@ public class ContractManager {
         List<Contract> contract = new ArrayList<>();
 
         for (ContractUserOptions useroption : userContractOptions) {
-            Contract c = getContract(useroption.contractId);
-            if (c == null) {
-                continue; //Expired
-            }
+            Contract c = getContract(useroption.contractId, true);
             contract.add(c);
         }
         return contract;
@@ -113,7 +109,38 @@ public class ContractManager {
 
     @Nullable
     public Contract getContract(int id) {
-        return module.getTable(ContractsTable.class)
-                .get("SELECT * FROM `{TABLE}` WHERE (`expireTime` < 0 OR `expireTime` > ?) AND `id`  = ?", System.currentTimeMillis(), id)[0];
+        return getContract(id, false);
+    }
+
+    @Nullable
+    public Contract getContract(int id, boolean includeExpired) {
+        Contract[] result;
+        if (includeExpired) {
+            result = module.getTable(ContractsTable.class)
+                    .get("SELECT * FROM `{TABLE}` WHERE `id` = ? AND `is_cancelled` = 0", id);
+        } else {
+            result = module.getTable(ContractsTable.class)
+                    .get("SELECT * FROM `{TABLE}` WHERE  (`expire_time` < 0 OR `expire_time` > ?) AND `is_cancelled` = 0 AND `id` = ?",
+                         System.currentTimeMillis(), id);
+        }
+        if (result == null || result.length == 0) {
+            return null;
+        }
+        return result[0];
+    }
+
+    @Nullable
+    public Contract getContract(String name) {
+        Contract[] result = module.getTable(ContractsTable.class)
+                .get("SELECT * FROM `{TABLE}` WHERE `name` = ?", name);
+        if (result == null || result.length == 0) {
+            return null;
+        }
+        return result[0];
+    }
+
+    public List<ContractUserOptions> getOptions(IngameUser user) {
+        int id = getUserId(user);
+        return Arrays.asList(module.getTable(ContractUserOptionsTable.class).get("SELECT * FROM `{TABLE}` WHERE `user_id` = ?", id));
     }
 }

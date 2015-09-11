@@ -33,15 +33,15 @@ public class ReallifeLanguageConfiguration extends Configuration {
 
     public static final YamlParentOption CONTRACT_PARENT = new YamlParentOption("Contract");
     public static final YamlI18nOption CONTRACT_DENIED = new YamlI18nOption(CONTRACT_PARENT, "Denied", "&4The contract has been denied");
-    public static final YamlI18nOption CONTRACT_NO_PENDINGS = new YamlI18nOption(CONTRACT_PARENT, "NoPending", "No pending contracts", true);
     public static final YamlI18nOption
             CONTRACT_DENIED_OWNER =
-            new YamlI18nOption(CONTRACT_PARENT, "DeniedOwnerMessage", "&4{DISPLAYNAME}&r&4 has denied your contract: {1}");
-    public static final YamlI18nOption CONTRACT_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "NotFound", "No contract found!", true);
+            new YamlI18nOption(CONTRACT_PARENT, "DeniedOwnerMessage", "&4{DISPLAYNAME}&r&4 has denied your contract: {0}");
+    public static final YamlI18nOption CONTRACT_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "ContractNotFound", "Contract not found!", true);
+    public static final YamlI18nOption CONTRACTS_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "NoContractSFound", "No contracts found!", true);
     public static final YamlI18nOption CONTRACT_ACCEPTED = new YamlI18nOption(CONTRACT_PARENT, "Accepted", "&aThe contract has been accepted");
     public static final YamlI18nOption
             CONTRACT_ACCEPTED_OWNER =
-            new YamlI18nOption(CONTRACT_PARENT, "AcceptedOwner", "&2{DISPLAYNAME}&r&2 has accepted your contract: {1}");
+            new YamlI18nOption(CONTRACT_PARENT, "AcceptedOwner", "&2{DISPLAYNAME}&r&2 has accepted your contract: {0}");
     public static final YamlI18nOption
             CONTRACT_CANCELLED =
             new YamlI18nOption(CONTRACT_PARENT, "Cancalled", "&4The contract {0}&r&4 has been cancelled.");
@@ -51,19 +51,16 @@ public class ReallifeLanguageConfiguration extends Configuration {
     public static final YamlParentOption GENERAL_PARENT = new YamlParentOption("General");
     public static YamlI18nOption
             CONTRACT_ACCEPT_MESSAGE =
-            new YamlI18nOption(CONTRACT_PARENT, "AcceptMessage", "&7Use &2/caccept {0}&7 to accept or &4/cdeny {0}&7 to deny!");
-    public static YamlI18nOption CONTRACT_ADDED = new YamlI18nOption(CONTRACT_PARENT, "Added", "&2{0}&r&2 has added you to the {1}&r&2 contract:");
-    private static ReallifeLanguageConfiguration instance;
+            new YamlI18nOption(CONTRACT_PARENT, "AcceptMessage", "&7Use &2/caccept&7 to accept or &4/cdeny&7 to deny!");
+    public static YamlI18nOption CONTRACT_ADDED = new YamlI18nOption(CONTRACT_PARENT, "Added", "&4{0}&r&2 has added you to the &c{1}&r&4 contract.");
 
+    private static ReallifeLanguageConfiguration instance;
     public ReallifeLanguageConfiguration() {
         super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Language.yml"));
+        instance = this;
     }
 
     public static ReallifeLanguageConfiguration getInstance() {
-        if (instance == null) {
-            instance = new ReallifeLanguageConfiguration();
-            instance.load();
-        }
         return instance;
     }
 

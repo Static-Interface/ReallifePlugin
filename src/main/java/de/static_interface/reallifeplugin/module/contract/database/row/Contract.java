@@ -49,4 +49,24 @@ public class Contract implements Row {
 
     @Column(name = "expire_time")
     public long expireTime;
+    @Column(name = "is_cancelled")
+    public boolean isCancelled = false;
+
+    @Override
+    public int hashCode() {
+        return (name.hashCode()) * 2;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Contract)) {
+            return false;
+        }
+
+        if (((Contract) o).name == null) {
+            return false;
+        }
+
+        return (((Contract) o).name).equals(name);
+    }
 }
