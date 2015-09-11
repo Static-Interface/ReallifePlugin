@@ -57,12 +57,6 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
         switch (getArg(args, 0, String.class).toLowerCase()) {
             case "new": {
-                double balance = (double) getModule().getConfig().get("ContractCost");
-                if (user.getBalance() - balance < 0) {
-                    user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
-                    break;
-                }
-
                 ContractConversation.createNewView((Player) sender, ReallifeMain.getInstance());
                 break;
             }
@@ -95,7 +89,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
 
             case "get": {
-                double balance = (double) getModule().getConfig().get("ContractBookCost");
+                double balance = (double) getModule().getValue("ContractBookCost", 500D);
                 if (user.getBalance() - balance < 0) {
                     user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
                     break;

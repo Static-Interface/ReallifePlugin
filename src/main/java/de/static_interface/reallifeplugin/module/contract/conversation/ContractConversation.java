@@ -16,11 +16,14 @@
 
 package de.static_interface.reallifeplugin.module.contract.conversation;
 
+import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.contract.ContractManager;
+import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.contract.ContractQueue;
 import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.DateUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
@@ -450,6 +453,14 @@ public class ContractConversation {
             contract.name = (String) context.getSessionData(ContractOption.NAME);
             contract.type = (String) context.getSessionData(ContractOption.TYPE);
             contract.period = (Long) context.getSessionData(ContractOption.PERIOD);
+
+            double balance = (double) Module.getModule(ContractModule.class).getValue("ContractCost", 500D);
+
+            IngameUser user = SinkLibrary.getInstance().getIngameUser(getPlayer(context));
+            if (user.getBalance() - balance < 0) {
+                return LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format();
+            }
+
 
             ContractQueue.createQueue(contract, (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS));
 
