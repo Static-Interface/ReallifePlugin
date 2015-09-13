@@ -54,6 +54,9 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
     @Override
     protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+        if (args.length < 1) {
+            sender.sendMessage("Usage: /contract <new/list/get/cancel>");
+        }
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
         switch (getArg(args, 0, String.class).toLowerCase()) {
             case "new": {
@@ -68,7 +71,12 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
                     break;
                 }
                 for (Contract c : contracts) {
-                    user.sendMessage(ChatColor.GOLD + "#" + c.id + ChatColor.GRAY + ": " + ChatColor.translateAlternateColorCodes('&', c.name));
+                    String s = "";
+                    if (c.isCancelled || c.expireTime <= System.currentTimeMillis()) {
+                        s = ChatColor.RESET.toString() + ChatColor.GRAY + " [Expired]";
+                    }
+                    user.sendMessage(ChatColor.GOLD + "ID:"
+                                     + " #" + c.id + ChatColor.GRAY + ": " + c.name + s);
                 }
                 break;
             }
@@ -94,6 +102,8 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
                     user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
                     break;
                 }
+
+                user.addBalance(-balance);
 
                 Contract c = ContractManager.getInstance().getContract(getArg(args, 1, Integer.class), true);
                 ContractUserOptions cuo = null;
@@ -121,7 +131,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
                 Collections.addAll(pages, ChatColor.translateAlternateColorCodes('&', c.content).split("\n"));
 
-                String s = ChatColor.DARK_RED + "Contract ID: " + ChatColor.RED + "#" + c.id;
+                String s = ChatColor.DARK_RED + "Contract ID: " + ChatColor.RED + "#" + c.id + "\n";
 
                 ContractType type = ContractType.valueOf(c.type);
                 s += ChatColor.DARK_RED + "Contract type: " + ChatColor.RED + type.name() + "\n";
@@ -133,7 +143,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
                 ContractEventType eType = ContractEventType.valueOf(c.events);
                 s += ChatColor.DARK_RED + "Event type: " + ChatColor.RED + eType.name() + "\n";
 
-                if (eType == ContractEventType.MONEY) {
+                if (cuo != null && cuo.userId != c.ownerId && eType == ContractEventType.MONEY) {
                     s += ChatColor.DARK_RED + "Money: " + ChatColor.RED + cuo.money + "\n";
                 }
 

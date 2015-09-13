@@ -37,7 +37,7 @@ public class ReallifeLanguageConfiguration extends Configuration {
             CONTRACT_DENIED_OWNER =
             new YamlI18nOption(CONTRACT_PARENT, "DeniedOwnerMessage", "&4{DISPLAYNAME}&r&4 has denied your contract: {0}");
     public static final YamlI18nOption CONTRACT_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "ContractNotFound", "Contract not found!", true);
-    public static final YamlI18nOption CONTRACTS_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "NoContractSFound", "No contracts found!", true);
+    public static final YamlI18nOption CONTRACTS_NOT_FOUND = new YamlI18nOption(CONTRACT_PARENT, "NoContractsFound", "No contracts found!", true);
     public static final YamlI18nOption CONTRACT_ACCEPTED = new YamlI18nOption(CONTRACT_PARENT, "Accepted", "&aThe contract has been accepted");
     public static final YamlI18nOption
             CONTRACT_ACCEPTED_OWNER =
@@ -48,7 +48,6 @@ public class ReallifeLanguageConfiguration extends Configuration {
     public static final YamlI18nOption
             CONTRACT_CREATED =
             new YamlI18nOption(CONTRACT_PARENT, "Created", "&2The contract {0} has been accepted by all participants!");
-    public static final YamlParentOption GENERAL_PARENT = new YamlParentOption("General");
     public static YamlI18nOption
             CONTRACT_ACCEPT_MESSAGE =
             new YamlI18nOption(CONTRACT_PARENT, "AcceptMessage", "&7Use &2/caccept&7 to accept or &4/cdeny&7 to deny!");

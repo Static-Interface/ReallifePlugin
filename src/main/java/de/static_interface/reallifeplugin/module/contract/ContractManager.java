@@ -129,16 +129,6 @@ public class ContractManager {
         return result[0];
     }
 
-    @Nullable
-    public Contract getContract(String name) {
-        Contract[] result = module.getTable(ContractsTable.class)
-                .get("SELECT * FROM `{TABLE}` WHERE `name` = ?", name);
-        if (result == null || result.length == 0) {
-            return null;
-        }
-        return result[0];
-    }
-
     public List<ContractUserOptions> getOptions(IngameUser user) {
         int id = getUserId(user);
         return Arrays.asList(module.getTable(ContractUserOptionsTable.class).get("SELECT * FROM `{TABLE}` WHERE `user_id` = ?", id));

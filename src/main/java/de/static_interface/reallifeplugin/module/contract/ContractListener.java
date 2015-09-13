@@ -77,13 +77,14 @@ class ContractListener extends ModuleListener<ContractModule> {
                         }
                         continue;
                     case PERIODIC:
+                        long time = System.currentTimeMillis();
                         if (isExpired) {
+                            time = c.expireTime;
+                        }
+                        if (time - options.lastCheck < c.period) {
                             continue;
                         }
-                        if (System.currentTimeMillis() - options.lastCheck < c.period) {
-                            continue;
-                        }
-                        amount *= (int) ((System.currentTimeMillis() - options.lastCheck) / c.period);
+                        amount *= (int) ((time - options.lastCheck) / c.period);
                 }
 
                 if ((amount < 0 && user.getBalance() - Math.abs(amount) < 0) || (amount > 0 && owner.getBalance() - Math.abs(amount) < 0)) {

@@ -47,7 +47,6 @@ public class CAcceptCommand extends ModuleCommand<ContractModule> {
             return true;
         }
 
-        ContractQueue.accept(user, c);
 
         user.sendMessage(m(ReallifeLanguageConfiguration.CONTRACT_ACCEPTED.format()));
 
@@ -58,6 +57,7 @@ public class CAcceptCommand extends ModuleCommand<ContractModule> {
                             .format(sender, (String) null, ChatColor.translateAlternateColorCodes('&', c.name)));
         }
 
+        ContractQueue.accept(user, c);
         return true;
     }
 }

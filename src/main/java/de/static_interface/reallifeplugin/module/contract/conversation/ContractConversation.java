@@ -40,19 +40,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.Plugin;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 //todo: i18n
 
 public class ContractConversation {
 
-    public final static SimpleDateFormat FORMATTER = new SimpleDateFormat("d.M.yyyy HH:MM");
+    public final static SimpleDateFormat FORMATTER = new SimpleDateFormat("dd.MM.YYYY HH:MM", Locale.GERMAN);
 
+    static {
+        FORMATTER.setLenient(false);
+    }
     public static void createNewView(Player player, Plugin plugin) {
         ConversationFactory factory = new ConversationFactory(plugin).withModality(true)
                 // .withPrefix(new Prefix())
@@ -116,15 +121,31 @@ public class ContractConversation {
 
     private static class ContentPrompt extends StringPrompt {
 
+        private String tmp = "";
         @Override
         public String getPromptText(ConversationContext conversationContext) {
-            return ChatColor.translateAlternateColorCodes('&',
-                                                          "&8>&7Bitte nimm dir nun ein Buch mit dem &lInhalt&r&7 des Vertrags in die Hand\n" +
-                                                          "&8>&7Schreib &6&lokay&r&7 im Chat wenn du bereit bist.");
+            String s = ChatColor.translateAlternateColorCodes('&', tmp +
+                                                                   "&8>&7Bitte nimm dir nun ein Buch mit dem &lInhalt&r&7 des Vertrags in die Hand\n"
+                                                                   +
+                                                                   "&8>&7Schreib &6&lokay&r&7 im Chat wenn du bereit bist.\n" +
+                                                                   "&8>&7Mit &6&lbuy&r&7 kannst du dir optional ein Buch für 500 € kaufen, falls du keins craften willst.");
+            tmp = "";
+            return s;
         }
 
         @Override
         public Prompt acceptInput(ConversationContext context, String s) {
+            if (s.equalsIgnoreCase("buy")) {
+                IngameUser user = SinkLibrary.getInstance().getIngameUser(getPlayer(context));
+                if (user.getBalance() - 500D < 0) {
+                    tmp = LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format() + "\n";
+                    return this;
+                }
+
+                user.addBalance(-500D);
+                user.getPlayer().getInventory().addItem(new ItemStack(Material.BOOK_AND_QUILL, 1));
+                return this;
+            }
             if (!(s.equalsIgnoreCase("ok") || s.equalsIgnoreCase("okay"))) {
                 return this;
             }
@@ -186,12 +207,7 @@ public class ContractConversation {
                 return this;
             }
 
-            if (ContractManager.getInstance().getContract(input) != null) {
-                getPlayer(context).sendMessage(ChatColor.RED + "Ein Vertrag mit dem Namen \"" + input + "\" existiert schon!");
-                return this;
-            }
-
-            context.setSessionData(ContractOption.NAME, input);
+            context.setSessionData(ContractOption.NAME, ChatColor.translateAlternateColorCodes('&', input));
             return new AddUserPrompt();
         }
     }
@@ -298,8 +314,9 @@ public class ContractConversation {
                 return this;
             }
 
+            DateTimeFormatter formatter = DateTimeFormat.forPattern("dd.MM.YYYY HH:mm");
             try {
-                FORMATTER.parse(input);
+                formatter.parseDateTime(input);
             } catch (Exception e) {
                 return new ErrorPrompt(this, "Ungueltiges Datum: &c" + input);
             }
@@ -442,12 +459,9 @@ public class ContractConversation {
             contract.content = (String) context.getSessionData(ContractOption.CONTENT);
             contract.ownerId = ContractManager.getInstance().getUserId(SinkLibrary.getInstance().getIngameUser(getPlayer(context)));
             contract.creationTime = System.currentTimeMillis();
-            try {
-                Date d = FORMATTER.parse((String) context.getSessionData(ContractOption.EXPIRE));
-                contract.expireTime = d.getTime();
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            DateTimeFormatter formatter = DateTimeFormat.forPattern("dd.MM.YYYY HH:mm");
+            DateTime d = formatter.parseDateTime((String) context.getSessionData(ContractOption.EXPIRE));
+            contract.expireTime = d.getMillis();
 
             contract.events = (String) context.getSessionData(ContractOption.EVENTS);
             contract.name = (String) context.getSessionData(ContractOption.NAME);
@@ -460,7 +474,7 @@ public class ContractConversation {
             if (user.getBalance() - balance < 0) {
                 return LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format();
             }
-
+            user.addBalance(-balance);
 
             ContractQueue.createQueue(contract, (List<ContractUserOptions>) context.getSessionData(ContractOption.USERS));
 
