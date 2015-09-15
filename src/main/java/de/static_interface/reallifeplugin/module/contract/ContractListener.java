@@ -52,7 +52,7 @@ class ContractListener extends ModuleListener<ContractModule> {
 
             for (final ContractUserOptions options : ContractManager.getInstance().getOptions(user)) {
                 final Contract c = ContractManager.getInstance().getContract(options.contractId, true);
-                if (c.ownerId == options.userId) {
+                if (c == null || c.ownerId == options.userId) {
                     continue;
                 }
 
