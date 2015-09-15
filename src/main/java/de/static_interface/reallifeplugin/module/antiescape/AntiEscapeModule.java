@@ -19,6 +19,9 @@ package de.static_interface.reallifeplugin.module.antiescape;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AntiEscapeModule extends Module<ReallifeMain> {
 
     public static final String NAME = "AntiEscape";
@@ -30,6 +33,9 @@ public class AntiEscapeModule extends Module<ReallifeMain> {
     @Override
     protected void onEnable() {
         addDefaultValue("AutoBanTime", 5);
+        List<String> excludedWorlds = new ArrayList<>();
+        excludedWorlds.add("excludedWorld");
+        addDefaultValue("ExcludedWorlds", excludedWorlds);
         registerModuleListener(new AntiEscapeListener(this));
     }
 

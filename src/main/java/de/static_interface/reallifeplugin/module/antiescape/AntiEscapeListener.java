@@ -25,6 +25,7 @@ import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.Debug;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,6 +35,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -49,20 +51,19 @@ public class AntiEscapeListener extends ModuleListener<AntiEscapeModule> {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDamageByEntity(EntityDamageByEntityEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
         if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) {
             return;
         }
 
         Player player = (Player) event.getEntity();
 
-        //if(player.hasPermission("reallifeplugin.escapebypass"))
-        //{
-        //    return;
-        //}
+        if (isExlucdedWorld(player.getWorld())) {
+            return;
+        }
+
+        if (player.hasPermission("reallifeplugin.escapebypass")) {
+            return;
+        }
 
         Damage damage = new Damage();
         if (damageInstances.containsKey(player.getUniqueId())) {
@@ -74,17 +75,21 @@ public class AntiEscapeListener extends ModuleListener<AntiEscapeModule> {
         damageInstances.put(player.getUniqueId(), damage);
     }
 
+    private boolean isExlucdedWorld(World world) {
+        return getModule().getConfig().getYamlConfiguration().getList("ExcludedWorlds", new ArrayList<>()).contains(world.getName());
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDamage(EntityDamageEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
         if (!(event.getEntity() instanceof Player) || !isValidCause(event.getCause())) {
             return;
         }
 
         Player player = (Player) event.getEntity();
+
+        if (isExlucdedWorld(player.getWorld())) {
+            return;
+        }
 
         if (player.hasPermission("reallifeplugin.escapebypass")) {
             return;
@@ -109,6 +114,10 @@ public class AntiEscapeListener extends ModuleListener<AntiEscapeModule> {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         if (event.isCancelled()) {
+            return;
+        }
+
+        if (isExlucdedWorld(event.getPlayer().getWorld())) {
             return;
         }
 
@@ -138,6 +147,10 @@ public class AntiEscapeListener extends ModuleListener<AntiEscapeModule> {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+        if (isExlucdedWorld(event.getPlayer().getWorld())) {
+            return;
+        }
+
         if (!damageInstances.containsKey(event.getPlayer().getUniqueId())) {
             return;
         }
