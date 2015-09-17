@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.level;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;

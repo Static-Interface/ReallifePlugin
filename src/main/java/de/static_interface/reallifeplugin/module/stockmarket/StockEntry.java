@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 
 import de.static_interface.reallifeplugin.module.payday.model.Entry;
 import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockUserRow;

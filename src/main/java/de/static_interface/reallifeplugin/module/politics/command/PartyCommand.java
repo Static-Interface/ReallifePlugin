@@ -21,7 +21,7 @@ import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENE
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS_SET;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.politics.Party;
 import de.static_interface.reallifeplugin.module.politics.PartyInviteQueue;
@@ -88,13 +88,13 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
             isForceMode = true;
             party = PartyManager.getInstance().getParty(getCommandLine().getOptionValue('p'));
             if (party == null) {
-                sender.sendMessage(ReallifeLanguageConfiguration.m("Party.PartyNotFound", getCommandLine().getOptionValue('p')));
+                sender.sendMessage(RpLanguage.m("Party.PartyNotFound", getCommandLine().getOptionValue('p')));
                 return true;
             }
         }
 
         if (party == null && args.length < 1) {
-            sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+            sender.sendMessage(RpLanguage.m("Party.NotInParty"));
             return true;
         }
 
@@ -120,7 +120,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
                 try {
                     if (party == null) {
-                        sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+                        sender.sendMessage(RpLanguage.m("Party.NotInParty"));
                         break;
                     }
                     deposit((Player) sender, party, Double.valueOf(args[1]));
@@ -148,28 +148,28 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new NotEnoughArgumentsException();
                 }
                 if (party != null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.AlreadyInParty", party.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Party.AlreadyInParty", party.getFormattedName()));
                     break;
                 }
                 party = PartyManager.getInstance().getParty(args[1]);
                 if (party == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.PartyNotFound", args[1]));
+                    sender.sendMessage(RpLanguage.m("Party.PartyNotFound", args[1]));
                     break;
                 }
 
                 if (!party.isPublic() && !PartyInviteQueue.hasInvite(uuid, party) && !isExplicitForceMode) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInvited", party.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Party.NotInvited", party.getFormattedName()));
                     break;
                 }
 
                 party.addMember(uuid, party.getDefaultRank());
-                party.announce(ReallifeLanguageConfiguration.m("Party.Joined", ((Player) sender).getDisplayName()));
+                party.announce(RpLanguage.m("Party.Joined", ((Player) sender).getDisplayName()));
                 PartyInviteQueue.remove(uuid, party);
                 break;
 
             case "invite": {
                 if (party == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+                    sender.sendMessage(RpLanguage.m("Party.NotInParty"));
                     break;
                 }
 
@@ -186,21 +186,21 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 if (PartyInviteQueue.hasInvite(target.getUniqueId(), party)) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.AlreadyInvited", target.getDisplayName()));
+                    sender.sendMessage(RpLanguage.m("Party.AlreadyInvited", target.getDisplayName()));
                     break;
                 }
 
                 if (!isExplicitForceMode) {
                     PartyInviteQueue.add(target.getUniqueId(), party);
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UserHasBeenInvited", target.getDisplayName()));
+                    sender.sendMessage(RpLanguage.m("Party.UserHasBeenInvited", target.getDisplayName()));
                     target.sendMessage(
-                            ReallifeLanguageConfiguration.m("Party.GotInvited", user.getDisplayName(), party.getFormattedName(), party.getTag()));
+                            RpLanguage.m("Party.GotInvited", user.getDisplayName(), party.getFormattedName(), party.getTag()));
                     break;
                 }
 
                 Party p = PartyManager.getInstance().getParty(target);
                 if (p != null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UserAlreadyInParty", target.getDisplayName(), p.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Party.UserAlreadyInParty", target.getDisplayName(), p.getFormattedName()));
                     break;
                 }
 
@@ -211,7 +211,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "kick": {
                 if (party == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+                    sender.sendMessage(RpLanguage.m("Party.NotInParty"));
                     break;
                 }
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.KICK)) {
@@ -223,16 +223,16 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
 
                 if (!party.isMember(target.getUniqueId())) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UserNotMember", target.getDisplayName(), party.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Party.UserNotMember", target.getDisplayName(), party.getFormattedName()));
                     break;
                 }
 
                 if (!isForceMode && user instanceof IngameUser && party.getRank(target).priority <= party.getRank((IngameUser) user).priority) {
-                    user.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughPriority"));
+                    user.sendMessage(RpLanguage.m("Party.NotEnoughPriority"));
                     return true;
                 }
 
-                party.announce(ReallifeLanguageConfiguration.m("Party.Kicked", target.getDisplayName(), ((Player) sender).getDisplayName()));
+                party.announce(RpLanguage.m("Party.Kicked", target.getDisplayName(), ((Player) sender).getDisplayName()));
                 party.removeMember(target.getUniqueId());
                 break;
             }
@@ -258,16 +258,16 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "leave":
                 if (party == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+                    sender.sendMessage(RpLanguage.m("Party.NotInParty"));
                     break;
                 }
-                party.announce(ReallifeLanguageConfiguration.m("Party.Left", ((Player) sender).getDisplayName()));
+                party.announce(RpLanguage.m("Party.Left", ((Player) sender).getDisplayName()));
                 party.removeMember(((Player) sender).getUniqueId());
                 break;
 
             case "rank":
                 if (party == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+                    sender.sendMessage(RpLanguage.m("Party.NotInParty"));
                     break;
                 }
                 handleRankCommand(sender, party, args, isForceMode);
@@ -275,7 +275,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
             case "delete":
                 if (party == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotInParty"));
+                    sender.sendMessage(RpLanguage.m("Party.NotInParty"));
                     break;
                 }
                 if (!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, PartyPermission.DELETE)) {
@@ -311,7 +311,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
         VaultBridge.addBalance(player, -amount);
         party.addBalance(amount);
 
-        party.announce(ReallifeLanguageConfiguration.m("Party.Deposit", player.getDisplayName(), amount));
+        party.announce(RpLanguage.m("Party.Deposit", player.getDisplayName(), amount));
     }
 
     private void withdraw(Player player, Party party, double amount) {
@@ -321,14 +321,14 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
         }
 
         if (party.getBalance() < amount) {
-            player.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughMoney"));
+            player.sendMessage(RpLanguage.m("Party.NotEnoughMoney"));
             return;
         }
 
         VaultBridge.addBalance(player, amount);
         party.addBalance(-amount);
 
-        party.announce(ReallifeLanguageConfiguration.m("Party.Withdraw", player.getDisplayName(), amount));
+        party.announce(RpLanguage.m("Party.Withdraw", player.getDisplayName(), amount));
     }
 
     private void handleRankCommand(CommandSender sender, Party party, String[] args, boolean isForceMode) {
@@ -407,7 +407,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     PartyRank userRank = party.getRank(SinkLibrary.getInstance().getIngameUser(((Player) sender)));
 
                     if (priortiy < userRank.priority) {
-                        sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughPriority"));
+                        sender.sendMessage(RpLanguage.m("Party.NotEnoughPriority"));
                         break;
                     }
                 }
@@ -439,7 +439,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
                 int defaultRankId = party.getDefaultRank().id;
                 if (defaultRankId == rank.id) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.DeletingDefaultRank"));
+                    sender.sendMessage(RpLanguage.m("Party.DeletingDefaultRank"));
                     break;
                 }
 
@@ -571,7 +571,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[2]);
                 if (!party.isMember(target.getUniqueId())) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UserNotMember", target.getDisplayName(), party.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Party.UserNotMember", target.getDisplayName(), party.getFormattedName()));
                     break;
                 }
 
@@ -599,12 +599,12 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
                 PartyPermission permission = PartyPermission.getPermission(args[3].toUpperCase());
                 if (permission == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.UnknownPermission", args[3].toUpperCase()));
+                    sender.sendMessage(RpLanguage.m("Party.UnknownPermission", args[3].toUpperCase()));
                     break;
                 }
 
                 if(!isForceMode && !PartyManager.getInstance().hasPartyPermission(uuid, permission)) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughPriority"));
+                    sender.sendMessage(RpLanguage.m("Party.NotEnoughPriority"));
                     break;
                 }
 
@@ -628,7 +628,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
     private PartyRank handleRank(CommandSender sender, Party party, String rankName, boolean checkPriority) {
         PartyRank targetRank = party.getRank(rankName);
         if (targetRank == null) {
-            sender.sendMessage(ReallifeLanguageConfiguration.m("Party.RankNotFound", rankName));
+            sender.sendMessage(RpLanguage.m("Party.RankNotFound", rankName));
             return null;
         }
 
@@ -636,7 +636,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
             PartyRank userRank = party.getRank(SinkLibrary.getInstance().getIngameUser(((Player) sender)));
 
             if (targetRank.priority < userRank.priority) {
-                sender.sendMessage(ReallifeLanguageConfiguration.m("Party.NotEnoughPriority"));
+                sender.sendMessage(RpLanguage.m("Party.NotEnoughPriority"));
                 return null;
             }
         }

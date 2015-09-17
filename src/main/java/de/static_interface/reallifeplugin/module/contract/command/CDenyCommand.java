@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract.command;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.contract.ContractManager;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
@@ -42,15 +42,15 @@ public class CDenyCommand extends ModuleCommand<ContractModule> {
 
         Contract c = ContractQueue.getContract(user);
         if (c == null || !ContractQueue.contains(user, c)) {
-            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
+            user.sendMessage(RpLanguage.CONTRACT_NOT_FOUND.format());
         }
         ContractQueue.deny(user, c);
-        user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_DENIED.format());
+        user.sendMessage(RpLanguage.CONTRACT_DENIED.format());
 
         IngameUser creator = ContractManager.getInstance().getIngameUser(c.ownerId);
         if (creator.isOnline()) {
             creator.sendMessage(
-                    ReallifeLanguageConfiguration.CONTRACT_DENIED_OWNER.format(sender, ChatColor.translateAlternateColorCodes('&', c.name)));
+                    RpLanguage.CONTRACT_DENIED_OWNER.format(sender, ChatColor.translateAlternateColorCodes('&', c.name)));
         }
         return true;
     }

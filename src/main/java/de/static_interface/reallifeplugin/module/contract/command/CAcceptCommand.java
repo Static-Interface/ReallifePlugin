@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.contract.command;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.contract.ContractManager;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
@@ -43,17 +43,16 @@ public class CAcceptCommand extends ModuleCommand<ContractModule> {
         IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
         Contract c = ContractQueue.getContract(user);
         if (c == null || !ContractQueue.contains(user, c)) {
-            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
+            user.sendMessage(RpLanguage.CONTRACT_NOT_FOUND.format());
             return true;
         }
 
-
-        user.sendMessage(m(ReallifeLanguageConfiguration.CONTRACT_ACCEPTED.format()));
+        user.sendMessage(m(RpLanguage.CONTRACT_ACCEPTED.format()));
 
         IngameUser creator = ContractManager.getInstance().getIngameUser(c.ownerId);
         if (creator.isOnline()) {
             creator.sendMessage(
-                    ReallifeLanguageConfiguration.CONTRACT_ACCEPTED_OWNER
+                    RpLanguage.CONTRACT_ACCEPTED_OWNER
                             .format(sender, (String) null, ChatColor.translateAlternateColorCodes('&', c.name)));
         }
 

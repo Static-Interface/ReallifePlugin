@@ -16,11 +16,11 @@
 
 package de.static_interface.reallifeplugin.module.stockmarket;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
@@ -104,7 +104,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
             isForceMode = true;
             corp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('p'));
             if (corp == null) {
-                sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('p')));
+                sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('p')));
                 return true;
             }
         }

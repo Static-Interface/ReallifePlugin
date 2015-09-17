@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUser;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
@@ -88,7 +88,7 @@ public class ContractManager {
 
             IngameUser user = getIngameUser(option.userId);
             if (user.isOnline()) {
-                user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_CREATED.format(contract.name));
+                user.sendMessage(RpLanguage.CONTRACT_CREATED.format(contract.name));
             }
         }
     }

@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.contract;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.contract.conversation.ContractConversation;
 import de.static_interface.reallifeplugin.module.contract.conversation.ContractEventType;
 import de.static_interface.reallifeplugin.module.contract.conversation.ContractType;
@@ -59,7 +59,7 @@ public class ContractQueue {
             }
             contracts.put(contract.name, contract);
             queue.put(user.getUniqueId(), contract.name);
-            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_ADDED.format(owner.getDisplayName(), contract.name)); // added to contract
+            user.sendMessage(RpLanguage.CONTRACT_ADDED.format(owner.getDisplayName(), contract.name)); // added to contract
 
             user.sendMessage(ChatColor.GRAY + "Inhalt:");
             for (String s : Objects.toString(contract.content).split("\\Q&n\\E")) {
@@ -73,7 +73,7 @@ public class ContractQueue {
             }
 
             if (ContractEventType.valueOf(contract.events) == ContractEventType.DEFAULT) {
-                user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_ACCEPT_MESSAGE.format());
+                user.sendMessage(RpLanguage.CONTRACT_ACCEPT_MESSAGE.format());
                 continue;
             }
 
@@ -94,7 +94,7 @@ public class ContractQueue {
                             + ChatColor.RED + "ausläuft");
                     break;
             }
-            user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_ACCEPT_MESSAGE.format());
+            user.sendMessage(RpLanguage.CONTRACT_ACCEPT_MESSAGE.format());
         }
     }
 
@@ -141,7 +141,7 @@ public class ContractQueue {
 
     public static void cancel(Contract contract) {
         for (UUID user : queue.keySet()) {
-            SinkLibrary.getInstance().getIngameUser(user).sendMessage(ReallifeLanguageConfiguration.CONTRACT_CANCELLED.format(contract.name));
+            SinkLibrary.getInstance().getIngameUser(user).sendMessage(RpLanguage.CONTRACT_CANCELLED.format(contract.name));
         }
 
         onQueueFinish(contract);

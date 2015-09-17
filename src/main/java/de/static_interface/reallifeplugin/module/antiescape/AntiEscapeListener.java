@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.antiescape;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.static_interface.reallifeplugin.module.ModuleListener;

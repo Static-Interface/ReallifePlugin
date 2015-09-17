@@ -19,7 +19,7 @@ package de.static_interface.reallifeplugin.module.contract.command;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.contract.ContractManager;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
@@ -68,7 +68,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             case "list": {
                 List<Contract> contracts = ContractManager.getInstance().getContracts(user);
                 if (contracts.size() == 0) {
-                    user.sendMessage(ReallifeLanguageConfiguration.CONTRACTS_NOT_FOUND.format());
+                    user.sendMessage(RpLanguage.CONTRACTS_NOT_FOUND.format());
                     break;
                 }
                 for (Contract c : contracts) {
@@ -89,11 +89,11 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
                 Contract c = ContractManager.getInstance().getContract(getArg(args, 1, Integer.class));
                 if (c == null) {
-                    user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
+                    user.sendMessage(RpLanguage.CONTRACT_NOT_FOUND.format());
                     break;
                 }
                 getModule().getTable(ContractsTable.class).executeUpdate("UPDATE `{TABLE}` SET `is_cancelled` = 1 WHERE `id` = ?", c.id);
-                user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_CANCELLED.format(ChatColor.translateAlternateColorCodes('&', c.name)));
+                user.sendMessage(RpLanguage.CONTRACT_CANCELLED.format(ChatColor.translateAlternateColorCodes('&', c.name)));
                 break;
             }
 
@@ -120,7 +120,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
                 }
 
                 if (cuo == null || c == null) {
-                    user.sendMessage(ReallifeLanguageConfiguration.CONTRACT_NOT_FOUND.format());
+                    user.sendMessage(RpLanguage.CONTRACT_NOT_FOUND.format());
                     break;
                 }
 

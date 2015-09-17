@@ -27,7 +27,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-public class ReallifeLanguageConfiguration extends Configuration {
+public class RpLanguage extends Configuration {
 
 
     public static final YamlParentOption CONTRACT_PARENT = new YamlParentOption("Contract");
@@ -52,14 +52,14 @@ public class ReallifeLanguageConfiguration extends Configuration {
             new YamlI18nOption(CONTRACT_PARENT, "AcceptMessage", "&7Use &2/caccept&7 to accept or &4/cdeny&7 to deny!");
     public static YamlI18nOption CONTRACT_ADDED = new YamlI18nOption(CONTRACT_PARENT, "Added", "&4{0}&r&2 has added you to the &c{1}&r&4 contract.");
 
-    private static ReallifeLanguageConfiguration instance;
+    private static RpLanguage instance;
 
-    public ReallifeLanguageConfiguration(File baseFolder) {
+    public RpLanguage(File baseFolder) {
         super(new File(baseFolder, "Language.yml"));
         instance = this;
     }
 
-    public static ReallifeLanguageConfiguration getInstance() {
+    public static RpLanguage getInstance() {
         return instance;
     }
 

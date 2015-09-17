@@ -16,14 +16,14 @@
 
 package de.static_interface.reallifeplugin.module.corporation.command;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_INVALID_VALUE;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS_SET;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.TIMEUNIT_DAYS;
 
-import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
 import de.static_interface.reallifeplugin.module.corporation.Corporation;
 import de.static_interface.reallifeplugin.module.corporation.CorporationInviteQueue;
@@ -102,7 +102,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             isForceMode = true;
             userCorp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('c'));
             if (userCorp == null) {
-                sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('c')));
+                sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('c')));
                 return true;
             }
         }
@@ -206,35 +206,35 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new NotEnoughArgumentsException();
                 }
                 if (userCorp != null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.AlreadyInCorporation", userCorp.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Corporation.AlreadyInCorporation", userCorp.getFormattedName()));
                     break;
                 }
 
                 Corporation corp = CorporationManager.getInstance().getCorporation(args[1]);
                 if (corp == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationNotFound", args[1]));
+                    sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", args[1]));
                     break;
                 }
 
                 if (!corp.isPublic() && !CorporationInviteQueue.hasInvite(((IngameUser) user).getUniqueId(), corp) && !isExplicitForceMode) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.NotInvited", corp.getFormattedName()));
+                    sender.sendMessage(RpLanguage.m("Corporation.NotInvited", corp.getFormattedName()));
                     break;
                 }
 
                 if (corp.getMemberLimit() > 0 && corp.getMemberCount() >= (corp.getMemberLimit() + 1)) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationFull"));
+                    sender.sendMessage(RpLanguage.m("Corporation.CorporationFull"));
                     break;
                 }
 
                 corp.addMember((IngameUser) user, corp.getDefaultRank());
-                corp.announce(ReallifeLanguageConfiguration.m("Corporation.Joined", ((Player) sender).getDisplayName()));
+                corp.announce(RpLanguage.m("Corporation.Joined", ((Player) sender).getDisplayName()));
                 CorporationInviteQueue.remove(((IngameUser) user).getUniqueId(), corp);
                 break;
             }
 
             case "rank":
                 if (userCorp == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.NotInCorporation"));
+                    sender.sendMessage(RpLanguage.m("Corporation.NotInCorporation"));
                     break;
                 }
                 handleRankCommand(sender, userCorp, args, isForceMode);
@@ -242,7 +242,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             case "invite": {
                 if (userCorp == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.NotInCorporation"));
+                    sender.sendMessage(RpLanguage.m("Corporation.NotInCorporation"));
                     break;
                 }
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.KICK)) {
@@ -253,7 +253,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 if (userCorp.getMemberLimit() > 0 && userCorp.getMemberCount() >= (userCorp.getMemberLimit() + 1)) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.CorporationFull"));
+                    sender.sendMessage(RpLanguage.m("Corporation.CorporationFull"));
                     break;
                 }
 
@@ -263,22 +263,22 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 if (CorporationInviteQueue.hasInvite(target.getUniqueId(), userCorp)) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.AlreadyInvited", target.getDisplayName()));
+                    sender.sendMessage(RpLanguage.m("Corporation.AlreadyInvited", target.getDisplayName()));
                     break;
                 }
 
                 if (!isExplicitForceMode) {
                     CorporationInviteQueue.add(target.getUniqueId(), userCorp);
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.UserHasBeenInvited", target.getDisplayName()));
+                    sender.sendMessage(RpLanguage.m("Corporation.UserHasBeenInvited", target.getDisplayName()));
                     target.sendMessage(
-                            ReallifeLanguageConfiguration
+                            RpLanguage
                                     .m("Corporation.GotInvited", user.getDisplayName(), userCorp.getFormattedName(), userCorp.getName()));
                     break;
                 }
 
                 Corporation corp = CorporationManager.getInstance().getUserCorporation(target);
                 if (corp != null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration
+                    sender.sendMessage(RpLanguage
                                                .m("Corporation.UserAlreadyInCorporation", target.getDisplayName(), corp.getFormattedName(),
                                                   corp.getName()));
                     break;
@@ -432,7 +432,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 int defaultRankId = corp.getDefaultRank().id;
                 if (defaultRankId == rank.id) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.DeletingDefaultRank"));
+                    sender.sendMessage(RpLanguage.m("Corporation.DeletingDefaultRank"));
                     break;
                 }
 
@@ -468,7 +468,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     CorpRank userRank = corp.getRank(SinkLibrary.getInstance().getIngameUser(((Player) sender)));
 
                     if (priortiy < userRank.priority) {
-                        sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.NotEnoughPriority"));
+                        sender.sendMessage(RpLanguage.m("Corporation.NotEnoughPriority"));
                         break;
                     }
                 }
@@ -604,7 +604,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[2]);
                 if (!corp.isMember(target)) {
                     sender.sendMessage(
-                            ReallifeLanguageConfiguration.m("Corporation.UserNotMember", target.getDisplayName(), corp.getFormattedName()));
+                            RpLanguage.m("Corporation.UserNotMember", target.getDisplayName(), corp.getFormattedName()));
                     break;
                 }
 
@@ -632,12 +632,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
                 Permission permission = CorporationPermissions.getInstance().getPermission(args[3].toUpperCase());
                 if (permission == null) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.UnknownPermission", args[3].toUpperCase()));
+                    sender.sendMessage(RpLanguage.m("Corporation.UnknownPermission", args[3].toUpperCase()));
                     break;
                 }
 
                 if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, permission)) {
-                    sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.NotEnoughPriority"));
+                    sender.sendMessage(RpLanguage.m("Corporation.NotEnoughPriority"));
                     break;
                 }
 
@@ -1147,7 +1147,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
     private CorpRank handleRank(CommandSender sender, Corporation corp, String rankName, boolean checkPriority) {
         CorpRank targetRank = corp.getRank(rankName);
         if (targetRank == null) {
-            sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.RankNotFound", rankName));
+            sender.sendMessage(RpLanguage.m("Corporation.RankNotFound", rankName));
             return null;
         }
 
@@ -1155,7 +1155,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             CorpRank userRank = corp.getRank(SinkLibrary.getInstance().getIngameUser(((Player) sender)));
 
             if (targetRank.priority < userRank.priority) {
-                sender.sendMessage(ReallifeLanguageConfiguration.m("Corporation.NotEnoughPriority"));
+                sender.sendMessage(RpLanguage.m("Corporation.NotEnoughPriority"));
                 return null;
             }
         }
