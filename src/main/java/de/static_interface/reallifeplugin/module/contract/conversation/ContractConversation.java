@@ -16,6 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.contract.conversation;
 
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
+
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.contract.ContractManager;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
@@ -23,7 +25,6 @@ import de.static_interface.reallifeplugin.module.contract.ContractQueue;
 import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.DateUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
@@ -138,7 +139,7 @@ public class ContractConversation {
             if (s.equalsIgnoreCase("buy")) {
                 IngameUser user = SinkLibrary.getInstance().getIngameUser(getPlayer(context));
                 if (user.getBalance() - 500D < 0) {
-                    tmp = LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format() + "\n";
+                    tmp = GENERAL_NOT_ENOUGH_MONEY.format() + "\n";
                     return this;
                 }
 
@@ -472,7 +473,7 @@ public class ContractConversation {
 
             IngameUser user = SinkLibrary.getInstance().getIngameUser(getPlayer(context));
             if (user.getBalance() - balance < 0) {
-                return LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format();
+                return GENERAL_NOT_ENOUGH_MONEY.format();
             }
             user.addBalance(-balance);
 

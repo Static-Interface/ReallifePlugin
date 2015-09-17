@@ -25,14 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Settings extends Configuration {
+public class RpSettings extends Configuration {
 
     public static final String PAYDAY = "payday";
     public static final String TAXES_MODIFIER = "taxesmodifier";
     public static final String SHOWN_NAME = "shownname";
     public static final String EXCLUDED = "excluded";
 
-    public Settings(Plugin plugin) {
+    public RpSettings(Plugin plugin) {
         super(new File(plugin.getDataFolder(), "Settings.yml"), true);
     }
 

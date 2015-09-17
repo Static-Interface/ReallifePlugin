@@ -20,7 +20,6 @@ import de.static_interface.sinklibrary.api.configuration.Configuration;
 import de.static_interface.sinklibrary.api.configuration.option.YamlI18nOption;
 import de.static_interface.sinklibrary.api.configuration.option.YamlParentOption;
 import de.static_interface.sinklibrary.util.StringUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.io.File;
@@ -54,8 +53,9 @@ public class ReallifeLanguageConfiguration extends Configuration {
     public static YamlI18nOption CONTRACT_ADDED = new YamlI18nOption(CONTRACT_PARENT, "Added", "&4{0}&r&2 has added you to the &c{1}&r&4 contract.");
 
     private static ReallifeLanguageConfiguration instance;
-    public ReallifeLanguageConfiguration() {
-        super(new File(Bukkit.getPluginManager().getPlugin("ReallifePlugin").getDataFolder(), "Language.yml"));
+
+    public ReallifeLanguageConfiguration(File baseFolder) {
+        super(new File(baseFolder, "Language.yml"));
         instance = this;
     }
 

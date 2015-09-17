@@ -20,7 +20,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import de.static_interface.reallifeplugin.command.AdCommand;
 import de.static_interface.reallifeplugin.command.ReallifePluginCommand;
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
-import de.static_interface.reallifeplugin.config.Settings;
+import de.static_interface.reallifeplugin.config.RpSettings;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.reallifeplugin.module.antiescape.AntiEscapeModule;
 import de.static_interface.reallifeplugin.module.contract.ContractModule;
@@ -50,15 +50,15 @@ public class ReallifeMain extends JavaPlugin {
 
     static WorldGuardPlugin wgp;
     private static ReallifeMain instance;
-    private Settings settings = null;
+    private RpSettings rpSettings = null;
     private Database db;
 
     public static ReallifeMain getInstance() {
         return instance;
     }
 
-    public Settings getSettings() {
-        return settings;
+    public RpSettings getSettings() {
+        return rpSettings;
     }
 
     public WorldGuardPlugin getWorldGuardPlugin() {
@@ -73,11 +73,12 @@ public class ReallifeMain extends JavaPlugin {
 
         instance = this;
 
-        settings = new Settings(this);
+        rpSettings = new RpSettings(this);
 
-        new ReallifeLanguageConfiguration().init();
+        File reallifeDirectory = new File(SinkLibrary.getInstance().getCustomDataFolder(), getName());
 
-        DatabaseConfiguration config = new DatabaseConfiguration(getDataFolder(), "ReallifePlugin", "RP_");
+        new ReallifeLanguageConfiguration(reallifeDirectory).init();
+        DatabaseConfiguration config = new DatabaseConfiguration(reallifeDirectory, "Database.yml", "ReallifePlugin", "RP_");
 
         SQLDialect type;
         try {
@@ -91,7 +92,7 @@ public class ReallifeMain extends JavaPlugin {
         }
         switch (type) {
             case H2:
-                db = new H2Database(new File(getDataFolder(), "database.h2"), config.getTablePrefix(), this);
+                db = new H2Database(new File(reallifeDirectory, "database.h2"), config.getTablePrefix(), this);
                 break;
             case MariaDB:
             case MySQL:

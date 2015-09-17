@@ -17,10 +17,11 @@
 package de.static_interface.reallifeplugin.module.corporation.command;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_INVALID_VALUE;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.TIMEUNIT_DAYS;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_INVALID_VALUE;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS_SET;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.TIMEUNIT_DAYS;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
@@ -42,7 +43,6 @@ import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsExcepti
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
@@ -196,7 +196,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     }
                     deposit((IngameUser) user, userCorp, Double.valueOf(args[1]));
                 } catch (NumberFormatException ignored) {
-                    user.sendMessage(LanguageConfiguration.GENERAL_INVALID_VALUE.format(args[1]));
+                    user.sendMessage(GENERAL_INVALID_VALUE.format(args[1]));
                 }
                 break;
             }
@@ -345,7 +345,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 try {
                     withdraw((IngameUser) user, userCorp, Double.valueOf(args[1]));
                 } catch (NumberFormatException ignored) {
-                    user.sendMessage(LanguageConfiguration.GENERAL_INVALID_VALUE.format(args[1]));
+                    user.sendMessage(GENERAL_INVALID_VALUE.format(args[1]));
                 }
                 break;
 
@@ -535,7 +535,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Prefix", prefix));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Prefix", prefix));
                 break;
             }
 
@@ -565,7 +565,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Description", description));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Description", description));
                 break;
             }
 
@@ -589,7 +589,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Name", args[3]));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Name", args[3]));
                 break;
             }
 
@@ -614,7 +614,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 corp.setRank(target, rank);
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
                 break;
             }
 
@@ -655,7 +655,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     corp.onUpdateRank(rankUser, rank);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
                 break;
 
             default:
@@ -683,7 +683,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
     private void withdraw(IngameUser user, Corporation corp, double amount) {
         if (amount < 1) {
-            user.sendMessage(LanguageConfiguration.GENERAL_INVALID_VALUE.format(amount));
+            user.sendMessage(GENERAL_INVALID_VALUE.format(amount));
             return;
         }
 
@@ -740,7 +740,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 int limit = Integer.valueOf(args[2]);
                 corporation.setMemberLimit(limit);
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("MemberLimit", limit));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("MemberLimit", limit));
                 break;
             }
 

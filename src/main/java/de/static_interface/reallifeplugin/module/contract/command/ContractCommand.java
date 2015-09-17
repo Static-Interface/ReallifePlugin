@@ -16,6 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.contract.command;
 
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
+
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
@@ -29,7 +31,6 @@ import de.static_interface.reallifeplugin.module.contract.database.row.ContractU
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.DateUtil;
 import org.apache.commons.cli.ParseException;
@@ -99,7 +100,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             case "get": {
                 double balance = (double) getModule().getValue("ContractBookCost", 500D);
                 if (user.getBalance() - balance < 0) {
-                    user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
+                    user.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
                     break;
                 }
 

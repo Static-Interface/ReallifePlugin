@@ -17,7 +17,7 @@
 package de.static_interface.reallifeplugin.module.corporation;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.ModuleListener;

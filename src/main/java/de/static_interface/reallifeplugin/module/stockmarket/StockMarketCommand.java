@@ -17,7 +17,8 @@
 package de.static_interface.reallifeplugin.module.stockmarket;
 
 import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.Module;
@@ -33,7 +34,6 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.table.Stoc
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -250,7 +250,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
                 double price = amount * stock.getPrice();
                 if (!VaultBridge.addBalance(user.getPlayer(), -price)) {
-                    user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
+                    user.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
                     return true;
                 }
 
@@ -426,7 +426,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
                 }
 
                 if (!user.addBalance(-transfer.price)) {
-                    user.sendMessage(LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY.format());
+                    user.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
                     return true;
                 }
 

@@ -16,9 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.politics.command;
 
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_INVALID_VALUE;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_NOT_ENOUGH_MONEY;
-import static de.static_interface.sinklibrary.configuration.LanguageConfiguration.GENERAL_SUCCESS;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_INVALID_VALUE;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
+import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS_SET;
 
 import de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
@@ -37,7 +38,6 @@ import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
-import de.static_interface.sinklibrary.configuration.LanguageConfiguration;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.CommandUtil;
@@ -503,7 +503,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Prefix", prefix));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Prefix", prefix));
                 break;
             }
 
@@ -533,7 +533,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Description", description));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Description", description));
                 break;
             }
 
@@ -557,7 +557,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                     throw new RuntimeException(e);
                 }
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Name", args[3]));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Name", args[3]));
                 break;
             }
 
@@ -582,7 +582,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
                 party.setRank(target, rank);
 
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
                 break;
             }
             case "setpermission":
@@ -616,7 +616,7 @@ public class PartyCommand extends ModuleCommand<PoliticsModule> {
                 }
                 Object value = CommandUtil.parseValue(valueArgs);
                 getModule().getTable(PartyRankPermissionsTable.class).setOption(permission.getPermissionString(), value, rank.id);
-                sender.sendMessage(LanguageConfiguration.GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
+                sender.sendMessage(GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
                 break;
 
             default:
