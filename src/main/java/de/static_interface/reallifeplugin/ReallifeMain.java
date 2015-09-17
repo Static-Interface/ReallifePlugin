@@ -52,6 +52,7 @@ public class ReallifeMain extends JavaPlugin {
     private static ReallifeMain instance;
     private RpSettings rpSettings = null;
     private Database db;
+    private File reallifeDirectory;
 
     public static ReallifeMain getInstance() {
         return instance;
@@ -73,10 +74,9 @@ public class ReallifeMain extends JavaPlugin {
 
         instance = this;
 
-        rpSettings = new RpSettings(this);
+        reallifeDirectory = new File(SinkLibrary.getInstance().getCustomDataFolder(), getName());
 
-        File reallifeDirectory = new File(SinkLibrary.getInstance().getCustomDataFolder(), getName());
-
+        rpSettings = new RpSettings(reallifeDirectory, this);
         new RpLanguage(reallifeDirectory).init();
         DatabaseConfiguration config = new DatabaseConfiguration(reallifeDirectory, "Database.yml", "ReallifePlugin", "RP_");
 
@@ -177,5 +177,9 @@ public class ReallifeMain extends JavaPlugin {
 
     public boolean isLwcAvailable() {
         return Bukkit.getPluginManager().getPlugin("LWC") != null;
+    }
+
+    public File getCustomDataFolder() {
+        return reallifeDirectory;
     }
 }

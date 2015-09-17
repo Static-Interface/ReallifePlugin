@@ -32,8 +32,8 @@ public class RpSettings extends Configuration {
     public static final String SHOWN_NAME = "shownname";
     public static final String EXCLUDED = "excluded";
 
-    public RpSettings(Plugin plugin) {
-        super(new File(plugin.getDataFolder(), "Settings.yml"), true);
+    public RpSettings(File baseFolder, Plugin plugin) {
+        super(new File(baseFolder, "Settings.yml"), true);
     }
 
     @Override

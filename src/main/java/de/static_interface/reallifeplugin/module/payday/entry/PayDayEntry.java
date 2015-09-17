@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module.payday.entry;
 
-import static de.static_interface.reallifeplugin.config.ReallifeLanguageConfiguration.m;
+import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.payday.model.Entry;

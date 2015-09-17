@@ -44,7 +44,7 @@ public class StockMarketModule extends Module<ReallifeMain> {
     private BukkitTask stocksTask;
 
     public StockMarketModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, new Configuration(new File(ReallifeMain.getInstance().getDataFolder(), NAME + ".yml")) {
+        super(plugin, new Configuration(new File(ReallifeMain.getInstance().getCustomDataFolder(), NAME + "Module.yml")) {
             @Override
             public void addDefaults() {
                 addDefault("Transfer.Cooldown", 2, "In minutes");

@@ -42,7 +42,7 @@ public class LevelModule extends Module<ReallifeMain> {
     private VaultPermissionsHook permissionsHook;
     private boolean inited = false;
     public LevelModule(ReallifeMain plugin, @Nullable Database db) {
-        super(plugin, new Configuration(new File(plugin.getDataFolder(), "LevelModule.yml"), false) {
+        super(plugin, new Configuration(new File(plugin.getCustomDataFolder(), NAME + "Module.yml"), false) {
             @Override
             public void addDefaults() {
                 //Example Level 1
