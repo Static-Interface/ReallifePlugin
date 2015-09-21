@@ -29,9 +29,9 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
+import de.static_interface.reallifeplugin.permission.Permission;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.user.SinkUser;
-import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.ChatColor;

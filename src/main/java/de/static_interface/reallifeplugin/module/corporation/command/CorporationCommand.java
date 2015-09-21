@@ -37,13 +37,13 @@ import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUs
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRankPermissionsTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpRanksTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
+import de.static_interface.reallifeplugin.permission.Permission;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
-import de.static_interface.sinklibrary.database.permission.Permission;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.user.IrcUser;
 import de.static_interface.sinklibrary.util.CommandUtil;
@@ -740,7 +740,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 int limit = Integer.valueOf(args[2]);
                 corporation.setMemberLimit(limit);
-                sender.sendMessage(GENERAL_SUCCESS_SET.format("MemberLimit", limit));
+                user.sendMessage(GENERAL_SUCCESS_SET.format("MemberLimit", limit));
                 break;
             }
 
@@ -756,7 +756,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 corporation.setOption(CorporationOptions.FISHING, true);
-                sender.sendMessage(GENERAL_SUCCESS.format());
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -772,7 +772,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 corporation.setOption(CorporationOptions.FISHING, false);
-                sender.sendMessage(GENERAL_SUCCESS.format());
+                user.sendMessage(GENERAL_SUCCESS.format());
                 break;
             }
 
@@ -787,7 +787,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return;
                 }
 
-                sender.sendMessage("Limit: " + corporation.getMemberLimit());
+                user.sendMessage("Limit: " + corporation.getMemberLimit());
                 break;
             }
 
@@ -1107,11 +1107,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             String users = "";
 
-            sender.sendMessage("");
+            user.sendMessage("");
             if (!StringUtil.isEmptyOrNull(rank.description)) {
-                sender.sendMessage(ChatColor.GOLD + rank.name + ChatColor.GRAY + ": " + rank.description);
+                user.sendMessage(ChatColor.GOLD + rank.name + ChatColor.GRAY + ": " + rank.description);
             } else {
-                sender.sendMessage(ChatColor.GOLD + rank.name);
+                user.sendMessage(ChatColor.GOLD + rank.name);
             }
 
             for (CorpUserRow rankUser : rankUsers) {
@@ -1126,13 +1126,13 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 users += ChatColor.GRAY + ", " + formattedName;
             }
 
-            sender.sendMessage(users);
+            user.sendMessage(users);
         }
 
-        sender.sendMessage("");
+        user.sendMessage("");
 
         if (!membersFound) {
-            sender.sendMessage(ChatColor.RED + "Keine Mitglieder gefunden");
+            user.sendMessage(ChatColor.RED + "Keine Mitglieder gefunden");
         }
 
         if (corporation.getBaseRegion() != null) {

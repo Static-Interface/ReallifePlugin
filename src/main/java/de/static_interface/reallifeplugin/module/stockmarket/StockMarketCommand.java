@@ -87,7 +87,7 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
     @Override
     protected boolean onExecute(CommandSender commandSender, String label, String[] args) throws ParseException {
-        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) commandSender);
 
         if (args.length == 0) {
             sendHelp(user);
@@ -98,13 +98,13 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         String prefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Börse" + ChatColor.GRAY + "] ";
 
         Corporation corp = CorporationManager.getInstance().getUserCorporation(user);
-        boolean isForceMode = sender.hasPermission("reallifeplugin.corporations.forcecommand") && getCommandLine().hasOption('f');
+        boolean isForceMode = user.hasPermission("reallifeplugin.corporations.forcecommand") && getCommandLine().hasOption('f');
 
-        if (sender.hasPermission("reallifeplugin.corporations.admin") && getCommandLine().hasOption('p')) {
+        if (user.hasPermission("reallifeplugin.corporations.admin") && getCommandLine().hasOption('p')) {
             isForceMode = true;
             corp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('p'));
             if (corp == null) {
-                sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('p')));
+                user.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('p')));
                 return true;
             }
         }
