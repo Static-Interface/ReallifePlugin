@@ -88,7 +88,7 @@ public class ReallifePluginCommand extends SinkCommand {
 
         registerSubCommand(moduleSubCommand);
 
-        SinkSubCommand moduleListSubCommand = new SinkSubCommand<ReallifePluginCommand>(this, "list") {
+        SinkSubCommand moduleListSubCommand = new SinkSubCommand(moduleSubCommand, "list") {
             @DefaultPermission
             @Description("List all modules")
             @Override
@@ -119,7 +119,7 @@ public class ReallifePluginCommand extends SinkCommand {
         };
         moduleSubCommand.registerSubCommand(moduleListSubCommand);
 
-        SinkSubCommand moduleEnableSubCommand = new SinkSubCommand<ReallifePluginCommand>(this, "enable") {
+        SinkSubCommand moduleEnableSubCommand = new SinkSubCommand(moduleSubCommand, "enable") {
             @DefaultPermission
             @Description("Enable a module")
             @Usage("<module>")
@@ -147,7 +147,7 @@ public class ReallifePluginCommand extends SinkCommand {
         };
         moduleSubCommand.registerSubCommand(moduleEnableSubCommand);
 
-        SinkSubCommand moduleDisableSubCommand = new SinkSubCommand<ReallifePluginCommand>(this, "disable") {
+        SinkSubCommand moduleDisableSubCommand = new SinkSubCommand(moduleSubCommand, "disable") {
             @DefaultPermission
             @Description("Disable a module")
             @Usage("<module>")
