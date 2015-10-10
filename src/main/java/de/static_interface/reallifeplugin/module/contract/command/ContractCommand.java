@@ -31,6 +31,7 @@ import de.static_interface.reallifeplugin.module.contract.database.row.ContractU
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.command.SinkSubCommand;
+import de.static_interface.sinklibrary.api.command.annotation.Aliases;
 import de.static_interface.sinklibrary.api.command.annotation.DefaultPermission;
 import de.static_interface.sinklibrary.api.command.annotation.Description;
 import de.static_interface.sinklibrary.api.command.annotation.Usage;
@@ -51,8 +52,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+@Description("Manage contracts")
+@DefaultPermission
+@Aliases("c")
 public class ContractCommand extends ModuleCommand<ContractModule> {
-
     public ContractCommand(ContractModule module) {
         super(module);
         getCommandOptions().setMinRequiredArgs(1);
@@ -60,7 +63,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
     @Override
     public void onRegistered() {
-        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "new") {
+        registerSubCommand(new SinkSubCommand(this, "new") {
             {
                 getCommandOptions().setPlayerOnly(true);
             }
@@ -73,7 +76,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
         });
 
-        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "list") {
+        registerSubCommand(new SinkSubCommand(this, "list") {
             {
                 getCommandOptions().setPlayerOnly(true);
             }
@@ -102,7 +105,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
         });
 
-        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "cancel") {
+        registerSubCommand(new SinkSubCommand(this, "cancel") {
             {
                 getCommandOptions().setMinRequiredArgs(1);
                 getCommandOptions().setIrcOpOnly(true);
@@ -129,7 +132,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
         });
 
-        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "get") {
+        registerSubCommand(new SinkSubCommand(this, "get") {
             {
                 getCommandOptions().setPlayerOnly(true);
                 getCommandOptions().setMinRequiredArgs(1);

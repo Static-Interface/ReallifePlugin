@@ -238,20 +238,16 @@ public abstract class Module<T extends Plugin> {
     }
 
     protected final void registerModuleListener(ModuleListener listener) {
-        if (!listeners.contains(listener)) {
+        if (!listeners.contains(listener) && enabled) {
             listeners.add(listener);
-            if (enabled) {
-                listener.register();
-            }
+            listener.register();
         }
     }
 
     protected final void registerModuleCommand(String name, ModuleCommand command) {
         if (!commands.keySet().contains(name) && enabled) {
             commands.put(name, command);
-            if (enabled) {
-                SinkLibrary.getInstance().registerCommand(name, command);
-            }
+            SinkLibrary.getInstance().registerCommand(name, command);
         }
     }
 

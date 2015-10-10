@@ -48,11 +48,11 @@ public class CorporationModule extends Module<ReallifeMain> {
         List<AbstractTable> tables = new ArrayList<>();
         AbstractTable table = new CorpsTable(getDatabase());
         tables.add(table);
+        table = new CorpRanksTable(getDatabase());
+        tables.add(table);
         table = new CorpUsersTable(getDatabase());
         tables.add(table);
         table = new CorpTradesTable(getDatabase());
-        tables.add(table);
-        table = new CorpRanksTable(getDatabase());
         tables.add(table);
         table = new CorpRankPermissionsTable(getDatabase());
         tables.add(table);

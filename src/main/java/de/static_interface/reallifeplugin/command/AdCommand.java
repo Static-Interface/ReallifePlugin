@@ -23,6 +23,10 @@ import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENE
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.command.SinkCommand;
+import de.static_interface.sinklibrary.api.command.annotation.Aliases;
+import de.static_interface.sinklibrary.api.command.annotation.DefaultPermission;
+import de.static_interface.sinklibrary.api.command.annotation.Description;
+import de.static_interface.sinklibrary.api.command.annotation.Usage;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
@@ -34,7 +38,10 @@ import org.bukkit.plugin.Plugin;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
+@DefaultPermission
+@Usage("<message>")
+@Description("Announce advertisments")
+@Aliases("advertisment")
 public class AdCommand extends SinkCommand {
 
     HashMap<UUID, Long> timeouts = new HashMap<>();

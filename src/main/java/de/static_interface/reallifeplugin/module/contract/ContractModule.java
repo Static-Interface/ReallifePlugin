@@ -46,9 +46,9 @@ public class ContractModule extends Module<ReallifeMain> {
         addDefaultValue("ContractCost", 500.0D);
         ContractManager.init(this);
         registerModuleCommand("contract", new ContractCommand(this));
-        registerModuleCommand("ccancel", new CCancelCommand(this));
-        registerModuleCommand("caccept", new CAcceptCommand(this));
-        registerModuleCommand("cdeny", new CDenyCommand(this));
+        registerModuleCommand("contractcancel", new CCancelCommand(this));
+        registerModuleCommand("contractaccept", new CAcceptCommand(this));
+        registerModuleCommand("contractdeny", new CDenyCommand(this));
         registerModuleListener(new ContractListener(this));
     }
 

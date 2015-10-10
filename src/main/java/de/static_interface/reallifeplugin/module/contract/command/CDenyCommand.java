@@ -23,12 +23,18 @@ import de.static_interface.reallifeplugin.module.contract.ContractModule;
 import de.static_interface.reallifeplugin.module.contract.ContractQueue;
 import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.annotation.Aliases;
+import de.static_interface.sinklibrary.api.command.annotation.DefaultPermission;
+import de.static_interface.sinklibrary.api.command.annotation.Description;
 import de.static_interface.sinklibrary.user.IngameUser;
 import org.apache.commons.cli.ParseException;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+@Description("Deny a contract request")
+@DefaultPermission
+@Aliases("cdeny")
 public class CDenyCommand extends ModuleCommand<ContractModule> {
 
     public CDenyCommand(ContractModule module) {

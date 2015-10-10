@@ -50,7 +50,7 @@ public class ReallifePluginCommand extends SinkCommand {
 
     @Override
     public void onRegistered() {
-        registerSubCommand(new SinkSubCommand<ReallifePluginCommand>(getPlugin(), getConfig(), "payday") {
+        registerSubCommand(new SinkSubCommand(this, "payday") {
             @Description("Run manually a payday event")
             @DefaultPermission
             @Override
@@ -77,7 +77,7 @@ public class ReallifePluginCommand extends SinkCommand {
             }
         });
 
-        SinkSubCommand moduleSubCommand = new SinkSubCommand<ReallifePluginCommand>(getPlugin(), getConfig(), "module") {
+        SinkSubCommand moduleSubCommand = new SinkSubCommand(this, "module") {
             @DefaultPermission
             @Description("Manage the modules")
             @Override
@@ -88,7 +88,7 @@ public class ReallifePluginCommand extends SinkCommand {
 
         registerSubCommand(moduleSubCommand);
 
-        SinkSubCommand moduleListSubCommand = new SinkSubCommand(getPlugin(), getConfig(), "list") {
+        SinkSubCommand moduleListSubCommand = new SinkSubCommand(moduleSubCommand, "list") {
             @DefaultPermission
             @Description("List all modules")
             @Override
@@ -119,7 +119,7 @@ public class ReallifePluginCommand extends SinkCommand {
         };
         moduleSubCommand.registerSubCommand(moduleListSubCommand);
 
-        SinkSubCommand moduleEnableSubCommand = new SinkSubCommand(getPlugin(), getConfig(), "enable") {
+        SinkSubCommand moduleEnableSubCommand = new SinkSubCommand(moduleSubCommand, "enable") {
             @DefaultPermission
             @Description("Enable a module")
             @Usage("<module>")
@@ -147,17 +147,16 @@ public class ReallifePluginCommand extends SinkCommand {
         };
         moduleSubCommand.registerSubCommand(moduleEnableSubCommand);
 
-        SinkSubCommand moduleDisableSubCommand = new SinkSubCommand(getPlugin(), getConfig(), "disable") {
+        SinkSubCommand moduleDisableSubCommand = new SinkSubCommand(moduleSubCommand, "disable") {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
+            }
             @DefaultPermission
             @Description("Disable a module")
             @Usage("<module>")
             @Override
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
-                if (args.length < 1) {
-                    return false;
-                }
-
-                Module module = Module.getModule(args[2]);
+                Module module = Module.getModule(args[0]);
                 if (module == null) {
                     sender.sendMessage(ChatColor.RED + "Module not found");
                     return true;
