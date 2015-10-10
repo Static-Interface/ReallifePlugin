@@ -60,7 +60,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
     @Override
     public void onRegistered() {
-        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "new") {
+        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "new") {
             {
                 getCommandOptions().setPlayerOnly(true);
             }
@@ -73,7 +73,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
         });
 
-        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "list") {
+        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "list") {
             {
                 getCommandOptions().setPlayerOnly(true);
             }
@@ -102,7 +102,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
         });
 
-        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "cancel") {
+        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "cancel") {
             {
                 getCommandOptions().setMinRequiredArgs(1);
                 getCommandOptions().setIrcOpOnly(true);
@@ -129,7 +129,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             }
         });
 
-        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "get") {
+        registerSubCommand(new SinkSubCommand<ContractCommand>(getPlugin(), getConfig(), "get") {
             {
                 getCommandOptions().setPlayerOnly(true);
                 getCommandOptions().setMinRequiredArgs(1);

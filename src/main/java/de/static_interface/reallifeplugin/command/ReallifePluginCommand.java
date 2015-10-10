@@ -50,7 +50,7 @@ public class ReallifePluginCommand extends SinkCommand {
 
     @Override
     public void onRegistered() {
-        registerSubCommand(new SinkSubCommand<ReallifePluginCommand>(this, "payday") {
+        registerSubCommand(new SinkSubCommand<ReallifePluginCommand>(getPlugin(), getConfig(), "payday") {
             @Description("Run manually a payday event")
             @DefaultPermission
             @Override
@@ -77,7 +77,7 @@ public class ReallifePluginCommand extends SinkCommand {
             }
         });
 
-        SinkSubCommand moduleSubCommand = new SinkSubCommand<ReallifePluginCommand>(this, "module") {
+        SinkSubCommand moduleSubCommand = new SinkSubCommand<ReallifePluginCommand>(getPlugin(), getConfig(), "module") {
             @DefaultPermission
             @Description("Manage the modules")
             @Override
@@ -88,7 +88,7 @@ public class ReallifePluginCommand extends SinkCommand {
 
         registerSubCommand(moduleSubCommand);
 
-        SinkSubCommand moduleListSubCommand = new SinkSubCommand(moduleSubCommand, "list") {
+        SinkSubCommand moduleListSubCommand = new SinkSubCommand(getPlugin(), getConfig(), "list") {
             @DefaultPermission
             @Description("List all modules")
             @Override
@@ -119,7 +119,7 @@ public class ReallifePluginCommand extends SinkCommand {
         };
         moduleSubCommand.registerSubCommand(moduleListSubCommand);
 
-        SinkSubCommand moduleEnableSubCommand = new SinkSubCommand(moduleSubCommand, "enable") {
+        SinkSubCommand moduleEnableSubCommand = new SinkSubCommand(getPlugin(), getConfig(), "enable") {
             @DefaultPermission
             @Description("Enable a module")
             @Usage("<module>")
@@ -147,7 +147,7 @@ public class ReallifePluginCommand extends SinkCommand {
         };
         moduleSubCommand.registerSubCommand(moduleEnableSubCommand);
 
-        SinkSubCommand moduleDisableSubCommand = new SinkSubCommand(moduleSubCommand, "disable") {
+        SinkSubCommand moduleDisableSubCommand = new SinkSubCommand(getPlugin(), getConfig(), "disable") {
             @DefaultPermission
             @Description("Disable a module")
             @Usage("<module>")
