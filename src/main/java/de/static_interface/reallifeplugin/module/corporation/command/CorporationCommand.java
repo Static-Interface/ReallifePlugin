@@ -39,97 +39,62 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpTradesTable;
 import de.static_interface.reallifeplugin.permission.Permission;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
-import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
+import de.static_interface.sinklibrary.api.command.SinkCommandBase;
+import de.static_interface.sinklibrary.api.command.SinkSubCommand;
+import de.static_interface.sinklibrary.api.command.annotation.Aliases;
+import de.static_interface.sinklibrary.api.command.annotation.DefaultPermission;
+import de.static_interface.sinklibrary.api.command.annotation.Description;
+import de.static_interface.sinklibrary.api.command.annotation.Usage;
 import de.static_interface.sinklibrary.api.exception.UserNotFoundException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.api.user.SinkUser;
+import de.static_interface.sinklibrary.configuration.GeneralLanguage;
 import de.static_interface.sinklibrary.user.IngameUser;
-import de.static_interface.sinklibrary.user.IrcUser;
 import de.static_interface.sinklibrary.util.CommandUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
+@Description("Interact with corporations!")
+@DefaultPermission
+@Usage("<corp>")
 public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
     public CorporationCommand(CorporationModule module) {
         super(module);
-        getCommandOptions().setPlayerOnly(true);
-        getCommandOptions().setCmdLineSyntax("{PREFIX}{ALIAS} <options> [-c <corp>] [-f]");
-        getCommandOptions().setCliOptions(new Options());
-        Option corpOption = Option.builder("c")
-                .hasArg()
-                .longOpt("corp")
-                .desc("Force as given corporation member")
-                .type(String.class)
-                .argName("corp name")
-                .build();
-        Option forceOption = Option.builder("f")
-                .longOpt("force")
-                .desc("Force command, even if you don't have permission for it")
-                .build();
-        getCommandOptions().getCliOptions().addOption(corpOption);
-        getCommandOptions().getCliOptions().addOption(forceOption);
     }
 
     @Override
-    public boolean onExecute(CommandSender sender, String label, String[] args) {
-        SinkUser user = SinkLibrary.getInstance().getUser(sender);
-        Corporation userCorp = null;
-        if (user instanceof IngameUser) {
-            userCorp = CorporationManager.getInstance().getUserCorporation((IngameUser) user);
-        }
-
-        boolean isExplicitForceMode = sender.hasPermission("reallifeplugin.corporations.forcecommand") && getCommandLine().hasOption('f');
-
-        boolean isForceMode = isExplicitForceMode;
-        if (sender.hasPermission("reallifeplugin.corporations.admin") && getCommandLine().hasOption('c')) {
-            isForceMode = true;
-            userCorp = CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('c'));
-            if (userCorp == null) {
-                sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", getCommandLine().getOptionValue('c')));
-                return true;
+    public void onRegistered() {
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "user") {
+            {
+                supportsNullCorporation();
             }
-        }
 
-        if (args.length < 1 && user instanceof IngameUser) {
-            if (userCorp != null) {
-                sendCorporationInfo(user, userCorp);
-                return true;
-            }
-            user.sendMessage(m("Corporation.NotInCorporation"));
-            return true;
-        } else if (args.length < 1 && !(user instanceof IngameUser)) {
-            return false;
-        }
+            @Description("Get information about an user")
+            @Usage("[player]")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                IngameUser target = null;
+                if (sender instanceof Player) {
+                    target = SinkLibrary.getInstance().getIngameUser((Player) sender);
+                }
 
-        List<String> tmp = new ArrayList<>(Arrays.asList(args));
-        tmp.remove(args[0]);
-        String[] moreArgs = tmp.toArray(new String[tmp.size()]);
-
-        switch (args[0].toLowerCase()) {
-            case "?":
-            case "help":
-                sendHelp(user);
-                break;
-
-            case "user": {
-                IngameUser target = (IngameUser) user;
                 if (args.length > 1) {
                     target = SinkLibrary.getInstance().getIngameUser(args[1]);
                     if (!target.hasPlayedBefore()) {
@@ -137,143 +102,178 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     }
                 }
 
-                sendUserInfo(user, target);
-                break;
+                if (target == null) {
+                    return false;
+                }
+
+                sendUserInfo(sender, target);
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "list") {
+            {
+                Options options = getCommandOptions().getCliOptions();
+                Option moneyOption = Option.builder("m")
+                        .desc("Sort by money")
+                        .longOpt("money")
+                        .build();
+                options.addOption(moneyOption);
+                supportsNullCorporation();
             }
 
-            case "admin": {
-                if (user instanceof IngameUser || (user instanceof IrcUser && user.isOp())) {
-                    if (!user.hasPermission("reallifeplugin.corporations.admin")) {
-                        throw new NotEnoughPermissionsException();
-                    }
-                    if (moreArgs.length < 1) {
-                        throw new NotEnoughArgumentsException();
-                    }
-                    handleAdminCommand(user, moreArgs);
-                    break;
-                }
+            @Description("List all corporations")
+            @Usage("[-m]")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                sendCorporationsList(sender, getCommandLine().hasOption('m'));
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "leave") {
+            {
+                getCommandOptions().setPlayerOnly(true);
             }
 
-            case "list": {
-                boolean listByMoney = false;
-                if (args.length > 1) {
-                    listByMoney = args[1].equalsIgnoreCase("money");
+            @Description("Leave a corporation")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation userCorp = getUserCorporation(sender);
+                if (getUserCorporation(sender) == null) {
+                    sender.sendMessage(m("Corporation.NotInCorporation"));
+                    return true;
                 }
-                sendCorporationsList(user, listByMoney);
-                break;
+
+                IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+                userCorp.removeMember(user);
+                userCorp.announce(StringUtil.format(m("Corporation.UserLeftCorporation"), user, null, null));
+                sender.sendMessage(m("Corporation.LeftCorporation"));
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "deposit", CorporationPermissions.DEPOSIT) {
+            {
+                getCommandOptions().setPlayerOnly(true);
+                getCommandOptions().setMinRequiredArgs(1);
             }
 
-            case "leave": {
-                if (user instanceof IngameUser) {
-                    if (userCorp == null) {
-                        user.sendMessage(m("Corporation.NotInCorporation"));
-                        break;
-                    }
-
-                    userCorp.removeMember((IngameUser) user);
-
-                    userCorp.announce(StringUtil.format(m("Corporation.UserLeftCorporation"), user, null, null));
-                    user.sendMessage(m("Corporation.LeftCorporation"));
-                    break;
+            @Description("Deposit money to corporation account")
+            @Usage("<amount>")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                if (getUserCorporation(sender) == null) {
+                    sender.sendMessage(m("Corporation.NotInCorporation"));
+                    return true;
                 }
+
+                deposit(SinkLibrary.getInstance().getIngameUser((Player) sender), getUserCorporation(sender), getArg(args, 0, Double.class));
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "withdraw", CorporationPermissions.WITHDRAW) {
+            {
+                getCommandOptions().setPlayerOnly(true);
+                getCommandOptions().setMinRequiredArgs(1);
             }
 
-            case "deposit": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.DEPOSIT)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (!(user instanceof IngameUser)) {
-                    break;
+            @Description("Withdraw money from corporation account")
+            @Usage("<amount>")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                if (getUserCorporation(sender) == null) {
+                    sender.sendMessage(m("Corporation.NotInCorporation"));
+                    return true;
                 }
 
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
-                }
-                try {
-                    if (userCorp == null) {
-                        user.sendMessage(m("Corporation.NotInCorporation"));
-                        break;
-                    }
-                    deposit((IngameUser) user, userCorp, Double.valueOf(args[1]));
-                } catch (NumberFormatException ignored) {
-                    user.sendMessage(GENERAL_INVALID_VALUE.format(args[1]));
-                }
-                break;
+                withdraw(SinkLibrary.getInstance().getIngameUser((Player) sender), getUserCorporation(sender), getArg(args, 0, Double.class));
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "join") {
+            {
+                getCommandOptions().setPlayerOnly(true);
+                getCommandOptions().setMinRequiredArgs(1);
+                supportsNullCorporation();
             }
 
-            case "join": {
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
-                }
+            @Description("Join a corporation")
+            @Usage("<corporation>")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation userCorp = getUserCorporation(sender);
                 if (userCorp != null) {
                     sender.sendMessage(RpLanguage.m("Corporation.AlreadyInCorporation", userCorp.getFormattedName()));
-                    break;
+                    return true;
                 }
 
-                Corporation corp = CorporationManager.getInstance().getCorporation(args[1]);
+                Corporation corp = CorporationManager.getInstance().getCorporation(args[0]);
                 if (corp == null) {
-                    sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", args[1]));
-                    break;
+                    sender.sendMessage(RpLanguage.m("Corporation.CorporationNotFound", args[0]));
+                    return true;
                 }
 
-                if (!corp.isPublic() && !CorporationInviteQueue.hasInvite(((IngameUser) user).getUniqueId(), corp) && !isExplicitForceMode) {
+                if (!corp.isPublic() && !CorporationInviteQueue.hasInvite(((Player) sender).getUniqueId(), corp) && !isForceMode(sender)) {
                     sender.sendMessage(RpLanguage.m("Corporation.NotInvited", corp.getFormattedName()));
-                    break;
+                    return true;
                 }
 
                 if (corp.getMemberLimit() > 0 && corp.getMemberCount() >= (corp.getMemberLimit() + 1)) {
                     sender.sendMessage(RpLanguage.m("Corporation.CorporationFull"));
-                    break;
+                    return true;
                 }
 
-                corp.addMember((IngameUser) user, corp.getDefaultRank());
+                IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+
+                corp.addMember(user, corp.getDefaultRank());
                 corp.announce(RpLanguage.m("Corporation.Joined", ((Player) sender).getDisplayName()));
-                CorporationInviteQueue.remove(((IngameUser) user).getUniqueId(), corp);
-                break;
+                CorporationInviteQueue.remove(user.getUniqueId(), corp);
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "invite", CorporationPermissions.INVITE) {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
             }
 
-            case "rank":
-                if (userCorp == null) {
-                    sender.sendMessage(RpLanguage.m("Corporation.NotInCorporation"));
-                    break;
-                }
-                handleRankCommand(sender, userCorp, args, isForceMode);
-                break;
+            @Description("Invite a player to the corporation")
+            @Usage("<player>")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                SinkUser user = SinkLibrary.getInstance().getUser(sender);
 
-            case "invite": {
+                Corporation userCorp = getUserCorporation(sender);
                 if (userCorp == null) {
                     sender.sendMessage(RpLanguage.m("Corporation.NotInCorporation"));
-                    break;
-                }
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.KICK)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
+                    return true;
                 }
 
                 if (userCorp.getMemberLimit() > 0 && userCorp.getMemberCount() >= (userCorp.getMemberLimit() + 1)) {
                     sender.sendMessage(RpLanguage.m("Corporation.CorporationFull"));
-                    break;
+                    return true;
                 }
 
                 IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1], true);
-                if (!isExplicitForceMode && !target.isOnline()) {
+                if (!isForceMode(sender) && !target.isOnline()) {
                     throw new UserNotOnlineException(target.getDisplayName());
                 }
 
                 if (CorporationInviteQueue.hasInvite(target.getUniqueId(), userCorp)) {
                     sender.sendMessage(RpLanguage.m("Corporation.AlreadyInvited", target.getDisplayName()));
-                    break;
+                    return true;
                 }
 
-                if (!isExplicitForceMode) {
+                if (!isExplicitForceMode(sender)) {
                     CorporationInviteQueue.add(target.getUniqueId(), userCorp);
                     sender.sendMessage(RpLanguage.m("Corporation.UserHasBeenInvited", target.getDisplayName()));
                     target.sendMessage(
                             RpLanguage
                                     .m("Corporation.GotInvited", user.getDisplayName(), userCorp.getFormattedName(), userCorp.getName()));
-                    break;
+                    return true;
                 }
 
                 Corporation corp = CorporationManager.getInstance().getUserCorporation(target);
@@ -281,106 +281,393 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     sender.sendMessage(RpLanguage
                                                .m("Corporation.UserAlreadyInCorporation", target.getDisplayName(), corp.getFormattedName(),
                                                   corp.getName()));
-                    break;
+                    return true;
                 }
 
                 userCorp.addMember(target, userCorp.getDefaultRank());
                 sender.sendMessage(GENERAL_SUCCESS.format());
-                break;
+                return true;
+            }
+        });
+
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "kick", CorporationPermissions.KICK) {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
             }
 
-            case "kick": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.INVITE)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
+            @Description("Kick a player from a corporation")
+            @Usage("<player>")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation userCorp = getUserCorporation(sender);
+                if (userCorp == null) {
+                    sender.sendMessage(RpLanguage.m("Corporation.NotInCorporation"));
+                    return true;
                 }
 
-                IngameUser u = SinkLibrary.getInstance().getIngameUser(args[1]);
+                IngameUser u = SinkLibrary.getInstance().getIngameUser(args[0]);
                 if (!userCorp.isMember(u)) {
-                    user.sendMessage(StringUtil.format(m("Corporation.NotMember"), args[1]));
-                    break;
+                    sender.sendMessage(StringUtil.format(m("Corporation.NotMember"), args[0]));
+                    return true;
                 }
-                if (!isForceMode && user instanceof IngameUser && userCorp.getRank(u).priority <= userCorp
-                        .getRank((IngameUser) user).priority) {
+
+                IngameUser user = null;
+                if (sender instanceof Player) {
+                    user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+                }
+                if (!isForceMode(sender) && (!(user instanceof IngameUser) || userCorp.getRank(u).priority <= userCorp.getRank(user).priority)) {
                     user.sendMessage(m("Corporation.NotEnoughPriority"));
                     return true;
                 }
                 userCorp.removeMember(u);
+
                 if (u.isOnline()) {
                     u.sendMessage(StringUtil.format(m("Corporation.Kicked"), userCorp.getName()));
                     user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationManager.getInstance().getFormattedName(u)));
                 }
-                break;
+                return true;
             }
+        });
 
-            case "delete": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.DELETE)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
+        registerSubCommand(new CorporationSubCommand<CorporationCommand>(this, "delete", CorporationPermissions.DELETE) {
+            @Description("Delete the corporation. THIS CAN NOT BE UNDONE.")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corp = getUserCorporation(sender);
+                if (corp == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
+                    return false;
                 }
 
-                Corporation corp = CorporationManager.getInstance().getCorporation(args[1]);
-                boolean successful = CorporationManager.getInstance().deleteCorporation(user, corp);
+                CorporationManager.getInstance().deleteCorporation(corp);
+                sender.sendMessage(StringUtil.format(m("Corporation.Deleted"), corp.getFormattedName()));
 
-                if (successful) {
-                    user.sendMessage(StringUtil.format(m("Corporation.Deleted"), corp.getFormattedName()));
-                }
-                break;
+                return true;
             }
+        });
 
-            case "withdraw":
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission((IngameUser) user, CorporationPermissions.WITHDRAW)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
-                }
-                if (!(user instanceof IngameUser)) {
-                    break;
-                }
-                try {
-                    withdraw((IngameUser) user, userCorp, Double.valueOf(args[1]));
-                } catch (NumberFormatException ignored) {
-                    user.sendMessage(GENERAL_INVALID_VALUE.format(args[1]));
-                }
-                break;
-
-            default: {
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
-                sendCorporationInfo(user, corporation);
-                break;
-            }
-        }
-
-        return true;
+        registerAdminSubCommands();
+        registerRankCommands();
     }
 
-    private void handleRankCommand(CommandSender sender, Corporation corp, String[] args, boolean isForceMode) {
-        if (!(sender instanceof Player)) {
-            return;
-        }
+    private void registerAdminSubCommands() {
+        SinkSubCommand adminCommand = new CorporationSubCommand<CorporationCommand>(this, "admin") {
+            {
+                supportsNullCorporation();
+            }
 
-        if (args.length < 2) {
-            throw new NotEnoughArgumentsException();
-        }
+            @DefaultPermission
+            @Description("Administrate corporations")
+            @Override
+            protected boolean onExecute(CommandSender commandSender, String s, String[] strings) throws ParseException {
+                return false;
+            }
+        };
 
-        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+        registerSubCommand(adminCommand);
 
-        switch (args[1].toLowerCase().trim()) {
-            case "permissionslist": {
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "new") {
+            {
+                getCommandOptions().setMinRequiredArgs(3);
+                supportsNullCorporation();
+            }
+
+            @Usage("<name> <base> <CEO> [world]")
+            @Description("Create a new corporation")
+            @DefaultPermission
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                SinkUser user = SinkLibrary.getInstance().getUser(sender);
+                if ((!(user instanceof IngameUser) && args.length < 4)) {
+                    return false;
+                }
+
+                String name = args[0];
+                String ceo = args[1];
+                String base = args[2];
+                World world;
+                if (user instanceof IngameUser) {
+                    world = ((IngameUser) user).getPlayer().getWorld();
+                } else {
+                    world = Bukkit.getWorld(args[3]);
+                }
+
+                boolean successful = CorporationManager.getInstance().createCorporation(getModule(), user, name, ceo, base, world);
+                Corporation corp = CorporationManager.getInstance().getCorporation(name);
+                String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
+                msg = StringUtil.format(msg, corp.getFormattedName());
+                user.sendMessage(msg);
+                return true;
+            }
+        });
+
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "setmemberlimit") {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
+                supportsNullCorporation();
+            }
+
+            @Usage("<corporation> <memberlimit>")
+            @Description("Set the maximum member limit for a corporation")
+            @DefaultPermission
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+
+                int limit = getArg(args, 1, Integer.class);
+                corporation.setMemberLimit(limit);
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("MemberLimit", limit));
+                return true;
+            }
+        });
+
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "getmemberlimit") {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
+                supportsNullCorporation();
+            }
+
+            @Usage("<corporation>")
+            @Description("Get the maximum member limit for a corporation")
+            @DefaultPermission
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+
+                sender.sendMessage("Limit: " + corporation.getMemberLimit());
+                return true;
+            }
+        });
+
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "enablefishing") {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
+                supportsNullCorporation();
+            }
+
+            @Usage("<corporation>")
+            @Description("Enable fishing for a corporation")
+            @DefaultPermission
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+
+                corporation.setOption(CorporationOptions.FISHING, true);
+                sender.sendMessage(GENERAL_SUCCESS.format());
+                return true;
+            }
+        });
+
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "disablefishing") {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
+                supportsNullCorporation();
+            }
+
+            @Usage("<corporation>")
+            @Description("Disable fishing for a corporation")
+            @DefaultPermission
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+
+                corporation.setOption(CorporationOptions.FISHING, false);
+                sender.sendMessage(GENERAL_SUCCESS.format());
+                return true;
+            }
+        });
+
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "setbase") {
+            {
+                getCommandOptions().setMinRequiredArgs(3);
+                supportsNullCorporation();
+            }
+
+            @Override
+            @Usage("<corporation> <base> [world]")
+            @DefaultPermission
+            @Description("Create a new corporation")
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                SinkUser user = SinkLibrary.getInstance().getUser(sender);
+                if (!(user instanceof IngameUser) && args.length < 4) {
+                    return false;
+                }
+
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+
+                World world;
+                if (user instanceof IngameUser) {
+                    world = ((IngameUser) user).getPlayer().getWorld();
+                } else {
+                    world = Bukkit.getWorld(args[2]);
+                }
+
+                if (corporation == null) {
+                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+                corporation.setBase(world, args[1]);
+                user.sendMessage(m("Corporation.BaseSet"));
+                return true;
+            }
+        });
+
+        SinkSubCommand<SinkSubCommand> moneyCommand = new CorporationSubCommand<SinkSubCommand>(adminCommand, "money") {
+            {
+                supportsNullCorporation();
+            }
+
+            @DefaultPermission
+            @Description("Money transactions")
+            @Override
+            protected boolean onExecute(CommandSender commandSender, String s, String[] strings) throws ParseException {
+                return false;
+            }
+        };
+
+        adminCommand.registerSubCommand(moneyCommand);
+
+        final Options forceTransactionOptions = new Options();
+        forceTransactionOptions.addOption(Option.builder("s")
+                                                  .longOpt("skipchecks")
+                                                  .desc("force transactions")
+                                                  .build());
+        moneyCommand.registerSubCommand(new CorporationSubCommand(moneyCommand, "give") {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
+                getCommandOptions().setCliOptions(forceTransactionOptions);
+                supportsNullCorporation();
+            }
+
+            @Override
+            @Usage("<corporation> <amount>")
+            @DefaultPermission
+            @Description("Give money to a corporation")
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+                double amount = getArg(args, 1, Double.class);
+                if (amount <= 0) {
+                    sender.sendMessage(GENERAL_INVALID_VALUE.format(amount));
+                    return true;
+                }
+
+                if (corporation.addBalance(amount, !getCommandLine().hasOption('s'))) {
+                    sender.sendMessage(GENERAL_SUCCESS.format());
+                } else {
+                    sender.sendMessage(ChatColor.DARK_RED + "Transaction Failure (try -s option?)");
+                }
+                return true;
+            }
+        });
+
+        moneyCommand.registerSubCommand(new CorporationSubCommand(moneyCommand, "take") {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
+                getCommandOptions().setCliOptions(forceTransactionOptions);
+                supportsNullCorporation();
+            }
+
+            @Override
+            @Usage("<corporation> <amount>")
+            @DefaultPermission
+            @Description("Take money from a corporation")
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+                double amount = getArg(args, 1, Double.class);
+                if (amount <= 0) {
+                    sender.sendMessage(GENERAL_INVALID_VALUE.format(amount));
+                    return true;
+                }
+
+                amount = -amount;
+                if (corporation.addBalance(amount, !getCommandLine().hasOption('s'))) {
+                    sender.sendMessage(GENERAL_SUCCESS.format());
+                } else {
+                    sender.sendMessage(ChatColor.DARK_RED + "Transaction Failure (try -s option?)");
+                }
+                return true;
+            }
+        });
+
+        adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "rename") {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
+                supportsNullCorporation();
+            }
+
+            @Usage("<corporation> <new_name>")
+            @DefaultPermission
+            @Description("Rename a corporation")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
+                if (corporation == null) {
+                    sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
+                    return true;
+                }
+
+                if (CorporationManager.getInstance().renameCorporation(SinkLibrary.getInstance().getUser(sender), corporation, args[1])) {
+                    sender.sendMessage(GENERAL_SUCCESS.format());
+                }
+
+                return true;
+            }
+        });
+    }
+
+    private void registerRankCommands() {
+        SinkSubCommand rankCommand = new SinkSubCommand<CorporationCommand>(this, "rank") {
+            @DefaultPermission
+            @Description("Manage ranks")
+            @Override
+            protected boolean onExecute(CommandSender commandSender, String s, String[] strings) throws ParseException {
+                return false;
+            }
+        };
+
+        registerSubCommand(rankCommand);
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "permissionslist") {
+            @DefaultPermission
+            @Aliases("plist")
+            @Usage("[group]")
+            @Description("List all permissions")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corp = getUserCorporation(sender);
                 CorpRank rank;
-                if (args.length >= 3) {
-                    rank = handleRank(sender, corp, args[2], false);
+                if (args.length > 0) {
+                    rank = handleRank(sender, corp, args[0], false);
                     if (rank == null) {
-                        break;
+                        return false;
                     }
                 } else {
-                    if (isForceMode) {
-                        throw new NotEnoughArgumentsException();
+                    if (isForceMode(sender)) {
+                        return false;
                     }
                     rank = corp.getRank(SinkLibrary.getInstance().getIngameUser((Player) sender));
                 }
@@ -399,10 +686,16 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                                        + (CorporationManager.getInstance().hasCorpPermission(rank, perm) ? ChatColor.DARK_GREEN : ChatColor.DARK_RED)
                                        + "value: " + Objects.toString(value) + ChatColor.GRAY + ")");
                 }
-                break;
+                return true;
             }
+        });
 
-            case "list": {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "list") {
+            @DefaultPermission
+            @Description("List all ranks")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corp = getUserCorporation(sender);
                 sender.sendMessage(ChatColor.GOLD + corp.getFormattedName() + ChatColor.GRAY + "'s Ranks:");
                 for (CorpRank rank : corp.getRanks()) {
                     String defaultText = ChatColor.GRAY + "";
@@ -414,26 +707,30 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                             "• " + ChatColor.GOLD + rank.name + defaultText + " (" + ChatColor.GOLD + rank.priority + ChatColor.GRAY + ")" + (
                                     StringUtil.isEmptyOrNull(rank.description) ? "" : ": " + rank.description));
                 }
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "delete", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
             }
 
-            case "delete": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 3) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+            @DefaultPermission
+            @Usage("<rank>")
+            @Description("Delete a rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                Corporation corp = getUserCorporation(sender);
+                CorpRank rank = handleRank(sender, corp, args[0], !isForceMode(sender));
                 if (rank == null) {
-                    break;
+                    return false;
                 }
 
                 int defaultRankId = corp.getDefaultRank().id;
                 if (defaultRankId == rank.id) {
                     sender.sendMessage(RpLanguage.m("Corporation.DeletingDefaultRank"));
-                    break;
+                    return true;
                 }
 
                 for (CorpUserRow row : corp.getRankUsers(rank)) {
@@ -443,37 +740,34 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 getModule().getTable(CorpRanksTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", rank.id);
                 sender.sendMessage(GENERAL_SUCCESS.format());
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "new", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
-            case "new": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
+            @DefaultPermission
+            @Usage("<rank> <priority>")
+            @Description("Creata a new rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                String rankName = args[0];
+                Corporation corp = getUserCorporation(sender);
+                int priortiy = getArg(args, 1, Integer.class);
 
-                String name = args[2];
-
-                int priortiy;
-                try {
-                    priortiy = Integer.parseInt(args[3]);
-                } catch (NumberFormatException e) {
-                    sender.sendMessage("Invalid number: " + args[3]);
-                    break;
-                }
-
-                if (!isForceMode) {
+                if (!isForceMode(sender)) {
                     CorpRank userRank = corp.getRank(SinkLibrary.getInstance().getIngameUser(((Player) sender)));
 
                     if (priortiy < userRank.priority) {
                         sender.sendMessage(RpLanguage.m("Corporation.NotEnoughPriority"));
-                        break;
+                        return true;
                     }
                 }
                 CorpRank rank = new CorpRank();
-                rank.name = name;
+                rank.name = rankName;
                 rank.prefix = ChatColor.GOLD.toString();
                 rank.description = null;
                 rank.priority = priortiy;
@@ -482,163 +776,176 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 getModule().getTable(CorpRanksTable.class).insert(rank);
 
                 sender.sendMessage(GENERAL_SUCCESS.format());
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "priority", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
-            case "priority": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
+            @DefaultPermission
+            @Usage("<rank> <new-priority>")
+            @Description("Set the priority for a rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                String rankName = args[0];
+                Corporation corp = getUserCorporation(sender);
+                int priortiy = getArg(args, 1, Integer.class);
 
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+                CorpRank rank = handleRank(sender, corp, rankName, !isForceMode(sender));
                 if (rank == null) {
-                    break;
+                    return false;
                 }
 
-                int priortiy;
-                try {
-                    priortiy = Integer.parseInt(args[3]);
-                } catch (NumberFormatException e) {
-                    sender.sendMessage("Invalid number: " + args[3]);
-                    break;
-                }
-
-                try {
-                    getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `priority`=? WHERE `id` = ?", priortiy, rank.id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `priority`=? WHERE `id` = ?", priortiy, rank.id);
 
                 sender.sendMessage(GENERAL_SUCCESS.format());
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "prefix", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
-            case "prefix": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+            @DefaultPermission
+            @Usage("<rank> <prefix>")
+            @Description("Set the prefix of a rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                String rankName = args[0];
+                Corporation corp = getUserCorporation(sender);
+                CorpRank rank = handleRank(sender, corp, rankName, !isForceMode(sender));
                 if (rank == null) {
-                    break;
+                    return false;
                 }
-
                 String prefix = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 3, args.length));
-                try {
-                    getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `prefix`=? WHERE `id` = ?", prefix, rank.id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+
+                getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `prefix`=? WHERE `id` = ?", prefix, rank.id);
 
                 sender.sendMessage(GENERAL_SUCCESS_SET.format("Prefix", prefix));
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "description", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
-            case "description": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+            @DefaultPermission
+            @Usage("<rank> <description>")
+            @Description("Set the description of a rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                String rankName = args[0];
+                Corporation corp = getUserCorporation(sender);
+                CorpRank rank = handleRank(sender, corp, rankName, !isForceMode(sender));
                 if (rank == null) {
-                    break;
+                    return false;
                 }
 
-                String description = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 3, args.length));
+                String description = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 1, args.length));
                 if (description.trim().equalsIgnoreCase("null") || description.trim().equalsIgnoreCase("off") || description.trim()
                         .equalsIgnoreCase("remove")) {
                     description = null;
                 }
 
-                try {
-                    getModule().getTable(CorpRanksTable.class)
-                            .executeUpdate("UPDATE `{TABLE}` SET `description`=? WHERE `id` = ?", description, rank.id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                getModule().getTable(CorpRanksTable.class)
+                        .executeUpdate("UPDATE `{TABLE}` SET `description`=? WHERE `id` = ?", description, rank.id);
 
                 sender.sendMessage(GENERAL_SUCCESS_SET.format("Description", description));
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "rename", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
-            case "rename": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+            @DefaultPermission
+            @Usage("<rank> <new_name>")
+            @Description("Rename a rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                String rankName = args[0];
+                String newName = args[1];
+                Corporation corp = getUserCorporation(sender);
+                CorpRank rank = handleRank(sender, corp, rankName, !isForceMode(sender));
                 if (rank == null) {
-                    break;
+                    return false;
                 }
 
-                try {
-                    getModule().getTable(CorpRanksTable.class)
-                            .executeUpdate("UPDATE `{TABLE}` SET `name`=? WHERE `id` = ?", args[3], rank.id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                getModule().getTable(CorpRanksTable.class)
+                        .executeUpdate("UPDATE `{TABLE}` SET `name`=? WHERE `id` = ?", newName, rank.id);
+                sender.sendMessage(GENERAL_SUCCESS_SET.format("Name", newName));
+                return true;
+            }
+        });
 
-                sender.sendMessage(GENERAL_SUCCESS_SET.format("Name", args[3]));
-                break;
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "set", CorporationPermissions.SET_RANK) {
+            {
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
-            case "set": {
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.SET_RANK)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
+            @DefaultPermission
+            @Usage("<player> <rank>")
+            @Description("Set the rank of a player")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                IngameUser target = getArg(args, 0, IngameUser.class);
+                String rankName = args[1];
+                Corporation corp = getUserCorporation(sender);
+                CorpRank rank = handleRank(sender, corp, rankName, !isForceMode(sender));
+                if (rank == null) {
+                    return false;
                 }
 
-                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[2]);
                 if (!corp.isMember(target)) {
                     sender.sendMessage(
                             RpLanguage.m("Corporation.UserNotMember", target.getDisplayName(), corp.getFormattedName()));
-                    break;
-                }
-
-                CorpRank rank = handleRank(sender, corp, args[3], !isForceMode);
-                if (rank == null) {
-                    break;
+                    return true;
                 }
 
                 corp.setRank(target, rank);
                 sender.sendMessage(GENERAL_SUCCESS_SET.format("Rank of " + target.getName(), rank.name));
-                break;
+                return true;
+            }
+        });
+
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "setpermission", CorporationPermissions.MANAGE_RANKS) {
+            {
+                getCommandOptions().setMinRequiredArgs(3);
             }
 
-            case "setpermission":
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.MANAGE_RANKS)) {
-                    throw new NotEnoughPermissionsException();
-                }
-                if (args.length < 5) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                CorpRank rank = handleRank(sender, corp, args[2], !isForceMode);
+            @DefaultPermission
+            @Usage("<rank> <permission> <value>")
+            @Description("Set a permission for a rank")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                String rankName = args[0];
+                Corporation corp = getUserCorporation(sender);
+                CorpRank rank = handleRank(sender, corp, rankName, !isForceMode(sender));
                 if (rank == null) {
-                    break;
-                }
-                Permission permission = CorporationPermissions.getInstance().getPermission(args[3].toUpperCase());
-                if (permission == null) {
-                    sender.sendMessage(RpLanguage.m("Corporation.UnknownPermission", args[3].toUpperCase()));
-                    break;
+                    return false;
                 }
 
-                if (!isForceMode && !CorporationManager.getInstance().hasCorpPermission(user, permission)) {
+                Permission permission = CorporationPermissions.getInstance().getPermission(args[1].toUpperCase());
+                if (permission == null) {
+                    sender.sendMessage(RpLanguage.m("Corporation.UnknownPermission", args[1].toUpperCase()));
+                    return true;
+                }
+
+                SinkUser user = SinkLibrary.getInstance().getUser(sender);
+                if (!isForceMode(sender) && (getUserCorporation(sender) == null ||
+                                             (user instanceof IngameUser && !CorporationManager.getInstance()
+                                                     .hasCorpPermission((IngameUser) user, permission)))) {
                     sender.sendMessage(RpLanguage.m("Corporation.NotEnoughPriority"));
-                    break;
+                    return true;
                 }
 
                 String[] valueArgs = new String[args.length - 4];
@@ -656,12 +963,33 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
 
                 sender.sendMessage(GENERAL_SUCCESS_SET.format(permission, Objects.toString(value)));
-                break;
+                return true;
+            }
+        });
+    }
 
-            default:
-                sender.sendMessage("Unknown subcommand: " + args[1]);
-                break;
+    @Override
+    public boolean onExecute(CommandSender sender, String label, String[] args) {
+        SinkUser user = SinkLibrary.getInstance().getUser(sender);
+        Corporation userCorp = null;
+        if (user instanceof IngameUser) {
+            userCorp = CorporationManager.getInstance().getUserCorporation((IngameUser) user);
         }
+
+        if (args.length < 1 && user instanceof IngameUser) {
+            if (userCorp != null) {
+                sendCorporationInfo(user, userCorp);
+                return true;
+            }
+            user.sendMessage(m("Corporation.NotInCorporation"));
+            return true;
+        } else if (args.length < 1 && !(user instanceof IngameUser)) {
+            return false;
+        }
+
+        Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
+        sendCorporationInfo(user, corporation);
+        return true;
     }
 
     private void deposit(IngameUser user, Corporation corp, double amount) {
@@ -698,322 +1026,8 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         corp.announce(m("Corporation.Withdraw", user.getDisplayName(), amount));
     }
 
-    private void handleAdminCommand(SinkUser user, String[] args) {
-        switch (args[0].toLowerCase()) {
-            case "?":
-            case "help":
-                sendAdminHelp(user);
-                break;
-
-            case "new": {
-                if ((user instanceof IngameUser && args.length < 4) || (!(user instanceof IngameUser) && args.length < 5)) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                String name = args[1];
-                String base = args[3];
-                World world;
-                if (user instanceof IngameUser) {
-                    world = ((IngameUser) user).getPlayer().getWorld();
-                } else {
-                    world = Bukkit.getWorld(args[4]);
-                }
-
-                boolean successful = CorporationManager.getInstance().createCorporation(getModule(), user, name, args[2], base, world);
-                Corporation corp = CorporationManager.getInstance().getCorporation(name);
-                String msg = successful ? m("Corporation.Created") : m("Corporation.CreationFailed");
-                msg = StringUtil.format(msg, corp.getFormattedName());
-                user.sendMessage(msg);
-                break;
-            }
-
-            case "setmemberlimit": {
-                if (args.length < 3) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-
-                int limit = Integer.valueOf(args[2]);
-                corporation.setMemberLimit(limit);
-                user.sendMessage(GENERAL_SUCCESS_SET.format("MemberLimit", limit));
-                break;
-            }
-
-            case "enablefishing": {
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-
-                corporation.setOption(CorporationOptions.FISHING, true);
-                user.sendMessage(GENERAL_SUCCESS.format());
-                break;
-            }
-
-            case "disablefishing": {
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-
-                corporation.setOption(CorporationOptions.FISHING, false);
-                user.sendMessage(GENERAL_SUCCESS.format());
-                break;
-            }
-
-            case "getmemberlimit": {
-                if (args.length < 2) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-
-                user.sendMessage("Limit: " + corporation.getMemberLimit());
-                break;
-            }
-
-            case "restrictblocks": {
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corp = CorporationManager.getInstance().getCorporation(args[2]);
-                if (corp == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[2]));
-                    return;
-                }
-
-                List<String>
-                        restrictedBlocks =
-                        corp.getOption(CorporationOptions.RESTRICTED_BLOCKS, ArrayList.class, new ArrayList<String>());
-
-                switch (args[1].toLowerCase()) {
-                    case "add": {
-                        String name = args[3];
-                        if (!name.equalsIgnoreCase("all")) {
-                            name = Material.getMaterial(args[3]).name();
-                        }
-                        restrictedBlocks.add(name.toUpperCase());
-                        corp.setOption(CorporationOptions.RESTRICTED_BLOCKS, restrictedBlocks);
-                        user.sendMessage(GENERAL_SUCCESS.format());
-                        break;
-                    }
-
-                    case "remove": {
-                        String name = args[3];
-                        if (!name.equalsIgnoreCase("all")) {
-                            name = Material.getMaterial(args[3]).name();
-                        }
-                        restrictedBlocks.remove(name.toUpperCase());
-                        corp.setOption(CorporationOptions.RESTRICTED_BLOCKS, restrictedBlocks);
-                        user.sendMessage(GENERAL_SUCCESS.format());
-                        break;
-                    }
-
-                    case "list":
-                        user.sendMessage("Restricted Blocks: " + StringUtil
-                                .formatArrayToString(restrictedBlocks.toArray(new String[restrictedBlocks.size()]), ", "));
-                        break;
-
-                    default:
-                        user.sendMessage(m("General.UnknownSubCommand", args[1]));
-                        break;
-                }
-            }
-
-            case "allowedblocks": {
-                if (args.length < 4) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corp = CorporationManager.getInstance().getCorporation(args[2]);
-                if (corp == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[2]));
-                    return;
-                }
-
-                List<String>
-                        allowedBlocks =
-                        corp.getOption(CorporationOptions.ALLOWED_BLOCKS, ArrayList.class, new ArrayList<String>());
-
-                switch (args[1].toLowerCase()) {
-                    case "add": {
-                        String name = args[3];
-                        if (!name.equalsIgnoreCase("all")) {
-                            name = Material.getMaterial(args[3]).name();
-                        }
-                        allowedBlocks.add(name.toUpperCase());
-                        corp.setOption(CorporationOptions.ALLOWED_BLOCKS, allowedBlocks);
-                        user.sendMessage(GENERAL_SUCCESS.format());
-                        break;
-                    }
-
-                    case "remove": {
-                        String name = args[3];
-                        if (!name.equalsIgnoreCase("all")) {
-                            name = Material.getMaterial(args[3]).name();
-                        }
-                        allowedBlocks.remove(name.toUpperCase());
-                        corp.setOption(CorporationOptions.ALLOWED_BLOCKS, allowedBlocks);
-                        user.sendMessage(GENERAL_SUCCESS.format());
-                        break;
-                    }
-
-                    case "list":
-                        user.sendMessage(
-                                "Allowed Blocks: " + StringUtil.formatArrayToString(allowedBlocks.toArray(new String[allowedBlocks.size()]), ", "));
-                        break;
-
-                    default:
-                        user.sendMessage(m("General.UnknownSubCommand", args[1]));
-                        break;
-                }
-            }
-
-            case "setbase": {
-                if (args.length < 3 || (!(user instanceof IngameUser) && args.length < 4)) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-
-                World world;
-                if (user instanceof IngameUser) {
-                    world = ((IngameUser) user).getPlayer().getWorld();
-                } else {
-                    world = Bukkit.getWorld(args[3]);
-                }
-
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-                corporation.setBase(world, args[2]);
-                user.sendMessage(m("Corporation.BaseSet"));
-                break;
-            }
-
-            case "give": {
-                if (args.length < 3) {
-                    throw new NotEnoughArgumentsException();
-                }
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-                double amount = Double.valueOf(args[2]);
-                if (amount < 1) {
-                    user.sendMessage(GENERAL_INVALID_VALUE.format(amount));
-                    return;
-                }
-
-                if (corporation.addBalance(amount)) {
-                    user.sendMessage(GENERAL_SUCCESS.format());
-                } else {
-                    user.sendMessage(ChatColor.DARK_RED + "Failure"); //Todo
-                }
-
-                break;
-            }
-
-            case "rename": {
-                if (args.length < 3) {
-                    throw new NotEnoughArgumentsException();
-                }
-
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-
-                if (CorporationManager.getInstance().renameCorporation(user, corporation, args[2])) {
-                    user.sendMessage(GENERAL_SUCCESS.format());
-                }
-                break;
-            }
-
-            case "take": {
-                if (args.length < 3) {
-                    throw new NotEnoughArgumentsException();
-                }
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
-                if (corporation == null) {
-                    user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[1]));
-                    return;
-                }
-                double amount = Double.valueOf(args[2]);
-                if (amount < 1) {
-                    user.sendMessage(GENERAL_INVALID_VALUE.format(amount));
-                    return;
-                }
-                amount = -amount;
-                corporation.addBalance(amount);
-                user.sendMessage(GENERAL_SUCCESS.format());
-                break;
-            }
-
-            default: {
-                user.sendMessage(m("General.UnknownSubCommand", args[0]));
-                break;
-            }
-        }
-    }
-
-
-
-    private void sendHelp(SinkUser user) {
-        user.sendMessage(ChatColor.RED + "Corp Commands: ");
-        user.sendMessage(ChatColor.GOLD + "/corp");
-        user.sendMessage(ChatColor.GOLD + "/corp <corp>");
-        user.sendMessage(ChatColor.GOLD + "/corp help");
-        user.sendMessage(ChatColor.GOLD + "/corp leave");
-        user.sendMessage(ChatColor.GOLD + "/corp user <user>");
-        user.sendMessage(ChatColor.GOLD + "/corp invite <user>");
-        user.sendMessage(ChatColor.GOLD + "/corp list");
-        user.sendMessage(ChatColor.GOLD + "/corp deposit <amount>");
-        user.sendMessage(ChatColor.GOLD + "/corp kick <user>");
-        user.sendMessage(ChatColor.GOLD + "/corp withdraw <amount>");
-        user.sendMessage(ChatColor.GOLD + "/corp delete <user>");
-        user.sendMessage(ChatColor.GOLD + "/corp rank <subcommand> <options>");
-
-        if (user.hasPermission("reallifeplugin.corporations.admin")) {
-            user.sendMessage(ChatColor.GOLD + "/corp admin help");
-        }
-    }
-
-    private void sendAdminHelp(SinkUser user) {
-        user.sendMessage(ChatColor.RED + "Admin Commands: ");
-        user.sendMessage(ChatColor.GOLD + "/corp admin new <corp> <ceo> <base>");
-        user.sendMessage(ChatColor.GOLD + "/corp admin delete <corp>");
-        user.sendMessage(ChatColor.GOLD + "/corp admin setbase <corp> <region>");
-        user.sendMessage(ChatColor.GOLD + "/corp admin give <corp> <amount>");
-        user.sendMessage(ChatColor.GOLD + "/corp admin take <corp> <amount>");
-        user.sendMessage(ChatColor.GOLD + "/corp admin rename <oldname> <newname>");
-    }
-
-    private void sendCorporationsList(SinkUser user, boolean listByMoney) {
-        user.sendMessage(ChatColor.GOLD + "Corporations: ");
+    private void sendCorporationsList(CommandSender sender, boolean listByMoney) {
+        sender.sendMessage(ChatColor.GOLD + "Corporations: ");
         String msg = "";
         for (Corporation corporation : CorporationManager.getInstance().getCorporations()) {
             int data;
@@ -1030,28 +1044,28 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
             msg += " " + formattedName;
         }
-        user.sendMessage(msg);
+        sender.sendMessage(msg);
     }
 
 
-    private void sendUserInfo(SinkUser user, IngameUser target) {
-        user.sendMessage("");
+    private void sendUserInfo(CommandSender sender, IngameUser target) {
+        sender.sendMessage("");
         String divider = ChatColor.GOLD + "";
         for (int i = 0; i < 32; i++) {
             divider += "-";
         }
-        user.sendMessage("");
-        user.sendMessage(ChatColor.GOLD + " User: " + CorporationManager.getInstance().getFormattedName(target));
-        user.sendMessage(divider);
+        sender.sendMessage("");
+        sender.sendMessage(ChatColor.GOLD + " User: " + CorporationManager.getInstance().getFormattedName(target));
+        sender.sendMessage(divider);
         Corporation corp = CorporationManager.getInstance().getUserCorporation(target);
-        user.sendMessage(ChatColor.GRAY + "Corporation: " + ChatColor.GOLD + (corp == null ? "-" : corp.getFormattedName()));
+        sender.sendMessage(ChatColor.GRAY + "Corporation: " + ChatColor.GOLD + (corp == null ? "-" : corp.getFormattedName()));
         String rank;
         if (corp == null) {
             rank = ChatColor.GOLD + "-";
         } else {
             rank = corp.getRank(target).name;
         }
-        user.sendMessage(ChatColor.GRAY + "Rank: " + rank);
+        sender.sendMessage(ChatColor.GRAY + "Rank: " + rank);
 
         String soldItems = "-";
         Integer userId = CorporationManager.getInstance().getUserId(target);
@@ -1074,10 +1088,10 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 soldItems = m("Corporation.ItemsSold", target.getDisplayName(), i, days + " " + TIMEUNIT_DAYS.format());
             }
         }
-        user.sendMessage(ChatColor.GRAY + "Items sold: " + ChatColor.GOLD + soldItems);
+        sender.sendMessage(ChatColor.GRAY + "Items sold: " + ChatColor.GOLD + soldItems);
 
-        user.sendMessage(divider);
-        user.sendMessage("");
+        sender.sendMessage(divider);
+        sender.sendMessage("");
     }
 
 
@@ -1160,5 +1174,105 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         }
         return targetRank;
+    }
+
+    private abstract class CorporationSubCommand<T extends SinkCommandBase> extends SinkSubCommand<T> {
+
+        @Nullable
+        private Permission permission;
+        private boolean supportsNullCorporation;
+
+        public CorporationSubCommand(T parentCommand, String name) {
+            this(parentCommand, name, null);
+        }
+
+        public CorporationSubCommand(T parentCommand, String name, @Nullable Permission permission) {
+            super(parentCommand, name);
+            this.permission = permission;
+        }
+
+        public void supportsNullCorporation() {
+            supportsNullCorporation = true;
+        }
+
+        @Override
+        public void onRegistered() {
+            Options options = getCommandOptions().getCliOptions();
+            if (options == null) {
+                options = new Options();
+            }
+
+            if (!supportsNullCorporation) {
+                Option corpOption = Option.builder("c")
+                        .hasArg()
+                        .longOpt("corp")
+                        .desc("Force as given corporation member")
+                        .type(String.class)
+                        .argName("corp name")
+                        .build();
+                options.addOption(corpOption);
+
+                if (permission != null) {
+                    Option forceOption = Option.builder("f")
+                            .longOpt("force")
+                            .desc("Force command, even if you don't have permission for it")
+                            .build();
+
+                    options.addOption(forceOption);
+                }
+            }
+            getCommandOptions().setCliOptions(options);
+        }
+
+        @Nullable
+        public Corporation getUserCorporation(CommandSender sender) {
+            if (!supportsNullCorporation && getCommandLine().hasOption('c')) {
+                return CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('c'));
+            }
+
+            Corporation userCorp = null;
+            if (sender instanceof Player) {
+                userCorp = CorporationManager.getInstance().getUserCorporation(SinkLibrary.getInstance().getIngameUser((Player) sender));
+            }
+            return userCorp;
+        }
+
+        @Override
+        public boolean onPreExecute(CommandSender sender, Command cmd, String label, String[] args) {
+            if (!supportsNullCorporation && getUserCorporation(sender) == null) {
+                sender.sendMessage(m("Corporation.NotInCorporation"));
+                return false;
+            }
+
+            if (hasPermission(sender)) {
+                return true;
+            }
+
+            sender.sendMessage(GeneralLanguage.PERMISSIONS_GENERAL.format());
+            return false;
+        }
+
+        public boolean hasPermission(CommandSender sender) {
+            if (!(sender instanceof Player)) {
+                return sender.isOp();
+            }
+            IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
+            Corporation corp = getUserCorporation(sender);
+            boolean hasCorpPermission = false;
+            if (corp != null) {
+                hasCorpPermission = CorporationManager.getInstance().hasCorpPermission(user, permission);
+            }
+
+            return isForceMode(sender) || hasCorpPermission;
+        }
+
+        public boolean isForceMode(CommandSender sender) {
+            return permission != null && testPermission(sender, "reallifeplugin.corporations.admin") && (getCommandLine().hasOption('f')
+                                                                                                         || getCommandLine().hasOption('c'));
+        }
+
+        public boolean isExplicitForceMode(CommandSender sender) {
+            return permission != null && testPermission(sender, "reallifeplugin.corporations.admin") && getCommandLine().hasOption('f');
+        }
     }
 }

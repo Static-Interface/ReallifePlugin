@@ -171,7 +171,7 @@ public class ReallifeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        SinkLibrary.getInstance().registerCommand("rp", new ReallifePluginCommand(this));
+        SinkLibrary.getInstance().registerCommand("reallifeplugin", new ReallifePluginCommand(this));
         SinkLibrary.getInstance().registerCommand("ad", new AdCommand(this));
     }
 

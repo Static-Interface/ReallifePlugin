@@ -20,8 +20,6 @@ public enum CorporationOptions {
     DEFAULT_RANK("default_rank"),
     ANNOUNCEMENT_MESSAGE("announcement_message"),
     PUBLIC("is_public"),
-    ALLOWED_BLOCKS("allowed_blocks"),
-    RESTRICTED_BLOCKS("restricted_blocks"),
     MEMBER_LIMIT("member_limit"),
     FISHING("fishing");
 

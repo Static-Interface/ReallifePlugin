@@ -30,7 +30,12 @@ import de.static_interface.reallifeplugin.module.contract.database.row.Contract;
 import de.static_interface.reallifeplugin.module.contract.database.row.ContractUserOptions;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.SinkSubCommand;
+import de.static_interface.sinklibrary.api.command.annotation.DefaultPermission;
+import de.static_interface.sinklibrary.api.command.annotation.Description;
+import de.static_interface.sinklibrary.api.command.annotation.Usage;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
+import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.DateUtil;
 import org.apache.commons.cli.ParseException;
@@ -50,58 +55,95 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
     public ContractCommand(ContractModule module) {
         super(module);
-        getCommandOptions().setPlayerOnly(true);
+        getCommandOptions().setMinRequiredArgs(1);
     }
 
     @Override
-    protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
-        if (args.length < 1) {
-            sender.sendMessage("Usage: /contract <new/list/get/cancel>");
-        }
-        IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
-        switch (getArg(args, 0, String.class).toLowerCase()) {
-            case "new": {
-                ContractConversation.createNewView((Player) sender, ReallifeMain.getInstance());
-                break;
+    public void onRegistered() {
+        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "new") {
+            {
+                getCommandOptions().setPlayerOnly(true);
             }
 
-            case "list": {
+            @Description("Create a new contract")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                ContractConversation.createNewView((Player) sender, ReallifeMain.getInstance());
+                return true;
+            }
+        });
+
+        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "list") {
+            {
+                getCommandOptions().setPlayerOnly(true);
+            }
+
+            @Description("List your contracts")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
                 List<Contract> contracts = ContractManager.getInstance().getContracts(user);
                 if (contracts.size() == 0) {
-                    user.sendMessage(RpLanguage.CONTRACTS_NOT_FOUND.format());
-                    break;
+                    sender.sendMessage(RpLanguage.CONTRACTS_NOT_FOUND.format());
+                    return true;
                 }
                 for (Contract c : contracts) {
+                    if (c == null) {
+                        continue;
+                    }
                     String s = "";
                     if (c.isCancelled || c.expireTime <= System.currentTimeMillis()) {
                         s = ChatColor.RESET.toString() + ChatColor.GRAY + " [Expired]";
                     }
-                    user.sendMessage(ChatColor.GOLD + "ID:"
-                                     + " #" + c.id + ChatColor.GRAY + ": " + c.name + s);
+                    sender.sendMessage(ChatColor.GOLD + "ID:"
+                                       + " #" + c.id + ChatColor.GRAY + ": " + c.name + s);
                 }
-                break;
+                return true;
+            }
+        });
+
+        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "cancel") {
+            {
+                getCommandOptions().setMinRequiredArgs(1);
+                getCommandOptions().setIrcOpOnly(true);
             }
 
-            case "cancel": {
-                if (!user.hasPermission("reallifeplugin.contract.cancel")) {
-                    throw new NotEnoughPermissionsException();
+            @DefaultPermission
+            @Usage("<contractId>")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                SinkUser user = SinkLibrary.getInstance().getUser(sender);
+                String permission = getSubPermission("cancel");
+                if (!user.hasPermission(permission)) {
+                    throw new NotEnoughPermissionsException(permission);
                 }
 
                 Contract c = ContractManager.getInstance().getContract(getArg(args, 1, Integer.class));
                 if (c == null) {
                     user.sendMessage(RpLanguage.CONTRACT_NOT_FOUND.format());
-                    break;
+                    return true;
                 }
                 getModule().getTable(ContractsTable.class).executeUpdate("UPDATE `{TABLE}` SET `is_cancelled` = 1 WHERE `id` = ?", c.id);
                 user.sendMessage(RpLanguage.CONTRACT_CANCELLED.format(ChatColor.translateAlternateColorCodes('&', c.name)));
-                break;
+                return true;
+            }
+        });
+
+        registerSubCommand(new SinkSubCommand<ContractCommand>(this, "get") {
+            {
+                getCommandOptions().setPlayerOnly(true);
+                getCommandOptions().setMinRequiredArgs(1);
             }
 
-            case "get": {
+            @Usage("<contractId>")
+            @Description("Get a copy of a contract as a book")
+            @Override
+            protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
                 double balance = (double) getModule().getValue("ContractBookCost", 500D);
                 if (user.getBalance() - balance < 0) {
                     user.sendMessage(GENERAL_NOT_ENOUGH_MONEY.format());
-                    break;
+                    return true;
                 }
 
                 user.addBalance(-balance);
@@ -121,7 +163,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
                 if (cuo == null || c == null) {
                     user.sendMessage(RpLanguage.CONTRACT_NOT_FOUND.format());
-                    break;
+                    return true;
                 }
 
                 ItemStack book = new ItemStack(Material.WRITTEN_BOOK, 1);
@@ -152,15 +194,18 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
                 pages.add(s);
 
+                user.addBalance(-balance);
+
                 meta.setPages(pages);
                 book.setItemMeta(meta);
                 user.getPlayer().getInventory().addItem(book);
-                break;
+                return true;
             }
+        });
+    }
 
-            default:
-                return false;
-        }
-        return true;
+    @Override
+    protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+        return false;
     }
 }

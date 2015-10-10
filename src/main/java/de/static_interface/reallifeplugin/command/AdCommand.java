@@ -72,7 +72,8 @@ public class AdCommand extends SinkCommand {
         String message = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " "));
 
         user.addBalance(-price);
-        BukkitUtil.broadcastMessage(StringUtil.format(m("Ad.Message"), p, message), false);
+        //Todo: create MessageStream
+        BukkitUtil.broadcastMessage(StringUtil.format(m("Ad.Message"), p, message));
         if (settingsTimeout > 0) {
             timeouts.put(p.getUniqueId(), currenttime + settingsTimeout);
         }

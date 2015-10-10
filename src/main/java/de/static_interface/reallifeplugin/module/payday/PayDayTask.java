@@ -153,7 +153,8 @@ public class PaydayTask implements Runnable {
         }
 
         List<PaydayPlayer> players = new ArrayList<>();
-        BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.", false);
+        //Todo: create MessageStream
+        BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.");
         for (Player player : Bukkit.getOnlinePlayers()) {
             PaydayPlayer p = null;
             boolean isInGroup = false;

@@ -8,11 +8,6 @@ depend: [SinkLibrary, WorldGuard]
 soft-depend: [AdventuriaPlugin, PermissionsEx]
 
 commands:
-  rp:
-    description: Reallifeplugin command
-    permission: reallifeplugin.command
-    usage: "Wrong usage! Correct Usage: /<command> <option> <args>"
-    aliases: reallifeplugin
   ic:
     description: Insurance Command
     permission: reallifeplugin.insurance

@@ -308,15 +308,8 @@ public class CorporationManager {
         return permsTable.getOption(permission.getPermissionString(), rank.id, boolean.class, false);
     }
 
-    public boolean deleteCorporation(SinkUser user, Corporation corporation) {
-        if (corporation == null) {
-            user.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
-            return false;
-        }
-
+    public void deleteCorporation(Corporation corporation) {
         module.getTable(CorpsTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id`=?", corporation.getId());
-
-        return true;
     }
 
     public Collection<Corporation> getCorporations() {

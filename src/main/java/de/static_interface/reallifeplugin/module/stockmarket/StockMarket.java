@@ -237,7 +237,8 @@ public class StockMarket {
         }
 
         if (i > 0) {
-            BukkitUtil.broadcastMessage(prefix + s, false);
+            //Todo: create MessageStream
+            BukkitUtil.broadcastMessage(prefix + s);
             return true;
         }
 

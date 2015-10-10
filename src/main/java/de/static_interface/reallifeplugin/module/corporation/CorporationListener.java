@@ -38,10 +38,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -153,18 +150,6 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
         return sStack.equals(stack);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public static void onBlockPlace(BlockPlaceEvent event) {
-        ItemStack stack = event.getPlayer().getItemInHand();
-        if (stack != null && isTagged(stack)) {
-            event.setCancelled(true);
-        }
-
-        if (isInteractionRestricted(SinkLibrary.getInstance().getIngameUser(event.getPlayer()), event.getBlock())) {
-            event.setCancelled(true);
-        }
-    }
-
     @EventHandler
     public static void untagListener(PlayerInteractEvent event) {
         IngameUser user = SinkLibrary.getInstance().getIngameUser(event.getPlayer());
@@ -265,52 +250,6 @@ public class CorporationListener extends ModuleListener<CorporationModule> {
     public static boolean isTagged(ItemStack stack) {
         return stack != null && stack.getItemMeta() != null && stack.getItemMeta().hasLore() && stack.getItemMeta().getLore()
                 .contains(m("Corporation.Sign.SoldWatermark"));
-    }
-
-    @EventHandler
-    public static void onBlockBreak(BlockBreakEvent event) {
-        if (isInteractionRestricted(SinkLibrary.getInstance().getIngameUser(event.getPlayer()), event.getBlock())) {
-            event.setCancelled(true);
-        }
-    }
-
-    public static boolean isInteractionRestricted(IngameUser user, Block block) {
-        if (true) {
-            return false;
-        }
-
-        Corporation corp = CorporationManager.getInstance().getCorporation(block.getLocation());
-        if (corp == null) {
-            return false;
-        }
-
-        if (user.hasPermission("reallifeplugin.corporations.admin")) {
-            return false;
-        }
-
-        if (!corp.isMember(user)) {
-            return true;
-        }
-
-        if (CorporationManager.getInstance().hasCorpPermission(user, CorporationPermissions.REGION_OWNER)) {
-            return false;
-        }
-
-        List<String> restrictedBlocks = corp.getOption(CorporationOptions.RESTRICTED_BLOCKS, ArrayList.class, new ArrayList());
-        List<String> allowedBlocks = corp.getOption(CorporationOptions.ALLOWED_BLOCKS, ArrayList.class, new ArrayList());
-
-        Material m = block.getType();
-
-        if (restrictedBlocks.isEmpty()) {
-            return false;
-        }
-
-        if (restrictedBlocks.contains("ALL") && !allowedBlocks.contains(m.name().toUpperCase())) {
-            return true;
-        }
-
-        return restrictedBlocks.contains(m.name().toUpperCase());
-
     }
 
     @Nullable
