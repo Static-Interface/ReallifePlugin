@@ -96,10 +96,10 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     target = SinkLibrary.getInstance().getIngameUser((Player) sender);
                 }
 
-                if (args.length > 1) {
-                    target = SinkLibrary.getInstance().getIngameUser(args[1]);
+                if (args.length > 0) {
+                    target = SinkLibrary.getInstance().getIngameUser(args[0]);
                     if (!target.hasPlayedBefore()) {
-                        throw new UserNotFoundException(args[1]);
+                        throw new UserNotFoundException(args[0]);
                     }
                 }
 
@@ -262,7 +262,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return true;
                 }
 
-                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[1], true);
+                IngameUser target = SinkLibrary.getInstance().getIngameUser(args[0], true);
                 if (!isForceMode(sender) && !target.isOnline()) {
                     throw new UserNotOnlineException(target.getDisplayName());
                 }
