@@ -26,8 +26,7 @@ import de.static_interface.reallifeplugin.module.payday.model.EntryResult;
 import de.static_interface.reallifeplugin.module.payday.model.Group;
 import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
 import de.static_interface.sinklibrary.SinkLibrary;
-import de.static_interface.sinklibrary.database.Database;
-import de.static_interface.sinklibrary.util.BukkitUtil;
+import de.static_interface.sinklibrary.stream.BukkitBroadcastMessageStream;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -41,12 +40,11 @@ import java.util.List;
 
 public class PaydayTask implements Runnable {
 
-    private Database db;
     private PaydayModule module;
 
-    public PaydayTask(PaydayModule module, Database db) {
-        this.db = db;
+    public PaydayTask(PaydayModule module) {
         this.module = module;
+        SinkLibrary.getInstance().registerMessageStream(new BukkitBroadcastMessageStream("rp_payday"));
     }
 
     public void givePayDay(List<PaydayPlayer> players) {
@@ -153,8 +151,8 @@ public class PaydayTask implements Runnable {
         }
 
         List<PaydayPlayer> players = new ArrayList<>();
-        //Todo: create MessageStream
-        BukkitUtil.broadcastMessage(ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.");
+        SinkLibrary.getInstance().getMessageStream("rp_payday")
+                .sendMessage(null, ChatColor.DARK_GREEN + "Es ist Zahltag! Dividenden und Gehalt werden nun ausgezahlt.");
         for (Player player : Bukkit.getOnlinePlayers()) {
             PaydayPlayer p = null;
             boolean isInGroup = false;

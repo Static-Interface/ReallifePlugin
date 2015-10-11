@@ -284,7 +284,7 @@ public class CorporationManager {
         permsTable.setOption(permission.getPermissionString(), value, rank.id);
     }
 
-    public boolean hasCorpPermission(IngameUser user, Permission permission) {
+    public boolean hasCorpPermission(IngameUser user, @Nullable Permission permission) {
         Corporation corp = getUserCorporation(user);
         if (corp == null) {
             return false;
@@ -294,7 +294,10 @@ public class CorporationManager {
         return hasCorpPermission(rank, permission);
     }
 
-    public boolean hasCorpPermission(CorpRank rank, Permission permission) {
+    public boolean hasCorpPermission(CorpRank rank, @Nullable Permission permission) {
+        if (permission == null) {
+            return true;
+        }
         if (permission != CorporationPermissions.ALL && permission.includeInAllPermission() && hasCorpPermission(rank, CorporationPermissions.ALL)) {
             return true;
         }

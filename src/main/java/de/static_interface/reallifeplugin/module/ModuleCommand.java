@@ -18,6 +18,7 @@ package de.static_interface.reallifeplugin.module;
 
 import de.static_interface.sinklibrary.api.command.SinkCommand;
 import de.static_interface.sinklibrary.database.Database;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -28,6 +29,11 @@ public abstract class ModuleCommand<T extends Module> extends SinkCommand {
     public ModuleCommand(T module) {
         super(module.getPlugin());
         this.module = module;
+    }
+
+    @Override
+    public String getConfigPath() {
+        return "Module" + getModule().getName() + ".Commands." + WordUtils.capitalizeFully(this.getName());
     }
 
     @Override

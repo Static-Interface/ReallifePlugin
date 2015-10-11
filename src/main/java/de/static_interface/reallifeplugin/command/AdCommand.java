@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 @DefaultPermission
 @Usage("<message>")
 @Description("Announce advertisments")
-@Aliases("advertisment")
+@Aliases("ad")
 public class AdCommand extends SinkCommand {
 
     HashMap<UUID, Long> timeouts = new HashMap<>();
