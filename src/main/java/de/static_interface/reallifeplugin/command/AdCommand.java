@@ -27,8 +27,8 @@ import de.static_interface.sinklibrary.api.command.annotation.Aliases;
 import de.static_interface.sinklibrary.api.command.annotation.DefaultPermission;
 import de.static_interface.sinklibrary.api.command.annotation.Description;
 import de.static_interface.sinklibrary.api.command.annotation.Usage;
+import de.static_interface.sinklibrary.stream.BukkitBroadcastMessageStream;
 import de.static_interface.sinklibrary.user.IngameUser;
-import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -49,6 +49,7 @@ public class AdCommand extends SinkCommand {
     public AdCommand(Plugin plugin) {
         super(plugin);
         getCommandOptions().setPlayerOnly(true);
+        SinkLibrary.getInstance().registerMessageStream(new BukkitBroadcastMessageStream("rp_ad"));
     }
 
     @Override
@@ -79,8 +80,7 @@ public class AdCommand extends SinkCommand {
         String message = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " "));
 
         user.addBalance(-price);
-        //Todo: create MessageStream
-        BukkitUtil.broadcastMessage(StringUtil.format(m("Ad.Message"), p, message));
+        SinkLibrary.getInstance().getMessageStream("rp_ad").sendMessage(user, StringUtil.format(m("Ad.Message"), p, message));
         if (settingsTimeout > 0) {
             timeouts.put(p.getUniqueId(), currenttime + settingsTimeout);
         }

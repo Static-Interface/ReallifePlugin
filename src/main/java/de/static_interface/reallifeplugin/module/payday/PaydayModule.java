@@ -44,7 +44,7 @@ public class PaydayModule extends Module<ReallifeMain> {
         registerModuleListener(new PaydayListener(this));
 
         long delay = getPaydayTime() * 60 * (long) Constants.TICK;
-        paydayTask = new PaydayTask(this, getDatabase());
+        paydayTask = new PaydayTask(this);
         payDayBukkitTask = Bukkit.getScheduler().runTaskTimer(getPlugin(), paydayTask, delay, delay);
     }
 

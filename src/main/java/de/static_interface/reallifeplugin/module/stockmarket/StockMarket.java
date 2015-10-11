@@ -31,8 +31,9 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.table.Stoc
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.reallifeplugin.module.stockmarket.event.StocksUpdateEvent;
+import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.stream.BukkitBroadcastMessageStream;
 import de.static_interface.sinklibrary.user.IngameUser;
-import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import org.apache.commons.lang.Validate;
@@ -56,6 +57,7 @@ public class StockMarket {
     public static StockMarket getInstance() {
         if (instance == null) {
             instance = new StockMarket();
+            SinkLibrary.getInstance().registerMessageStream(new BukkitBroadcastMessageStream("rp_stockmarket_event"));
         }
         return instance;
     }
@@ -237,8 +239,7 @@ public class StockMarket {
         }
 
         if (i > 0) {
-            //Todo: create MessageStream
-            BukkitUtil.broadcastMessage(prefix + s);
+            SinkLibrary.getInstance().getMessageStream("rp_stockmarket_event").sendMessage(prefix + s);
             return true;
         }
 
