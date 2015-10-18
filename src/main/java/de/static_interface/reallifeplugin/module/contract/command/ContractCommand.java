@@ -70,6 +70,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
             @Description("Create a new contract")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 ContractConversation.createNewView((Player) sender, ReallifeMain.getInstance());
                 return true;
@@ -83,6 +84,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
 
             @Description("List your contracts")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
                 List<Contract> contracts = ContractManager.getInstance().getContracts(user);
@@ -141,6 +143,7 @@ public class ContractCommand extends ModuleCommand<ContractModule> {
             @Usage("<contractId>")
             @Description("Get a copy of a contract as a book")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 IngameUser user = SinkLibrary.getInstance().getIngameUser((Player) sender);
                 double balance = (double) getModule().getValue("ContractBookCost", 500D);

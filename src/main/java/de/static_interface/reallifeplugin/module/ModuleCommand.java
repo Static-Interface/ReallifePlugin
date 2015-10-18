@@ -33,7 +33,7 @@ public abstract class ModuleCommand<T extends Module> extends SinkCommand {
 
     @Override
     public String getConfigPath() {
-        return "Module" + getModule().getName() + ".Commands." + WordUtils.capitalizeFully(this.getName());
+        return "Module." + getModule().getName() + ".Commands." + WordUtils.capitalizeFully(this.getName());
     }
 
     @Override

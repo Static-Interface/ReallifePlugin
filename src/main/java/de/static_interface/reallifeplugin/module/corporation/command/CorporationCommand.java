@@ -51,6 +51,7 @@ import de.static_interface.sinklibrary.api.user.SinkUser;
 import de.static_interface.sinklibrary.configuration.GeneralLanguage;
 import de.static_interface.sinklibrary.user.IngameUser;
 import de.static_interface.sinklibrary.util.CommandUtil;
+import de.static_interface.sinklibrary.util.Debug;
 import de.static_interface.sinklibrary.util.MathUtil;
 import de.static_interface.sinklibrary.util.StringUtil;
 import de.static_interface.sinklibrary.util.VaultBridge;
@@ -83,13 +84,10 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
     @Override
     public void onRegistered() {
         registerSubCommand(new CorporationSubCommand(this, "user") {
-            {
-                supportsNullCorporation();
-            }
-
             @Description("Get information about an user")
             @Usage("[player]")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 IngameUser target = null;
                 if (sender instanceof Player) {
@@ -124,11 +122,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                         .build();
                 options.addOption(moneyOption);
                 getCommandOptions().setCliOptions(options);
-                supportsNullCorporation();
             }
 
             @Description("List all corporations")
             @Usage("[-m]")
+            @DefaultPermission
             @Override
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 sendCorporationsList(sender, getCommandLine().hasOption('m'));
@@ -143,6 +141,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
             @Description("Leave a corporation")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 Corporation userCorp = getUserCorporation(sender);
                 if (getUserCorporation(sender) == null) {
@@ -158,7 +157,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        registerSubCommand(new CorporationSubCommand(this, "deposit", CorporationPermissions.DEPOSIT) {
+        registerSubCommand(new CorporationSubCommand(this, "deposit", true, CorporationPermissions.DEPOSIT) {
             {
                 getCommandOptions().setPlayerOnly(true);
                 getCommandOptions().setMinRequiredArgs(1);
@@ -167,6 +166,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             @Description("Deposit money to corporation account")
             @Usage("<amount>")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 if (getUserCorporation(sender) == null) {
                     sender.sendMessage(m("Corporation.NotInCorporation"));
@@ -178,7 +178,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        registerSubCommand(new CorporationSubCommand(this, "withdraw", CorporationPermissions.WITHDRAW) {
+        registerSubCommand(new CorporationSubCommand(this, "withdraw", true, CorporationPermissions.WITHDRAW) {
             {
                 getCommandOptions().setPlayerOnly(true);
                 getCommandOptions().setMinRequiredArgs(1);
@@ -187,6 +187,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             @Description("Withdraw money from corporation account")
             @Usage("<amount>")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 if (getUserCorporation(sender) == null) {
                     sender.sendMessage(m("Corporation.NotInCorporation"));
@@ -202,12 +203,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             {
                 getCommandOptions().setPlayerOnly(true);
                 getCommandOptions().setMinRequiredArgs(1);
-                supportsNullCorporation();
             }
 
             @Description("Join a corporation")
             @Usage("<corporation>")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 Corporation userCorp = getUserCorporation(sender);
                 if (userCorp != null) {
@@ -240,7 +241,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        registerSubCommand(new CorporationSubCommand(this, "invite", CorporationPermissions.INVITE) {
+        registerSubCommand(new CorporationSubCommand(this, "invite", true, CorporationPermissions.INVITE) {
             {
                 getCommandOptions().setMinRequiredArgs(1);
             }
@@ -248,6 +249,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             @Description("Invite a player to the corporation")
             @Usage("<player>")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 SinkUser user = SinkLibrary.getInstance().getUser(sender);
 
@@ -295,7 +297,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        registerSubCommand(new CorporationSubCommand(this, "kick", CorporationPermissions.KICK) {
+        registerSubCommand(new CorporationSubCommand(this, "kick", true, CorporationPermissions.KICK) {
             {
                 getCommandOptions().setMinRequiredArgs(1);
             }
@@ -303,6 +305,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             @Description("Kick a player from a corporation")
             @Usage("<player>")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 Corporation userCorp = getUserCorporation(sender);
                 if (userCorp == null) {
@@ -334,10 +337,15 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        registerSubCommand(new CorporationSubCommand(this, "delete", CorporationPermissions.DELETE) {
+        registerSubCommand(new CorporationSubCommand(this, "delete", true, CorporationPermissions.DELETE) {
             @Description("Delete the corporation. THIS CAN NOT BE UNDONE.")
             @Override
+            @DefaultPermission
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
+                if (args.length > 0) {
+                    sender.sendMessage("Too many arguments");
+                    return true;
+                }
                 Corporation corp = getUserCorporation(sender);
                 if (corp == null) {
                     sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), ""));
@@ -358,7 +366,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
     private void registerAdminSubCommands() {
         SinkSubCommand adminCommand = new CorporationSubCommand(this, "admin") {
             {
-                supportsNullCorporation();
+                getCommandOptions().setIrcOpOnly(true);
             }
 
             @DefaultPermission
@@ -374,7 +382,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "new") {
             {
                 getCommandOptions().setMinRequiredArgs(3);
-                supportsNullCorporation();
             }
 
             @Usage("<name> <base> <CEO> [world]")
@@ -409,7 +416,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "setmemberlimit") {
             {
                 getCommandOptions().setMinRequiredArgs(1);
-                supportsNullCorporation();
             }
 
             @Usage("<corporation> <memberlimit>")
@@ -433,7 +439,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "getmemberlimit") {
             {
                 getCommandOptions().setMinRequiredArgs(1);
-                supportsNullCorporation();
             }
 
             @Usage("<corporation>")
@@ -455,7 +460,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "enablefishing") {
             {
                 getCommandOptions().setMinRequiredArgs(1);
-                supportsNullCorporation();
             }
 
             @Usage("<corporation>")
@@ -478,7 +482,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "disablefishing") {
             {
                 getCommandOptions().setMinRequiredArgs(1);
-                supportsNullCorporation();
             }
 
             @Usage("<corporation>")
@@ -501,7 +504,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "setbase") {
             {
                 getCommandOptions().setMinRequiredArgs(3);
-                supportsNullCorporation();
             }
 
             @Override
@@ -534,10 +536,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         });
 
         CorporationSubCommand moneyCommand = new CorporationSubCommand(adminCommand, "money") {
-            {
-                supportsNullCorporation();
-            }
-
             @DefaultPermission
             @Description("Money transactions")
             @Override
@@ -557,7 +555,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             {
                 getCommandOptions().setMinRequiredArgs(2);
                 getCommandOptions().setCliOptions(forceTransactionOptions);
-                supportsNullCorporation();
             }
 
             @Override
@@ -589,7 +586,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             {
                 getCommandOptions().setMinRequiredArgs(2);
                 getCommandOptions().setCliOptions(forceTransactionOptions);
-                supportsNullCorporation();
             }
 
             @Override
@@ -621,7 +617,6 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "rename") {
             {
                 getCommandOptions().setMinRequiredArgs(2);
-                supportsNullCorporation();
             }
 
             @Usage("<corporation> <new_name>")
@@ -645,7 +640,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
     }
 
     private void registerRankCommands() {
-        CorporationSubCommand rankCommand = new CorporationSubCommand(this, "rank") {
+        CorporationSubCommand rankCommand = new CorporationSubCommand(this, "rank", true) {
             @DefaultPermission
             @Description("Manage ranks")
             @Override
@@ -656,7 +651,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
         registerSubCommand(rankCommand);
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "permissionslist") {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "permissionslist", true) {
             @DefaultPermission
             @Aliases("plist")
             @Usage("[group]")
@@ -695,7 +690,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "list") {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "list", true) {
             @DefaultPermission
             @Description("List all ranks")
             @Override
@@ -716,7 +711,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "delete", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "delete", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(1);
             }
@@ -749,7 +744,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "new", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "new", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(2);
             }
@@ -785,7 +780,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "priority", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "priority", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(2);
             }
@@ -811,7 +806,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "prefix", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "prefix", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(2);
             }
@@ -836,7 +831,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "description", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "description", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(2);
             }
@@ -867,7 +862,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "rename", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "rename", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(2);
             }
@@ -892,7 +887,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "set", CorporationPermissions.SET_RANK) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "set", true, CorporationPermissions.SET_RANK) {
             {
                 getCommandOptions().setMinRequiredArgs(2);
             }
@@ -922,7 +917,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             }
         });
 
-        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "setpermission", CorporationPermissions.MANAGE_RANKS) {
+        rankCommand.registerSubCommand(new CorporationSubCommand(rankCommand, "setpermission", true, CorporationPermissions.MANAGE_RANKS) {
             {
                 getCommandOptions().setMinRequiredArgs(3);
             }
@@ -1183,55 +1178,59 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
     private abstract class CorporationSubCommand extends SinkSubCommand<SinkCommandBase> {
 
+        private boolean needsCorp;
         @Nullable
         private Permission permission;
-        private boolean supportsNullCorporation = false;
 
         public CorporationSubCommand(SinkCommandBase parentCommand, String name) {
-            this(parentCommand, name, null);
+            this(parentCommand, name, false, null);
+        }
+
+        public CorporationSubCommand(SinkCommandBase parentCommand, String name, boolean needsCorp) {
+            this(parentCommand, name, needsCorp, null);
         }
 
         public CorporationSubCommand(SinkCommandBase parentCommand, String name, @Nullable Permission permission) {
-            super(parentCommand, name);
-            this.permission = permission;
+            this(parentCommand, name, false, permission);
         }
 
-        public void supportsNullCorporation() {
-            supportsNullCorporation = true;
+        public CorporationSubCommand(SinkCommandBase parentCommand, String name, boolean needsCorp, @Nullable Permission permission) {
+            super(parentCommand, name);
+            this.needsCorp = needsCorp;
+            this.permission = permission;
         }
 
         @Override
         public void onRegistered() {
+            Debug.logMethodCall(getDebuggableName());
             Options options = getCommandOptions().getCliOptions();
-            if (options == null) {
-                options = new Options();
-            }
-
-            if (!supportsNullCorporation) {
+            debug("needsCorp == " + needsCorp);
+            debug("permission == " + (permission != null ? permission.getPermissionString() : "null"));
+            if (needsCorp) {
                 Option corpOption = Option.builder("c")
                         .hasArg()
                         .longOpt("corp")
                         .desc("Force as given corporation member")
-                        .type(String.class)
-                        .argName("corp name")
+                        .argName("<corp name>")
                         .build();
                 options.addOption(corpOption);
-
-                if (permission != null) {
-                    Option forceOption = Option.builder("f")
-                            .longOpt("force")
-                            .desc("Force command, even if you don't have permission for it")
-                            .build();
-
-                    options.addOption(forceOption);
-                }
             }
-            getCommandOptions().setCliOptions(options);
+
+            if (permission != null) {
+                Option forceOption = Option.builder("f")
+                        .longOpt("force")
+                        .desc("Force command, even if you don't have permission for it")
+                        .build();
+
+                options.addOption(forceOption);
+            }
         }
 
         @Nullable
-        public Corporation getUserCorporation(CommandSender sender) {
-            if (!supportsNullCorporation && getCommandLine() != null && getCommandLine().hasOption('c')) {
+        public Corporation getUserCorporation(CommandSender sender) throws ParseException {
+            if (needsCorp
+                && getCommandLine().hasOption('c')
+                && sender.hasPermission("reallifeplugin.corporations.admin")) {
                 return CorporationManager.getInstance().getCorporation(getCommandLine().getOptionValue('c'));
             }
 
@@ -1244,20 +1243,34 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
         @Override
         public boolean onPreExecute(CommandSender sender, Command cmd, String label, String[] args) {
-            if (!supportsNullCorporation && getUserCorporation(sender) == null) {
-                sender.sendMessage(m("Corporation.NotInCorporation"));
+            try {
+                if (needsCorp && getUserCorporation(sender) == null) {
+                    debug("needsCorp check failed");
+                    sender.sendMessage(m("Corporation.NotInCorporation"));
+                    return false;
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
                 return false;
             }
 
-            if (hasPermission(sender)) {
-                return true;
+            try {
+                if (hasPermission(sender)) {
+                    return true;
+                }
+            } catch (ParseException e) {
+                return false;
             }
 
             sender.sendMessage(GeneralLanguage.PERMISSIONS_GENERAL.format());
             return false;
         }
 
-        public boolean hasPermission(CommandSender sender) {
+        public boolean hasPermission(CommandSender sender) throws ParseException {
+            if (permission == null) {
+                return true;
+            }
+
             if (!(sender instanceof Player)) {
                 return sender.isOp();
             }

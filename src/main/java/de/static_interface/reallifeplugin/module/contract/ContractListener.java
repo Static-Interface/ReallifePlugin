@@ -87,21 +87,23 @@ class ContractListener extends ModuleListener<ContractModule> {
                         amount *= (int) ((time - options.lastCheck) / c.period);
                 }
 
-                if ((amount < 0 && user.getBalance() - Math.abs(amount) < 0) || (amount > 0 && owner.getBalance() - Math.abs(amount) < 0)) {
+                if ((amount < 0 && (user.getBalance() - amount < 0)) // check if transaction source has enough balance
+                    || (amount > 0 && (owner.getBalance() - amount < 0))) { // check if transaction target has enough balance
                     //Try next time
+                    continue;
+                }
+
+                if (amount == 0) {
+                    //Skip 0 amounts
                     continue;
                 }
 
                 getModule().getTable(ContractUserOptionsTable.class)
                         .executeUpdate("UPDATE `{TABLE}` SET `lastCheck` = ? WHERE `id` = ?", System.currentTimeMillis(), options.id);
 
-                if (amount == 0) {
-                    continue;
-                }
-
-                ContractEntry entry = new ContractEntry(user.getName(), amount, c);
+                ContractEntry entry = new ContractEntry(user.getName(), amount, c); // give amount to source
                 p.addEntry(entry);
-                ContractEntry ownerEntry = new ContractEntry(owner.getName(), user.getName(), -amount, c);
+                ContractEntry ownerEntry = new ContractEntry(owner.getName(), user.getName(), -amount, c); // take amount from target
                 List<ContractEntry> entries = ownerEntries.get(owner.getUniqueId());
                 if (entries == null) {
                     entries = new ArrayList<>();
