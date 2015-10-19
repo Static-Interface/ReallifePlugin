@@ -229,14 +229,16 @@ public class Corporation {
 
     public void setBase(World world, String regionId) {
         ProtectedRegion rg = getBaseRegion();
-        DefaultDomain rgMembers = rg.getMembers();
-        for (IngameUser member : getMembers()) {
-            try {
-                rgMembers.removePlayer(member.getUniqueId());
-            } catch (Exception e) {
-                ReallifeMain.getInstance().getLogger()
-                        .warning("Couldn't remove player from WorldGuard region " + rg.getId() + " :" + member.getName());
-                e.printStackTrace();
+        if (rg != null) {
+            DefaultDomain rgMembers = rg.getMembers();
+            for (IngameUser member : getMembers()) {
+                try {
+                    rgMembers.removePlayer(member.getUniqueId());
+                } catch (Exception e) {
+                    ReallifeMain.getInstance().getLogger()
+                            .warning("Couldn't remove player from WorldGuard region " + rg.getId() + " :" + member.getName());
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -250,7 +252,7 @@ public class Corporation {
             throw new RuntimeException(e);
         }
 
-        rgMembers = newRegion.getMembers();
+        DefaultDomain rgMembers = newRegion.getMembers();
         for (IngameUser member : getMembers()) {
             try {
                 rgMembers.addPlayer(member.getUniqueId());
