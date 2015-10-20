@@ -65,6 +65,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -822,7 +823,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 if (rank == null) {
                     return false;
                 }
-                String prefix = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 3, args.length));
+                String prefix = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 0, args.length));
 
                 getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `prefix`=? WHERE `id` = ?", prefix, rank.id);
 
@@ -948,12 +949,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return true;
                 }
 
-                String[] valueArgs = new String[args.length - 4];
-                int valuePosition = 0;
-                for (int i = 4; i < args.length; i++) {
-                    valueArgs[valuePosition] = args[i];
-                    valuePosition++;
-                }
+                String[] valueArgs = Arrays.copyOfRange(args, 2, args.length);
                 Object value = CommandUtil.parseValue(valueArgs);
                 getModule().getTable(CorpRankPermissionsTable.class).setOption(permission.getPermissionString(), value, rank.id);
 
