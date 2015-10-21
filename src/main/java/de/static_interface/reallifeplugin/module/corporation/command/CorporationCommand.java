@@ -504,7 +504,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
         adminCommand.registerSubCommand(new CorporationSubCommand(adminCommand, "setbase") {
             {
-                getCommandOptions().setMinRequiredArgs(3);
+                getCommandOptions().setMinRequiredArgs(2);
             }
 
             @Override
@@ -513,14 +513,14 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             @Description("Create a new corporation")
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
                 SinkUser user = SinkLibrary.getInstance().getUser(sender);
-                if (!(user instanceof IngameUser) && args.length < 4) {
+                if (!(user instanceof IngameUser) && args.length < 3) {
                     return false;
                 }
 
                 Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
 
                 World world;
-                if (user instanceof IngameUser) {
+                if (user instanceof IngameUser && args.length < 3) {
                     world = ((IngameUser) user).getPlayer().getWorld();
                 } else {
                     world = Bukkit.getWorld(args[2]);
