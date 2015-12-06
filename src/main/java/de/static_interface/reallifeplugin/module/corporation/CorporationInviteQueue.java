@@ -50,6 +50,6 @@ public class CorporationInviteQueue {
     }
 
     public static boolean hasInvite(UUID user, Corporation corp) {
-        return invites.get(user) != null && invites.get(user).contains(Integer.valueOf(corp.getId()));
+        return invites.get(user) != null && invites.get(user).contains(corp.getId());
     }
 }

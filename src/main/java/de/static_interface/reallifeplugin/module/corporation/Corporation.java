@@ -16,6 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.corporation;
 
+import static de.static_interface.sinklibrary.database.query.Query.eq;
+import static de.static_interface.sinklibrary.database.query.Query.from;
+
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import de.static_interface.reallifeplugin.ReallifeMain;
@@ -58,7 +61,6 @@ public class Corporation {
     private CorpsTable corpsTable;
     private CorpUsersTable corpUsersTable;
     private CorporationModule module;
-    private CorpRank[] ranks;
 
     public Corporation(CorporationModule module, int id) {
         this.id = id;
@@ -96,15 +98,22 @@ public class Corporation {
 
         double newAmount = getBalance() + amount;
 
-        corpsTable.executeUpdate("UPDATE `{TABLE}` SET `balance`=? WHERE `id`=?", newAmount, id);
-
+        from(corpsTable)
+                .update()
+                .set("balance", "?")
+                .where("id", eq("?"))
+                .execute(newAmount, id);
         return true;
     }
 
     public void addMember(IngameUser user, CorpRank rank) {
         Integer userId = CorporationManager.getInstance().getUserId(user);
-        corpUsersTable
-                .executeUpdate("UPDATE `{TABLE}` SET `corp_id` = ?, `corp_rank` = ? WHERE `id` = ?", getId(), rank.id, userId);
+        from(corpUsersTable)
+                .update()
+                .set("corp_id", "?")
+                .set("corp_rank", "?")
+                .where("id", eq("?"))
+                .execute(getId(), rank.id, userId);
 
         onUpdateRank(user, rank);
 
@@ -127,13 +136,22 @@ public class Corporation {
     }
 
     private void resetUser(IngameUser user) {
-        corpUsersTable.executeUpdate("UPDATE `{TABLE}` SET `corp_rank`=NULL, `corp_id`=NULL WHERE `id`=?", CorporationManager
-                .getInstance().getUserId(user));
+        from(corpUsersTable)
+                .update()
+                .set("corp_rank", "?")
+                .set("corp_id", "?")
+                .where("id", eq("?"))
+                .execute(null, null, CorporationManager
+                        .getInstance().getUserId(user));
     }
 
     public Set<IngameUser> getMembers() {
         Set<IngameUser> members = new HashSet<>();
-        CorpUserRow[] result = corpUsersTable.get("SELECT `uuid` from `{TABLE}` WHERE `corp_id`=?", id);
+        CorpUserRow[] result = from(corpUsersTable)
+                .select("uuid")
+                .where("corp_id", eq("?"))
+                .getResults(id);
+
         for (CorpUserRow row : result) {
             IngameUser member = SinkLibrary.getInstance().getIngameUser(UUID.fromString(row.uuid));
             members.add(member);
@@ -146,7 +164,10 @@ public class Corporation {
     }
 
     private CorpRow getBase() {
-        return corpsTable.get("SELECT * FROM `{TABLE}` WHERE `id`=?", id)[0];
+        return from(corpsTable)
+                .select()
+                .where("id", eq("?"))
+                .get(id);
     }
 
     public ProtectedRegion getBaseRegion() {
@@ -172,7 +193,11 @@ public class Corporation {
             throw new IllegalArgumentException("Min Tag Length: 2 , Max Tag length: 5");
         }
 
-        corpsTable.executeUpdate("UPDATE `{TABLE}` SET `tag`=? WHERE `id`=?", tag, id);
+        from(corpsTable)
+                .update()
+                .set("tag", "?")
+                .where("id", eq("?"))
+                .execute(tag, id);
     }
 
     public CorpRank getRank(IngameUser user) {
@@ -184,29 +209,30 @@ public class Corporation {
         if (rankId == null) {
             return null;
         }
-        CorpRank[] result = module.getTable(CorpRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", rankId);
-        if (result == null || result.length < 1) {
-            return null;
-        }
-        return result[0];
+
+        return from(module.getTable(CorpRanksTable.class))
+                .select()
+                .where("id", eq("?"))
+                .and("corp_id", eq("?"))
+                .get(rankId, getId());
     }
 
     @Nullable
     public CorpRank getRank(String name) {
-        CorpRank[] result = module.getTable(CorpRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `name` = ? AND `corp_id` = ?", name, getId());
-        if (result == null || result.length < 1) {
-            return null;
-        }
-        return result[0];
+        return from(module.getTable(CorpRanksTable.class))
+                .select()
+                .where("name", eq("?"))
+                .and("corp_id", eq("?"))
+                .get(name, getId());
     }
 
     @Nullable
-    public CorpRank getRank(int id) {
-        CorpRank[] result = module.getTable(CorpRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `id` = ?", id);
-        if (result == null || result.length < 1) {
-            return null;
-        }
-        return result[0];
+    public CorpRank getRank(int rankId) {
+        return from(module.getTable(CorpRanksTable.class))
+                .select()
+                .where("id", eq("?"))
+                .and("corp_id", eq("?"))
+                .get(rankId, getId());
     }
 
     @Nullable
@@ -220,11 +246,19 @@ public class Corporation {
     }
 
     private List<CorpUserRow> getUsersInternal() {
-        return Arrays.asList(module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ?", getBase().id));
+        CorpUserRow[] result = from(corpUsersTable)
+                .select()
+                .where("corp_id", eq("?"))
+                .getResults(getBase().id);
+        return Arrays.asList(result);
     }
 
     public boolean isMember(IngameUser user) {
-        return corpUsersTable.get("SELECT * from `{TABLE}` WHERE `uuid`=? AND `corp_id`=?", user.getUniqueId().toString(), id).length > 0;
+        return from(corpUsersTable)
+                       .select()
+                       .where("uuid", eq("?"))
+                       .and("corp_id", eq("?"))
+                       .getResults(user.getUniqueId().toString(), id).length > 0;
     }
 
     public void setBase(World world, String regionId) {
@@ -263,7 +297,11 @@ public class Corporation {
             }
         }
 
-        corpsTable.executeUpdate("UPDATE `{TABLE}` SET `base_id`=?, `base_world`=? WHERE `id`=?", regionId, world.getName(), id);
+        from(corpsTable).update()
+                .set("base_id", "?")
+                .set("base_world", "?")
+                .where("id", eq("?"))
+                .execute(regionId, world.getName(), id);
     }
 
     public void setRank(IngameUser target, CorpRank rank) {
@@ -274,7 +312,11 @@ public class Corporation {
         onUpdateRank(target, rank);
 
         int userId = CorporationManager.getInstance().getUserId(target);
-        module.getTable(CorpUsersTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_rank`=? WHERE `id` = ?", rank.id, userId);
+        from(module.getTable(CorpUsersTable.class))
+                .update()
+                .set("corp_rank", "?")
+                .where("id", eq("?"))
+                .execute(rank.id, userId);
     }
 
     public void onUpdateRank(IngameUser user, @Nullable CorpRank rank) {
@@ -286,7 +328,11 @@ public class Corporation {
     }
 
     public int getMemberCount() {
-        return module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` where `corp_id` = ?", getId()).length;
+        return from(module.getTable(CorpUsersTable.class))
+                .select()
+                .where("corp_id", eq("?"))
+                .getResults(getId())
+                .length;
     }
 
     private void addRegionOwner(IngameUser user) {
@@ -336,7 +382,12 @@ public class Corporation {
     public List<CorpRank> getRanks() {
         List<CorpRank>
                 rows =
-                Arrays.asList(module.getTable(CorpRanksTable.class).get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ?", getId()));
+                Arrays.asList(
+                        from(module.getTable(CorpRanksTable.class))
+                                .select()
+                                .where("corp_id", eq("?"))
+                                .getResults(getId()));
+
         Collections.sort(rows);
         return rows;
     }
@@ -351,11 +402,12 @@ public class Corporation {
     }
 
     public List<CorpUserRow> getRankUsers(CorpRank rank) {
-        CorpUserRow[] result =
-                module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `corp_id` = ? AND `corp_rank` = ?", getId(), rank.id);
-        if (result == null || result.length < 1) {
-            return new ArrayList<>();
-        }
+        CorpUserRow[]
+                result =
+                from(module.getTable(CorpUsersTable.class))
+                        .select().where("corp_id", eq("?"))
+                        .and("corp_rank", eq("?"))
+                        .getResults(getId(), rank.id);
 
         return Arrays.asList(result);
     }

@@ -17,6 +17,8 @@
 package de.static_interface.reallifeplugin.module.corporation;
 
 import static de.static_interface.reallifeplugin.config.RpLanguage.m;
+import static de.static_interface.sinklibrary.database.query.Query.eq;
+import static de.static_interface.sinklibrary.database.query.Query.from;
 
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;
@@ -99,9 +101,13 @@ public class CorporationManager {
      */
     @Nullable
     public Integer getUserId(IngameUser user) {
-        CorpUserRow[] rows = module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString());
-        if (rows.length > 0) {
-            return rows[0].id;
+        CorpUserRow result = from(module.getTable(CorpUsersTable.class))
+                .select()
+                .where("uuid", eq("?"))
+                .get(user.getUniqueId().toString());
+
+        if (result != null) {
+            return result.id;
         }
 
         CorpUserRow row = new CorpUserRow();
@@ -112,20 +118,15 @@ public class CorporationManager {
     }
 
     public CorpUserRow getCorpUser(int userId) {
-        return module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `id`=?", userId)[0];
+        return from(module.getTable(CorpUsersTable.class))
+                .select()
+                .where("id", eq("?"))
+                .get(userId);
     }
 
     public CorpUserRow getCorpUser(IngameUser user) {
         int id = getUserId(user);
-        CorpUserRow[]
-                rows =
-                module.getTable(CorpUsersTable.class).get("SELECT * FROM `{TABLE}` WHERE `id`=?", id);
-        return rows[0];
-    }
-
-    public boolean hasEntry(CorporationModule module, IngameUser user) {
-        return module.getTable(CorpUsersTable.class)
-                       .get("SELECT * FROM `{TABLE}` WHERE `uuid`=?", user.getUniqueId().toString()).length > 0;
+        return getCorpUser(id);
     }
 
     public String getFormattedName(IngameUser user) {
@@ -312,7 +313,10 @@ public class CorporationManager {
     }
 
     public void deleteCorporation(Corporation corporation) {
-        module.getTable(CorpsTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id`=?", corporation.getId());
+        from(module.getTable(CorpsTable.class))
+                .delete()
+                .where("id", eq("?"))
+                .execute(corporation.getId());
     }
 
     public Collection<Corporation> getCorporations() {
@@ -320,7 +324,10 @@ public class CorporationManager {
             return new ArrayList<>();
         }
 
-        CorpRow[] rows = module.getTable(CorpsTable.class).get("SELECT * FROM `{TABLE}`");
+        CorpRow[] rows = from(module.getTable(CorpsTable.class))
+                .select()
+                .getResults();
+
         List<Corporation> corporations = new ArrayList<>();
         for (CorpRow row : rows) {
             Corporation corp = new Corporation(module, row.id);
@@ -338,7 +345,11 @@ public class CorporationManager {
             return false;
         }
 
-        module.getTable(CorpsTable.class).executeUpdate("UPDATE `{TABLE}` SET `corp_name` = ? WHERE id = ?", newName, corp.getId());
+        from(module.getTable(CorpsTable.class))
+                .update()
+                .set("corp_name", "?")
+                .where("id", eq("?"))
+                .execute(newName, corp.getId());
 
         return true;
     }
