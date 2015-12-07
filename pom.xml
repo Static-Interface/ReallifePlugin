@@ -64,10 +64,6 @@
 
     <repositories>
         <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/repositories/releases/</url>
-        </repository>
-        <repository>
             <id>andune-nexus</id>
             <url>http://andune.com/nexus/content/repositories/public/</url>
         </repository>
@@ -81,7 +77,7 @@
         </repository>
         <repository>
             <id>pex-repo</id>
-            <url>http://pex-repo.zachsthings.com</url>
+            <url>https://pex-repo.aoeu.xyz/</url>
         </repository>
     </repositories>
 
@@ -133,7 +129,7 @@
         <dependency>
             <groupId>ru.tehkode</groupId>
             <artifactId>PermissionsEx</artifactId>
-            <version>1.22</version>
+            <version>1.23</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

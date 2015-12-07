@@ -33,7 +33,6 @@ import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.database.DatabaseConfiguration;
-import de.static_interface.sinklibrary.database.SQLDialect;
 import de.static_interface.sinklibrary.database.impl.database.H2Database;
 import de.static_interface.sinklibrary.database.impl.database.MySqlDatabase;
 import org.bukkit.Bukkit;
@@ -79,25 +78,21 @@ public class ReallifeMain extends JavaPlugin {
         rpSettings = new RpSettings(reallifeDirectory, this);
         new RpLanguage(reallifeDirectory).init();
         DatabaseConfiguration config = new DatabaseConfiguration(reallifeDirectory, "Database.yml", "ReallifePlugin", "RP_");
+        String type = config.getDatabaseType();
 
-        SQLDialect type;
-        try {
-            type = config.getDatabaseType();
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Warning, an error occured while parsing the config:");
-            getLogger().log(Level.SEVERE, "Invalid Database type: " + config.get("Type"));
-            e.printStackTrace();
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-        switch (type) {
-            case H2:
-                db = new H2Database(new File(reallifeDirectory, "database.h2"), config.getTablePrefix(), this);
+        switch (type.toUpperCase().trim()) {
+            case "H2":
+                db = new H2Database(new File(reallifeDirectory, "database.h2"), config.getTablePrefix());
                 break;
-            case MariaDB:
-            case MySQL:
-                db = new MySqlDatabase(config, this);
+            case "MARIADB":
+            case "MYSQL":
+                db = new MySqlDatabase(config);
                 break;
+            default:
+                getLogger().log(Level.SEVERE, "Warning, an error occured while parsing the config:");
+                getLogger().log(Level.SEVERE, "Invalid Database type: " + type);
+                Bukkit.getPluginManager().disablePlugin(this);
+                return;
         }
 
         if (db != null) {
