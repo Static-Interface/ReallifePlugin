@@ -22,6 +22,9 @@ import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENE
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS_SET;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.TIMEUNIT_DAYS;
+import static de.static_interface.sinklibrary.database.query.Query.eq;
+import static de.static_interface.sinklibrary.database.query.Query.from;
+import static de.static_interface.sinklibrary.database.query.Query.gt;
 
 import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;
@@ -739,7 +742,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     corp.setRank(rankUser, corp.getDefaultRank());
                 }
 
-                getModule().getTable(CorpRanksTable.class).executeUpdate("DELETE FROM `{TABLE}` WHERE `id` = ?", rank.id);
+                from(getModule().getTable(CorpRanksTable.class))
+                        .delete()
+                        .where("id", eq("?"))
+                        .execute(rank.id);
+
                 sender.sendMessage(GENERAL_SUCCESS.format());
                 return true;
             }
@@ -800,7 +807,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return false;
                 }
 
-                getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `priority`=? WHERE `id` = ?", priortiy, rank.id);
+                from(getModule().getTable(CorpRanksTable.class))
+                        .update()
+                        .set("priority", "?")
+                        .where("id", eq("?"))
+                        .execute(priortiy, rank.id);
 
                 sender.sendMessage(GENERAL_SUCCESS.format());
                 return true;
@@ -825,7 +836,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                 }
                 String prefix = ChatColor.translateAlternateColorCodes('&', StringUtil.formatArrayToString(args, " ", 0, args.length));
 
-                getModule().getTable(CorpRanksTable.class).executeUpdate("UPDATE `{TABLE}` SET `prefix`=? WHERE `id` = ?", prefix, rank.id);
+                from(getModule().getTable(CorpRanksTable.class))
+                        .update()
+                        .set("prefix", "?")
+                        .where("id", eq("?"))
+                        .execute(prefix, rank.id);
 
                 sender.sendMessage(GENERAL_SUCCESS_SET.format("Prefix", prefix));
                 return true;
@@ -855,8 +870,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     description = null;
                 }
 
-                getModule().getTable(CorpRanksTable.class)
-                        .executeUpdate("UPDATE `{TABLE}` SET `description`=? WHERE `id` = ?", description, rank.id);
+                from(getModule().getTable(CorpRanksTable.class))
+                        .update()
+                        .set("description", "?")
+                        .where("id", eq("?"))
+                        .execute(description, rank.id);
 
                 sender.sendMessage(GENERAL_SUCCESS_SET.format("Description", description));
                 return true;
@@ -881,8 +899,12 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return false;
                 }
 
-                getModule().getTable(CorpRanksTable.class)
-                        .executeUpdate("UPDATE `{TABLE}` SET `name`=? WHERE `id` = ?", newName, rank.id);
+                from(getModule().getTable(CorpRanksTable.class))
+                        .update()
+                        .set("name", "?")
+                        .where("id", eq("?"))
+                        .execute(newName, rank.id);
+
                 sender.sendMessage(GENERAL_SUCCESS_SET.format("Name", newName));
                 return true;
             }
@@ -1070,9 +1092,14 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             int days = 3;
             long maxTime = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * days;
             CorpTradesRow[] rows =
-                    getModule().getTable(CorpTradesTable.class).get(
-                            "SELECT * FROM `{TABLE}` WHERE `user_id` = ? AND `corp_id` = ? AND `time` > ?", userId,
-                            corp.getId(), maxTime);
+                    from(
+                            getModule().getTable(CorpTradesTable.class))
+                            .select()
+                            .where("user_id", eq("?"))
+                            .and("corp_id", eq("?"))
+                            .and("time", gt("?"))
+                            .getResults(userId, corp.getId(), maxTime);
+
             if (rows.length > 0) {
                 int i = 0;
                 for (CorpTradesRow row : rows) {
