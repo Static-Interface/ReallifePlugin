@@ -46,7 +46,8 @@ public class RpSettings extends Configuration {
         addDefault("Groups.Default.ShownName", "%name%");
 
         addDefault("Ad.Price", 500.0);
-        addDefault("Ad.Timeout", 30);
+        addDefault("Ad.Timeout", 30, "In minutes");
+        addDefault("Ad.GlobalCooldown", 45, "In seconds");
     }
 
     @Override

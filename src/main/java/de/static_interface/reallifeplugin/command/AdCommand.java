@@ -21,6 +21,7 @@ import static de.static_interface.reallifeplugin.config.RpLanguage.m;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_NOT_ENOUGH_MONEY;
 
 import de.static_interface.reallifeplugin.ReallifeMain;
+import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.command.SinkCommand;
 import de.static_interface.sinklibrary.api.command.annotation.Aliases;
@@ -44,8 +45,8 @@ import java.util.concurrent.TimeUnit;
 @Aliases("ad")
 public class AdCommand extends SinkCommand {
 
-    HashMap<UUID, Long> timeouts = new HashMap<>();
-
+    private HashMap<UUID, Long> timeouts = new HashMap<>();
+    private long lastAdMessage;
     public AdCommand(Plugin plugin) {
         super(plugin);
         getCommandOptions().setPlayerOnly(true);
@@ -73,6 +74,12 @@ public class AdCommand extends SinkCommand {
             return true;
         }
 
+        long cooldownSeconds = (System.currentTimeMillis() - lastAdMessage) / 1000;
+        if ((int) ReallifeMain.getInstance().getSettings().get("Ad.GlobalCooldown") <= cooldownSeconds) {
+            sender.sendMessage(RpLanguage.AD_GLOBAL_COOLDOWN.format(sender));
+            return true;
+        }
+
         if (args.length < 1) {
             return false;
         }
@@ -84,6 +91,8 @@ public class AdCommand extends SinkCommand {
         if (settingsTimeout > 0) {
             timeouts.put(p.getUniqueId(), currenttime + settingsTimeout);
         }
+
+        lastAdMessage = System.currentTimeMillis();
         return true;
     }
 }

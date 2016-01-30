@@ -5,7 +5,7 @@ author: Trojaner
 website: http://static-interface.de
 main: de.static_interface.reallifeplugin.ReallifeMain
 depend: [SinkLibrary, WorldGuard]
-soft-depend: [AdventuriaPlugin, PermissionsEx]
+soft-depend: [AdventuriaPlugin]
 
 commands:
   ic:

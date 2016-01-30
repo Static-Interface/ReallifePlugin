@@ -47,10 +47,14 @@ public class RpLanguage extends Configuration {
     public static final YamlI18nOption
             CONTRACT_CREATED =
             new YamlI18nOption(CONTRACT_PARENT, "Created", "&2The contract {0} has been accepted by all participants!");
+    public static final YamlParentOption AD_PARENT = new YamlParentOption("Ad");
     public static YamlI18nOption
             CONTRACT_ACCEPT_MESSAGE =
             new YamlI18nOption(CONTRACT_PARENT, "AcceptMessage", "&7Use &2/caccept&7 to accept or &4/cdeny&7 to deny!");
     public static YamlI18nOption CONTRACT_ADDED = new YamlI18nOption(CONTRACT_PARENT, "Added", "&4{0}&r&2 has added you to the &c{1}&r&4 contract.");
+    public static YamlI18nOption
+            AD_GLOBAL_COOLDOWN =
+            new YamlI18nOption(AD_PARENT, "GlobalCooldown", "&4Someone just posted an ad. Please wait a bit.", true);
 
     private static RpLanguage instance;
 
