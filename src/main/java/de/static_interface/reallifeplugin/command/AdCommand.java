@@ -75,7 +75,7 @@ public class AdCommand extends SinkCommand {
         }
 
         long cooldownSeconds = (System.currentTimeMillis() - lastAdMessage) / 1000;
-        if ((int) ReallifeMain.getInstance().getSettings().get("Ad.GlobalCooldown") <= cooldownSeconds) {
+        if ((int) ReallifeMain.getInstance().getSettings().get("Ad.GlobalCooldown") >= cooldownSeconds) {
             sender.sendMessage(RpLanguage.AD_GLOBAL_COOLDOWN.format(sender));
             return true;
         }
