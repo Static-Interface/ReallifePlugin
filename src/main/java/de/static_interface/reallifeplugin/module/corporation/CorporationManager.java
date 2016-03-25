@@ -130,6 +130,9 @@ public class CorporationManager {
     }
 
     public String getFormattedName(IngameUser user) {
+        if (!user.hasPlayedBefore()) {
+            return null;
+        }
         String name =
                 ChatColor.stripColor(user.getDisplayName() == null ? user.getName() : user.getDisplayName());
 

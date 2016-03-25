@@ -317,7 +317,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
                     return true;
                 }
 
-                IngameUser u = SinkLibrary.getInstance().getIngameUser(args[0]);
+                IngameUser u = SinkLibrary.getInstance().getIngameUser(args[0], false);
                 if (!userCorp.isMember(u)) {
                     sender.sendMessage(StringUtil.format(m("Corporation.NotMember"), args[0]));
                     return true;
@@ -335,7 +335,11 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
 
                 if (u.isOnline()) {
                     u.sendMessage(StringUtil.format(m("Corporation.Kicked"), userCorp.getName()));
-                    user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), CorporationManager.getInstance().getFormattedName(u)));
+                    String name = CorporationManager.getInstance().getFormattedName(u);
+                    if (name == null) {
+                        name = args[0];
+                    }
+                    user.sendMessage(StringUtil.format(m("Corporation.CEOKicked"), name));
                 }
                 return true;
             }
