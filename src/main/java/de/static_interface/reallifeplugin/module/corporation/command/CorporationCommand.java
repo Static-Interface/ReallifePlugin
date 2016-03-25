@@ -632,7 +632,7 @@ public class CorporationCommand extends ModuleCommand<CorporationModule> {
             @Description("Rename a corporation")
             @Override
             protected boolean onExecute(CommandSender sender, String label, String[] args) throws ParseException {
-                Corporation corporation = CorporationManager.getInstance().getCorporation(args[1]);
+                Corporation corporation = CorporationManager.getInstance().getCorporation(args[0]);
                 if (corporation == null) {
                     sender.sendMessage(StringUtil.format(m("Corporation.DoesntExists"), args[0]));
                     return true;
