@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.static_interface.reallifeplugin.module.bank;
+package de.static_interface.reallifeplugin.module.bank.database.wrapper;
 
 import static de.static_interface.sinklibrary.database.query.Query.eq;
 import static de.static_interface.sinklibrary.database.query.Query.from;
@@ -27,16 +27,21 @@ public class Bank {
     protected BankTable bankTable;
     private int id;
 
-    public Bank(BankTable tbl, int id) {
+    public Bank(BankTable tbl, BankRow row) {
         bankTable = tbl;
-        this.id = id;
+        this.id = row.id;
     }
 
-    protected BankRow getBase() {
+    public BankRow getBase() {
         return from(bankTable).select().where("id", eq("?")).get(id);
     }
 
     public int getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o instanceof Bank && (((Bank) o).getId() == id);
     }
 }

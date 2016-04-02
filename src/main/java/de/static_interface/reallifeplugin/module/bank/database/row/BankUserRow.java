@@ -17,11 +17,11 @@
 package de.static_interface.reallifeplugin.module.bank.database.row;
 
 import de.static_interface.reallifeplugin.module.bank.database.table.BankTable;
-import de.static_interface.reallifeplugin.module.bank.database.table.BankUsersTable;
 import de.static_interface.sinklibrary.database.CascadeAction;
 import de.static_interface.sinklibrary.database.Row;
 import de.static_interface.sinklibrary.database.annotation.Column;
 import de.static_interface.sinklibrary.database.annotation.ForeignKey;
+import de.static_interface.sinklibrary.database.annotation.UniqueKey;
 
 import javax.annotation.Nullable;
 
@@ -31,8 +31,8 @@ public class BankUserRow implements Row {
     public Integer id;
 
     @Column
-    @ForeignKey(table = BankUsersTable.class, column = "id")
-    public int user;
+    @UniqueKey
+    public String uuid;
 
     @Column(name = "bank_id")
     @Nullable

@@ -16,6 +16,18 @@
 
 package de.static_interface.reallifeplugin.module.bank;
 
+import static de.static_interface.sinklibrary.database.query.Query.eq;
+import static de.static_interface.sinklibrary.database.query.Query.from;
+
+import de.static_interface.reallifeplugin.module.bank.database.row.BankRow;
+import de.static_interface.reallifeplugin.module.bank.database.row.BankUserRow;
+import de.static_interface.reallifeplugin.module.bank.database.table.BankTable;
+import de.static_interface.reallifeplugin.module.bank.database.table.BankUsersTable;
+import de.static_interface.reallifeplugin.module.bank.database.wrapper.Bank;
+import de.static_interface.reallifeplugin.module.bank.database.wrapper.BankUser;
+
+import java.util.UUID;
+
 public class BankManager {
 
     private static BankManager instance;
@@ -33,7 +45,34 @@ public class BankManager {
         instance = null;
     }
 
-    public BankManager getInstance() {
+    public static BankManager getInstance() {
         return instance;
+    }
+
+    public Bank getBank(int id) {
+        BankTable table = module.getTable(BankTable.class);
+        BankRow row = from(table)
+                .select()
+                .where("id", eq("?"))
+                .get(id);
+        if (row == null) {
+            throw new IllegalArgumentException("Bank with id " + id + " not found!");
+        }
+        return new Bank(table, row);
+    }
+
+    public BankUser getUser(UUID uuid) {
+        BankUsersTable table = module.getTable(BankUsersTable.class);
+        BankUserRow row = from(table)
+                .select()
+                .where("uuid", eq("?"))
+                .get(uuid.toString());
+
+        if (row == null) {
+            row = new BankUserRow();
+            row.uuid = uuid.toString();
+            row = table.insert(row);
+        }
+        return new BankUser(table, row);
     }
 }
