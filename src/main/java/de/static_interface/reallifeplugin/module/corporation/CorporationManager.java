@@ -73,7 +73,7 @@ public class CorporationManager {
         return instance;
     }
 
-    public static void unload() {
+    static void unload() {
         instance = null;
     }
 
