@@ -17,7 +17,7 @@
 package de.static_interface.reallifeplugin.module;
 
 import de.static_interface.sinklibrary.api.command.SinkCommand;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.Database;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

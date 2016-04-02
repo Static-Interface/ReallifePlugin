@@ -19,7 +19,7 @@ package de.static_interface.reallifeplugin.module.payday;
 import de.static_interface.reallifeplugin.ReallifeMain;
 import de.static_interface.reallifeplugin.module.Module;
 import de.static_interface.sinklibrary.Constants;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.Database;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 

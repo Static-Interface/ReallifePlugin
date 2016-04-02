@@ -17,8 +17,8 @@
 package de.static_interface.reallifeplugin.module.corporation.database.table;
 
 import de.static_interface.reallifeplugin.module.corporation.database.row.CorpUserRow;
-import de.static_interface.sinklibrary.database.AbstractTable;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.AbstractTable;
+import de.static_interface.sinksql.Database;
 
 public class CorpUsersTable extends AbstractTable<CorpUserRow> {
 

@@ -26,8 +26,8 @@ import de.static_interface.reallifeplugin.module.bank.database.table.BankUsersTa
 import de.static_interface.reallifeplugin.module.bank.database.table.BannedUsersTable;
 import de.static_interface.reallifeplugin.module.bank.database.table.LoansTable;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
-import de.static_interface.sinklibrary.database.AbstractTable;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.AbstractTable;
+import de.static_interface.sinksql.Database;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -23,8 +23,8 @@ import de.static_interface.reallifeplugin.module.level.hook.VaultPermissionsHook
 import de.static_interface.reallifeplugin.module.level.listener.LevelCommandListener;
 import de.static_interface.reallifeplugin.module.level.listener.PlayerJoinListener;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
-import de.static_interface.sinklibrary.database.Database;
 import de.static_interface.sinklibrary.util.StringUtil;
+import de.static_interface.sinksql.Database;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;

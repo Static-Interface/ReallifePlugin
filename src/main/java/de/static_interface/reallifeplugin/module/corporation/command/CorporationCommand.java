@@ -22,9 +22,9 @@ import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENE
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.GENERAL_SUCCESS_SET;
 import static de.static_interface.sinklibrary.configuration.GeneralLanguage.TIMEUNIT_DAYS;
-import static de.static_interface.sinklibrary.database.query.Query.eq;
-import static de.static_interface.sinklibrary.database.query.Query.from;
-import static de.static_interface.sinklibrary.database.query.Query.gt;
+import static de.static_interface.sinksql.query.Query.eq;
+import static de.static_interface.sinksql.query.Query.from;
+import static de.static_interface.sinksql.query.Query.gt;
 
 import de.static_interface.reallifeplugin.config.RpLanguage;
 import de.static_interface.reallifeplugin.module.ModuleCommand;

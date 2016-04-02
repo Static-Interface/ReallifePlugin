@@ -26,8 +26,8 @@ import de.static_interface.reallifeplugin.module.corporation.database.table.Corp
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
 import de.static_interface.reallifeplugin.module.stockmarket.StockMarketModule;
-import de.static_interface.sinklibrary.database.AbstractTable;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.AbstractTable;
+import de.static_interface.sinksql.Database;
 
 import java.util.ArrayList;
 import java.util.Collection;

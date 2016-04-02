@@ -18,8 +18,8 @@ package de.static_interface.reallifeplugin.module;
 
 import de.static_interface.sinklibrary.SinkLibrary;
 import de.static_interface.sinklibrary.api.configuration.Configuration;
-import de.static_interface.sinklibrary.database.AbstractTable;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.AbstractTable;
+import de.static_interface.sinksql.Database;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 

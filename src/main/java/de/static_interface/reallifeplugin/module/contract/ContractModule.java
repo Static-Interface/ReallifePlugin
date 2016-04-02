@@ -25,8 +25,8 @@ import de.static_interface.reallifeplugin.module.contract.command.ContractComman
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUserOptionsTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractUsersTable;
 import de.static_interface.reallifeplugin.module.contract.database.table.ContractsTable;
-import de.static_interface.sinklibrary.database.AbstractTable;
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.AbstractTable;
+import de.static_interface.sinksql.Database;
 
 import java.util.ArrayList;
 import java.util.Collection;

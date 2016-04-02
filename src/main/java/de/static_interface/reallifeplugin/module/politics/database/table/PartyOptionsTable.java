@@ -16,10 +16,10 @@
 
 package de.static_interface.reallifeplugin.module.politics.database.table;
 
-import de.static_interface.sinklibrary.database.AbstractTable;
-import de.static_interface.sinklibrary.database.CascadeAction;
-import de.static_interface.sinklibrary.database.Database;
-import de.static_interface.sinklibrary.database.impl.table.OptionsTable;
+import de.static_interface.sinksql.AbstractTable;
+import de.static_interface.sinksql.CascadeAction;
+import de.static_interface.sinksql.Database;
+import de.static_interface.sinksql.impl.table.OptionsTable;
 
 public class PartyOptionsTable extends OptionsTable {
 

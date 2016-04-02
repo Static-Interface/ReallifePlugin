@@ -16,7 +16,7 @@
 
 package de.static_interface.reallifeplugin.module;
 
-import de.static_interface.sinklibrary.database.Database;
+import de.static_interface.sinksql.Database;
 import org.bukkit.event.Event;
 
 public abstract class ModuleEvent<T extends Module> extends Event {

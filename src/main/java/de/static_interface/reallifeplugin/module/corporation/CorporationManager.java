@@ -17,8 +17,8 @@
 package de.static_interface.reallifeplugin.module.corporation;
 
 import static de.static_interface.reallifeplugin.config.RpLanguage.m;
-import static de.static_interface.sinklibrary.database.query.Query.eq;
-import static de.static_interface.sinklibrary.database.query.Query.from;
+import static de.static_interface.sinksql.query.Query.eq;
+import static de.static_interface.sinksql.query.Query.from;
 
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.BukkitUtil;

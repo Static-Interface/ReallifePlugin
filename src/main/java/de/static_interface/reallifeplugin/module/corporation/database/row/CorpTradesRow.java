@@ -16,14 +16,14 @@
 
 package de.static_interface.reallifeplugin.module.corporation.database.row;
 
-import static de.static_interface.sinklibrary.database.CascadeAction.CASCADE;
+import static de.static_interface.sinksql.CascadeAction.CASCADE;
 
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpUsersTable;
 import de.static_interface.reallifeplugin.module.corporation.database.table.CorpsTable;
-import de.static_interface.sinklibrary.database.Row;
-import de.static_interface.sinklibrary.database.annotation.Column;
-import de.static_interface.sinklibrary.database.annotation.ForeignKey;
-import de.static_interface.sinklibrary.database.annotation.Index;
+import de.static_interface.sinksql.Row;
+import de.static_interface.sinksql.annotation.Column;
+import de.static_interface.sinksql.annotation.ForeignKey;
+import de.static_interface.sinksql.annotation.Index;
 
 public class CorpTradesRow implements Row {
 

@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.contract.database.row;
 
-import de.static_interface.sinklibrary.database.Row;
-import de.static_interface.sinklibrary.database.annotation.Column;
-import de.static_interface.sinklibrary.database.annotation.Index;
+import de.static_interface.sinksql.Row;
+import de.static_interface.sinksql.annotation.Column;
+import de.static_interface.sinksql.annotation.Index;
 
 public class ContractUser implements Row {
 

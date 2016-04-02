@@ -98,6 +98,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>de.static_interface</groupId>
+            <artifactId>sinksql</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
             <version>1.7.9-R0.3-SNAPSHOT</version>

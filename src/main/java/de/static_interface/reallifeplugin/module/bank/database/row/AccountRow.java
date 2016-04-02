@@ -18,10 +18,10 @@ package de.static_interface.reallifeplugin.module.bank.database.row;
 
 import de.static_interface.reallifeplugin.module.bank.database.table.BankTable;
 import de.static_interface.reallifeplugin.module.bank.database.table.BankUsersTable;
-import de.static_interface.sinklibrary.database.CascadeAction;
-import de.static_interface.sinklibrary.database.Row;
-import de.static_interface.sinklibrary.database.annotation.Column;
-import de.static_interface.sinklibrary.database.annotation.ForeignKey;
+import de.static_interface.sinksql.CascadeAction;
+import de.static_interface.sinksql.Row;
+import de.static_interface.sinksql.annotation.Column;
+import de.static_interface.sinksql.annotation.ForeignKey;
 
 import javax.annotation.Nullable;
 

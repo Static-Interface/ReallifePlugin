@@ -16,9 +16,9 @@
 
 package de.static_interface.reallifeplugin.module.bank.database.row;
 
-import de.static_interface.sinklibrary.database.Row;
-import de.static_interface.sinklibrary.database.annotation.Column;
-import de.static_interface.sinklibrary.database.annotation.UniqueKey;
+import de.static_interface.sinksql.Row;
+import de.static_interface.sinksql.annotation.Column;
+import de.static_interface.sinksql.annotation.UniqueKey;
 
 public class BankRow implements Row {
 

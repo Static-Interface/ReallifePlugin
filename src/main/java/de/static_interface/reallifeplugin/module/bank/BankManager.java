@@ -16,8 +16,8 @@
 
 package de.static_interface.reallifeplugin.module.bank;
 
-import static de.static_interface.sinklibrary.database.query.Query.eq;
-import static de.static_interface.sinklibrary.database.query.Query.from;
+import static de.static_interface.sinksql.query.Query.eq;
+import static de.static_interface.sinksql.query.Query.from;
 
 import de.static_interface.reallifeplugin.module.bank.database.row.BankRow;
 import de.static_interface.reallifeplugin.module.bank.database.row.BankUserRow;
