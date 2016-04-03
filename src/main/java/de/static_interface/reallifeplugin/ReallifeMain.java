@@ -77,7 +77,7 @@ public class ReallifeMain extends JavaPlugin {
 
         rpSettings = new RpSettings(reallifeDirectory, this);
         new RpLanguage(reallifeDirectory).init();
-        DatabaseConfiguration config = new DatabaseConfiguration(reallifeDirectory, "Database.yml", "ReallifePlugin", "RP_");
+        DatabaseConfiguration config = new DatabaseConfiguration(reallifeDirectory, "Database.yml", "ReallifePlugin", this);
         String type = config.getDatabaseType();
 
         switch (type.toUpperCase().trim()) {
