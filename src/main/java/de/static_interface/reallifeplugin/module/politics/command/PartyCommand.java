@@ -34,6 +34,7 @@ import de.static_interface.reallifeplugin.module.politics.database.table.PartyRa
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyRanksTable;
 import de.static_interface.reallifeplugin.module.politics.database.table.PartyUsersTable;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.annotation.Usage;
 import de.static_interface.sinklibrary.api.exception.NotEnoughArgumentsException;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
@@ -55,12 +56,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Usage("<options> [-p <party>] [-f]")
 public class PartyCommand extends ModuleCommand<PoliticsModule> {
 
     public PartyCommand(PoliticsModule module) {
         super(module);
         getCommandOptions().setPlayerOnly(true);
-        getCommandOptions().setCmdLineSyntax("{PREFIX}{ALIAS} <options> [-p <party>] [-f]");
         getCommandOptions().setCliOptions(new Options());
         Option partyOption = Option.builder("p")
                 .hasArg()

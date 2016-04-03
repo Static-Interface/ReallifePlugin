@@ -32,6 +32,7 @@ import de.static_interface.reallifeplugin.module.stockmarket.database.row.StockU
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StockUsersTable;
 import de.static_interface.reallifeplugin.module.stockmarket.database.table.StocksTable;
 import de.static_interface.sinklibrary.SinkLibrary;
+import de.static_interface.sinklibrary.api.command.annotation.Usage;
 import de.static_interface.sinklibrary.api.exception.NotEnoughPermissionsException;
 import de.static_interface.sinklibrary.api.exception.UserNotOnlineException;
 import de.static_interface.sinklibrary.user.IngameUser;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+@Usage("<options> [-c <corp>] [-f]")
 public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
 
     private CorporationModule corpModule;
@@ -67,7 +69,6 @@ public class StockMarketCommand extends ModuleCommand<StockMarketModule> {
         pendingTransfers = new ArrayList<>();
         transferCooldown = new HashMap<>();
         pendingCooldown = (int) getModule().getConfig().get("Transfer.Cooldown");
-        getCommandOptions().setCmdLineSyntax("{PREFIX}{ALIAS} <options> [-c <corp>] [-f]");
         getCommandOptions().setCliOptions(new Options());
         Option corpOption = Option.builder("c")
                 .hasArg()

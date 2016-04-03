@@ -19,8 +19,8 @@ package de.static_interface.reallifeplugin.module.payday;
 import de.static_interface.reallifeplugin.module.ModuleListener;
 import de.static_interface.reallifeplugin.module.payday.event.PaydayEvent;
 import de.static_interface.reallifeplugin.module.payday.model.PaydayPlayer;
-import de.static_interface.sinklibrary.util.BukkitUtil;
 import de.static_interface.sinklibrary.util.Debug;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -38,7 +38,7 @@ public class PaydayListener extends ModuleListener<PaydayModule> {
 
     public PaydayListener(PaydayModule module) {
         super(module);
-        for (Player player : BukkitUtil.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
+        for (Player player : Bukkit.getOnlinePlayers()) // Case of reload or something, where PlayerJoin is not fired
         {
             onlineTimes.put(player.getUniqueId(), System.currentTimeMillis());
         }
